@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Cart() {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
 
   // 데이터 불러오기
@@ -72,7 +74,15 @@ function Cart() {
 
   return (
     <div className="cart-container">
-      <h2>장바구니</h2>
+      <div className="cart-header">
+        <h2>장바구니</h2>
+        <button 
+          onClick={() => navigate('/stuff/item/list')} 
+          className="back-button"
+        >
+          상품 목록으로 돌아가기
+        </button>
+      </div>
       {cartItems.length === 0 ? (
         <p>장바구니가 비어있습니다.</p>
       ) : (

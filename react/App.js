@@ -8,6 +8,7 @@ import ItemRegister from './components/ItemRegister';
 import DeletedItems from './components/DeletedItems';
 import Cart from './components/Cart';
 import RemovedStaff from './components/RemovedStaff';
+import Register from './components/Register';
 
 // axios 기본 설정
 axios.defaults.withCredentials = true;
@@ -59,11 +60,12 @@ function App() {
           setIsAdmin(response.data.isAdmin);
           navigate('/stuff/item/list'); // 수정된 경로
         } else {
-          alert(response.data.message);
+          alert(response.data.message || '로그인에 실패했습니다.'); // 메시지 개선
         }
       })
       .catch(error => {
-        alert('로그인에 실패했습니다.');
+        console.error('로그인 요청 실패:', error); // 콘솔에 에러 로그 추가
+        alert('로그인에 실패했습니다. 서버에 문제가 있습니다.'); // 에러 메시지 개선
       });
   }
 
@@ -125,17 +127,19 @@ function App() {
 
   // TopMenu 컴포넌트
   const TopMenu = () => (
-    <div className="top-menu">
-      <h1 className="section-title" style={{ margin: 0 }}>물건 목록</h1>
-      <div>
-        {location.search.includes('message=addedToCart') && (
-          <span style={{ color: 'green', marginRight: '20px' }}>
-            장바구니에 추가되었습니다!
-          </span>
-        )}
-        <a href="/stuff/cart" className="cart-link">
-          🛒 장바구니
-        </a>
+    <div>
+      <div className="top-menu">
+        <h1 className="section-title" style={{ margin: 0 }}>물건 목록</h1>
+        <div>
+          {location.search.includes('message=addedToCart') && (
+            <span style={{ color: 'green', marginRight: '20px' }}>
+              장바구니에 추가되었습니다!
+            </span>
+          )}
+          <a href="/stuff/cart" className="cart-link">
+            🛒 장바구니
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -210,19 +214,34 @@ function App() {
           <button type="submit">로그인</button>
         </form>
       ) : (
-        <button onClick={handleLogout}>로그아웃</button>
+        <div className="auth-buttons">
+          <button onClick={handleLogout}>로그아웃</button>
+          {isAdmin && (
+            <button 
+              onClick={() => navigate('/staff/register')} 
+              className="register-btn"
+            >
+              직원 등록
+            </button>
+          )}
+        </div>
       )}
 
-      {/* 라우트 설정 추가 */}
+      {/* 라우트 설정 수정 */}
       <Routes>
-        <Route path="/" element={<StaffTable />} />
+        {/* 메인 페이지에 ItemList 표시 */}
+        <Route path="/" element={<ItemList />} />
         <Route path="/staff/edit" element={<StaffEdit />} />
         <Route path="/stuff/item/list" element={<ItemList />} />
         <Route path="/stuff/item/register" element={<ItemRegister />} />
         <Route path="/stuff/item/deleted" element={<DeletedItems />} />
         <Route path="/stuff/cart" element={<Cart />} />
         <Route path="/staff/removelist" element={<RemovedStaff />} />
+        <Route path="/staff/register" element={<Register />} />
       </Routes>
+
+      {/* 관리자일 경우에만 StaffTable 표시 */}
+      {isAdmin && <StaffTable />}
     </div>
   );
 }
