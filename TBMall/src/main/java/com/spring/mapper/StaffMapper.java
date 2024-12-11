@@ -22,4 +22,6 @@ public interface StaffMapper {
 
 	// 직원 정보 수정
 	public int update(StaffDto staffDto);
+
+	public void insertStaff(StaffDto staffDto);
 }

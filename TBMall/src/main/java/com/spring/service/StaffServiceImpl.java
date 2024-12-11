@@ -70,4 +70,10 @@ public class StaffServiceImpl implements StaffService {
 		log.info("직원 정보 수정: " + staffDto);
 		mapper.update(staffDto);
 	}
+
+	@Override
+	public void insertStaff(StaffDto staffDto) {
+		log.info("직원 등록: " + staffDto);
+		mapper.insertStaff(staffDto);
+	}
 }

@@ -24,8 +24,18 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @RequestMapping("/staff/*")
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-		RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS }, allowCredentials = "true")
+@CrossOrigin(
+	origins = "http://localhost:3000", 
+	allowedHeaders = "*", 
+	methods = { 
+		RequestMethod.GET, 
+		RequestMethod.POST,
+		RequestMethod.PUT, 
+		RequestMethod.DELETE, 
+		RequestMethod.OPTIONS 
+	}, 
+	allowCredentials = "true"
+)
 @AllArgsConstructor
 public class StaffController {
 	private StaffService service;
@@ -76,7 +86,7 @@ public class StaffController {
 	public Map<String, Object> getRemoveList(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-		
+
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			response.put("success", false);
 			response.put("message", "관리자 권한이 필요합니다.");
@@ -174,6 +184,29 @@ public class StaffController {
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 		response.put("isLoggedIn", loginStaff != null);
 		response.put("isAdmin", loginStaff != null && loginStaff.getAdmins() == 1);
+		return response;
+	}
+
+	@PostMapping("/register")
+	public Map<String, Object> register(@RequestBody StaffDto staffDto, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+
+		if (loginStaff == null || loginStaff.getAdmins() != 1) {
+			response.put("success", false);
+			response.put("message", "관리자 권한이 필요합니다.");
+			return response;
+		}
+
+		try {
+			service.insertStaff(staffDto);
+			response.put("success", true);
+			response.put("message", "직원이 성공적으로 등록되었습니다.");
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", "직원 등록 중 오류가 발생했습니다.");
+		}
+
 		return response;
 	}
 }

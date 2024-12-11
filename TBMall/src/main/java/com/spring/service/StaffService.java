@@ -20,4 +20,6 @@ public interface StaffService {
 
 	public void update(StaffDto staffDto);
 
+	public void insertStaff(StaffDto staffDto);
+
 }

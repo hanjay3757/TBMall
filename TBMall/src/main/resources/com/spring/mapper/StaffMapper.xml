@@ -41,4 +41,15 @@
         admins = #{admins}
     WHERE bno = #{bno}
 </update>
+<insert id="insertStaff">
+    INSERT INTO tbl_guest (
+        btext,      /* 아이디 */
+        password,   /* 비밀번호 */
+        admins      /* 관리자 여부 */
+    ) VALUES (
+        #{btext},
+        #{password},
+        #{admins}
+    )
+</insert>
 </mapper>
