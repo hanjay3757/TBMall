@@ -10,35 +10,35 @@ import Cart from './components/Cart';
 import RemovedStaff from './components/RemovedStaff';
 import Register from './components/Register';
 
-// axios 기본 설정
+// axios 기본 설정 (withCredentials 설정: 쿠키를 포함하여 요청)
 axios.defaults.withCredentials = true;
 
 // App 컴포넌트
 function App() {
   // 상태 변수들
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [staffList, setStaffList] = useState([]);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);  // 관리자 여부
+  const [isLoggedIn, setIsLoggedIn] = useState(false);  // 로그인 여부
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });  // 로그인 폼 데이터
+  const [staffList, setStaffList] = useState([]);  // 직원 목록
+  const navigate = useNavigate();  // 페이지 이동을 위한 navigate 훅
+  const location = useLocation();  // 현재 URL 정보
 
   useEffect(() => {
-    checkLoginStatus();
-    loadStaffList();
+    checkLoginStatus();  // 로그인 상태 확인
+    loadStaffList();  // 직원 목록 불러오기
   }, []);
 
   // 로그인 상태 확인
   function checkLoginStatus() {
     axios.get('http://localhost:8080/mvc/staff/check-login')
       .then(response => {
-        setIsLoggedIn(response.data.isLoggedIn);
-        setIsAdmin(response.data.isAdmin);
+        setIsLoggedIn(response.data.isLoggedIn);  // 로그인 상태 갱신
+        setIsAdmin(response.data.isAdmin);  // 관리자 상태 갱신
       })
       .catch(error => {
         console.error('로그인 상태 확인 실패:', error);
-        setIsLoggedIn(false);
-        setIsAdmin(false);
+        setIsLoggedIn(false);  // 실패시 로그인 상태를 false로
+        setIsAdmin(false);  // 관리자 상태를 false로
       });
   }
 
@@ -56,16 +56,16 @@ function App() {
     })
       .then(response => {
         if (response.data.success) {
-          setIsLoggedIn(true);
-          setIsAdmin(response.data.isAdmin);
-          navigate('/stuff/item/list'); // 수정된 경로
+          setIsLoggedIn(true);  // 로그인 성공시 로그인 상태 true
+          setIsAdmin(response.data.isAdmin);  // 관리자 여부 갱신
+          navigate('/stuff/item/list');  // 물건 목록 페이지로 이동
         } else {
-          alert(response.data.message || '로그인에 실패했습니다.'); // 메시지 개선
+          alert(response.data.message || '로그인에 실패했습니다.');
         }
       })
       .catch(error => {
-        console.error('로그인 요청 실패:', error); // 콘솔에 에러 로그 추가
-        alert('로그인에 실패했습니다. 서버에 문제가 있습니다.'); // 에러 메시지 개선
+        console.error('로그인 요청 실패:', error);
+        alert('로그인에 실패했습니다. 서버에 문제가 있습니다.');
       });
   }
 
@@ -74,9 +74,9 @@ function App() {
     axios.post('http://localhost:8080/mvc/staff/logout')
       .then(response => {
         if (response.data.success) {
-          setIsLoggedIn(false);
-          setIsAdmin(false);
-          navigate('/'); // 로그아웃 후 메인 페이지로 이동
+          setIsLoggedIn(false);  // 로그아웃 후 로그인 상태 false
+          setIsAdmin(false);  // 관리자 상태 false
+          navigate('/');  // 메인 페이지로 이동
         }
       })
       .catch(error => {
@@ -88,14 +88,14 @@ function App() {
   function loadStaffList() {
     axios.get('http://localhost:8080/mvc/staff/list')
       .then(response => {
-        setStaffList(response.data || []);
+        setStaffList(response.data || []);  // 직원 목록 업데이트
       })
       .catch(error => {
         console.error('직원 목록 조회 실패:', error);
       });
   }
 
-  // 직원 삭제
+  // 직원 삭제 확인
   function confirmDelete(bno) {
     if (window.confirm('이 직원을 삭제하시겠습니까?')) {
       const params = new URLSearchParams();
@@ -109,7 +109,7 @@ function App() {
         .then(response => {
           if (response.data.success) {
             alert('직원이 삭제되었습니다.');
-            loadStaffList();
+            loadStaffList();  // 직원 목록 재불러오기
           } else {
             alert(response.data.message);
           }
@@ -122,10 +122,10 @@ function App() {
 
   // 직원 수정
   function editStaff(bno) {
-    navigate(`/staff/edit?bno=${bno}`);
+    navigate(`/staff/edit?bno=${bno}`);  // 수정 페이지로 이동
   }
 
-  // TopMenu 컴포넌트
+  // TopMenu 컴포넌트 (물건 목록 상단 메뉴)
   const TopMenu = () => (
     <div>
       <div className="top-menu">
@@ -144,7 +144,7 @@ function App() {
     </div>
   );
 
-  // AdminMenu 컴포넌트
+  // AdminMenu 컴포넌트 (관리자 메뉴)
   const AdminMenu = () => (
     isAdmin && (
       <div className="admin-menu">
@@ -155,7 +155,7 @@ function App() {
     )
   );
 
-  // StaffTable 컴포넌트
+  // StaffTable 컴포넌트 (직원 목록 테이블)
   const StaffTable = () => (
     isAdmin && (
       <>
@@ -191,9 +191,9 @@ function App() {
 
   return (
     <div className="App">
-      <TopMenu />
-      <AdminMenu />
-      
+      <TopMenu />  {/* 상단 메뉴 */}
+      <AdminMenu />  {/* 관리자 메뉴 */}
+
       {/* 로그인/로그아웃 버튼 */}
       {!isLoggedIn ? (
         <form onSubmit={handleLogin}>
@@ -227,20 +227,19 @@ function App() {
         </div>
       )}
 
-      {/* 라우트 설정 수정 */}
+      {/* 라우트 설정 */}
       <Routes>
-        {/* 메인 페이지에 ItemList 표시 */}
-        <Route path="/" element={<ItemList />} />
-        <Route path="/staff/edit" element={<StaffEdit />} />
-        <Route path="/stuff/item/list" element={<ItemList />} />
-        <Route path="/stuff/item/register" element={<ItemRegister />} />
-        <Route path="/stuff/item/deleted" element={<DeletedItems />} />
-        <Route path="/stuff/cart" element={<Cart />} />
-        <Route path="/staff/removelist" element={<RemovedStaff />} />
-        <Route path="/staff/register" element={<Register />} />
+        <Route path="/" element={<ItemList />} />  {/* 물건 목록 페이지 */}
+        <Route path="/staff/edit" element={<StaffEdit />} />  {/* 직원 수정 페이지 */}
+        <Route path="/stuff/item/list" element={<ItemList />} />  {/* 물건 목록 페이지 */}
+        <Route path="/stuff/item/register" element={<ItemRegister />} />  {/* 물건 등록 페이지 */}
+        <Route path="/stuff/item/deleted" element={<DeletedItems />} />  {/* 삭제된 물건 목록 페이지 */}
+        <Route path="/stuff/cart" element={<Cart />} />  {/* 장바구니 페이지 */}
+        <Route path="/staff/removelist" element={<RemovedStaff />} />  {/* 삭제된 직원 목록 */}
+        <Route path="/staff/register" element={<Register />} />  {/* 직원 등록 페이지 */}
       </Routes>
 
-      {/* 관리자일 경우에만 StaffTable 표시 */}
+      {/* 관리자일 경우에만 직원 목록 테이블 표시 */}
       {isAdmin && <StaffTable />}
     </div>
   );
