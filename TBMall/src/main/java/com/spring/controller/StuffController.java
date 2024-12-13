@@ -1,8 +1,8 @@
 package com.spring.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import javax.servlet.http.HttpSession;
 
@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.spring.dto.CartDto;
 import com.spring.dto.StaffDto;
@@ -31,18 +31,8 @@ import com.spring.service.StuffService;
 
 @RestController
 @RequestMapping(value = "/stuff", produces = "application/json;charset=UTF-8")
-@CrossOrigin(
-    origins = "http://localhost:3000",
-    allowCredentials = "true",
-    allowedHeaders = "*",
-    methods = {
-        RequestMethod.GET, 
-        RequestMethod.POST, 
-        RequestMethod.DELETE, 
-        RequestMethod.PATCH,
-        RequestMethod.OPTIONS
-    }
-)
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", allowedHeaders = "*", methods = {
+		RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS })
 public class StuffController {
 
 	private static final Logger log = LoggerFactory.getLogger(StuffController.class);
@@ -70,7 +60,7 @@ public class StuffController {
 		}
 
 		try {
-			service.processCheckout(loginStaff.getBno());
+			service.processCheckout(loginStaff.getMember_no());
 			return "redirect:/stuff/item/list?message=orderComplete";
 		} catch (Exception e) {
 			log.error("결제 실패: " + e.getMessage());
@@ -110,7 +100,7 @@ public class StuffController {
 	@ResponseBody
 	public Map<String, Object> register(StuffDto stuff, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		
+
 		if (!isAdmin(session)) {
 			response.put("success", false);
 			response.put("message", "관리자 권한이 필요합니다.");
@@ -126,20 +116,17 @@ public class StuffController {
 			response.put("success", false);
 			response.put("message", e.getMessage());
 		}
-		
+
 		return response;
 	}
 
 	// 장바구니에 추가
 	@PostMapping("/cart/add")
 	@ResponseBody
-	public Map<String, String> addToCart(
-		@RequestBody Map<String, Object> request,
-		HttpSession session
-	) {
+	public Map<String, String> addToCart(@RequestBody Map<String, Object> request, HttpSession session) {
 		Map<String, String> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		
+
 		if (loginStaff == null) {
 			response.put("status", "error");
 			response.put("message", "로그인이 필요합니다.");
@@ -149,9 +136,9 @@ public class StuffController {
 		try {
 			Long itemId = ((Number) request.get("itemId")).longValue();
 			int quantity = ((Number) request.get("quantity")).intValue();
-			
-			service.addToCart(itemId, loginStaff.getBno(), quantity);
-			
+
+			service.addToCart(itemId, loginStaff.getMember_no(), quantity);
+
 			response.put("status", "success");
 			response.put("message", "장바구니에 추가되었습니다.");
 		} catch (Exception e) {
@@ -159,7 +146,7 @@ public class StuffController {
 			response.put("status", "error");
 			response.put("message", e.getMessage());
 		}
-		
+
 		return response;
 	}
 
@@ -171,7 +158,7 @@ public class StuffController {
 			return "redirect:/staff/login";
 		}
 
-		model.addAttribute("cartItems", service.getCartItems(loginStaff.getBno()));
+		model.addAttribute("cartItems", service.getCartItems(loginStaff.getMember_no()));
 		return "stuff/cart";
 	}
 
@@ -225,13 +212,10 @@ public class StuffController {
 	// 물건 복구
 	@PostMapping("/item/restore")
 	@ResponseBody
-	public Map<String, String> restoreItem(
-		@RequestParam("itemId") Long itemId, 
-		HttpSession session
-	) {
+	public Map<String, String> restoreItem(@RequestParam("itemId") Long itemId, HttpSession session) {
 		Map<String, String> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		
+
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			response.put("status", "error");
 			response.put("message", "관리자 권한이 필요합니다.");
@@ -246,7 +230,7 @@ public class StuffController {
 			response.put("status", "error");
 			response.put("message", e.getMessage());
 		}
-		
+
 		return response;
 	}
 
@@ -258,7 +242,7 @@ public class StuffController {
 		if (loginStaff == null) {
 			throw new RuntimeException("로그인이 필요합니다.");
 		}
-		return service.getCartItems(loginStaff.getBno());
+		return service.getCartItems(loginStaff.getMember_no());
 	}
 
 	// 장바구니 아이템 삭제 API 추가
@@ -275,11 +259,8 @@ public class StuffController {
 	// 장바구니 수량 업데이트 API 추가
 	@PatchMapping("/cart/{cartId}")
 	@ResponseBody
-	public void updateCartItemQuantity(
-		@PathVariable Long cartId,
-		@RequestBody Map<String, Integer> payload,
-		HttpSession session
-	) {
+	public void updateCartItemQuantity(@PathVariable Long cartId, @RequestBody Map<String, Integer> payload,
+			HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 		if (loginStaff == null) {
 			throw new RuntimeException("로그인이 필요합니다.");

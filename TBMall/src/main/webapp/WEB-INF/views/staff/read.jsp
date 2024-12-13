@@ -10,8 +10,8 @@
 <body>
 <%
 	StaffDto read = (StaffDto)request.getAttribute("read");
-	long bno = read.getBno();
-	String btext = read.getBtext();
+	long bno = read.getMember_no();
+	String btext = read.getMember_id();
 %>	
 
 글본문

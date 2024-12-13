@@ -40,7 +40,7 @@
             <th>No</th>
             <th>btext</th>
             <th>권한</th>
-            <th>관리</th>
+            <th>관리aadfadfaaaaaaa1111</th>
         </tr>
                         <td>${staff.bno}</td>
                         <td>${staff.btext}</td>

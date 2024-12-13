@@ -28,4 +28,19 @@ public class StaffDto {
 		this.delete_right_no = delete_right_no;
 	}
 
+	public int getAdmins() {
+		int adminint = 0;
+		if (this.admin_no != null) {
+			adminint = 1;
+		} else {
+			adminint = 0;
+		}
+		return adminint;
+	}
+
+	public void setPassword(String member_pw) {
+		this.member_pw = member_pw;
+
+	}
+
 }

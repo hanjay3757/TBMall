@@ -17,8 +17,8 @@
 	Object o = request.getAttribute("list");
 	ArrayList<StaffDto> list = (ArrayList<StaffDto>)o; 
 	for(int i=0;i<list.size();i++){
-		Long bno = list.get(i).getBno();
-		String btext = list.get(i).getBtext();
+		Long bno = list.get(i).getMember_no();
+		String btext = list.get(i).getMember_id();
 %>		
 		<%=bno %>	
 		<%=btext %>	

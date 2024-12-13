@@ -76,7 +76,7 @@ public class StaffController {
 	public Map<String, Object> getRemoveList(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-		
+
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			response.put("success", false);
 			response.put("message", "관리자 권한이 필요합니다.");
@@ -113,7 +113,7 @@ public class StaffController {
 		return response;
 	}
 
-	@PostMapping("/edit")
+	@GetMapping("/edit")
 	public Map<String, Object> edit(@RequestBody StaffDto staffDto,
 			@RequestParam("currentPassword") String currentPassword, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
@@ -125,14 +125,14 @@ public class StaffController {
 			return response;
 		}
 
-		StaffDto currentStaff = service.read(staffDto.getBno());
-		if (!currentStaff.getPassword().equals(currentPassword)) {
+		StaffDto currentStaff = service.read(staffDto.getMember_no());
+		if (!currentStaff.getMember_pw().equals(currentPassword)) {
 			response.put("success", false);
 			response.put("message", "현재 비밀번호가 일치하지 않습니다.");
 			return response;
 		}
 
-		if (loginStaff.getAdmins() != 1 && !loginStaff.getBno().equals(staffDto.getBno())) {
+		if (loginStaff.getAdmins() != 1 && !loginStaff.getMember_no().equals(staffDto.getMember_no())) {
 			response.put("success", false);
 			response.put("message", "권한이 없습니다.");
 			return response;
@@ -149,20 +149,20 @@ public class StaffController {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		if (loginStaff == null || !loginStaff.getBno().equals(staffDto.getBno())) {
+		if (loginStaff == null || !loginStaff.getMember_no().equals(staffDto.getMember_no())) {
 			response.put("success", false);
 			response.put("message", "권한이 없습니다.");
 			return response;
 		}
 
-		StaffDto originalStaff = service.read(staffDto.getBno());
-		if (!originalStaff.getPassword().equals(currentPassword)) {
+		StaffDto originalStaff = service.read(staffDto.getMember_no());
+		if (!originalStaff.getMember_pw().equals(currentPassword)) {
 			response.put("success", false);
 			response.put("message", "현재 비밀번호가 일치하지 않습니다.");
 			return response;
 		}
 
-		originalStaff.setPassword(staffDto.getPassword());
+		originalStaff.setPassword(staffDto.getMember_pw());
 		service.update(originalStaff);
 		response.put("success", true);
 		return response;
