@@ -20,6 +20,7 @@ public class StaffDto {
 	private String member_joindate;
 	private int delete_right_no;
 
+//이름 교체
 	public StaffDto(Long admin_no, Long member_no, String member_id, int delete_right_no) {
 		super();
 		this.admin_no = admin_no;
