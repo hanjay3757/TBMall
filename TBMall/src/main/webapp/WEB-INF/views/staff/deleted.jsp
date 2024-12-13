@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@page import="com.spring.dto.StaffDto"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,7 +29,7 @@
 </head>
 <body>
     <h1>삭제된 물건 목록</h1>
-    
+   
     <table class="item-table">
         <tr>
             <th>상품명</th>

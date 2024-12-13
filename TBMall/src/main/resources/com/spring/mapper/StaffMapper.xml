@@ -20,26 +20,36 @@
 	
 	<!-- 삭제 권한 부여 -->
 	<update id="softDelete">
-	UPDATE tbmall_admin SET delete_right_no = 1
-	where member_no = #{member_no}
+	UPDATE tbmall_member 
+	SET member_delete = 1
+	WHERE member_no = #{member_no}
 	</update>
 	<!-- 삭제 권한 회수 -->
+	<update id="Delete">
+        UPDATE tbmall_admin 
+        SET is_deleted = 1 
+        WHERE member_no = #{member_no}
+    </update>
+	
 	<update id="restore">
-	UPDATE tbmall_admin SET delete_right_no = 0
-	where member_no = #{member_no}
+	UPDATE tbmall_member 
+	SET member_delete = 0,
+		member_delete_at = NULL
+	WHERE member_no = #{member_no}
 	</update>
 	<!-- 삭제 권한 가진 admin 호출 -->
 	<select id="getDeletedStaff" resultType="com.spring.dto.StaffDto">
-	 SELECT tbmall_admin.admin_no,tbmall_member.member_no, tbmall_member.member_nick
-        FROM tbmall_admin
-        JOIN tbmall_member
-        ON tbmall_admin.member_no= tbmall_member.member_no
-        WHERE tbmall_admin.delete_right_no =1
+	 SELECT m.*, a.admin_no, m.member_delete_at
+        FROM tbmall_member m
+        LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
+        WHERE m.member_delete = 1
 	</select>
 	<!-- 로그인 -->
 	<select id="login" resultType="com.spring.dto.StaffDto">
 		SELECT * FROM tbmall_member 
-		WHERE member_id = #{member_id} AND member_pw = #{member_pw}
+		WHERE member_id = #{member_id} 
+		AND member_pw = #{member_pw}
+		AND (member_delete = 0 OR member_delete IS NULL)
 	</select>
 	<!-- 계정정보 수정 인듯? -->
 	<update id="update" parameterType="com.spring.dto.StaffDto">

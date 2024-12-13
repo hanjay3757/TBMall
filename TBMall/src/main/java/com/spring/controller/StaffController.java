@@ -39,36 +39,65 @@ public class StaffController {
 	public StaffDto read(@RequestParam("bno") Long bno) {
 		return service.read(bno);
 	}
+	// 작동중
 
-	@PostMapping("/remove")
+	@GetMapping("/remove")
 	public Map<String, Object> remove(@RequestParam("bno") Long bno, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
+		if (loginStaff == null) {
 			response.put("success", false);
-			response.put("message", "관리자 권한이 필요합니다.");
+			response.put("message", "로그인이 필요합니다.");
 			return response;
 		}
 
-		service.remove(bno);
-		response.put("success", true);
+		if (loginStaff.getAdmins() != 1 || loginStaff.getDelete_right_no() != 1) {
+			response.put("success", false);
+			response.put("message", "삭제 권한이 있는 관리자만 삭제할 수 있습니다.");
+			return response;
+		}
+
+		try {
+			service.remove(bno);
+			response.put("success", true);
+			
+			response.put("message", "직원이 성공적으로 삭제되었습니다.");
+		} catch (RuntimeException e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+		
 		return response;
 	}
 
-	@PostMapping("/restore")
+//c
+	@GetMapping("/restore")
 	public Map<String, Object> restore(@RequestParam("bno") Long bno, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
+		if (loginStaff == null) {
 			response.put("success", false);
-			response.put("message", "관리자 권한이 필요합니다.");
+			response.put("message", "로그인이 필요합니다.");
 			return response;
 		}
 
-		service.restore(bno);
-		response.put("success", true);
+		if (loginStaff.getAdmins() != 1 || loginStaff.getDelete_right_no() != 1) {
+			response.put("success", false);
+			response.put("message", "삭제 권한이 있는 관리자만 복구할 수 있습니다.");
+			return response;
+		}
+
+		try {
+			service.restore(bno);
+			response.put("success", true);
+			response.put("message", "직원이 성공적으로 복구되었습니다.");
+		} catch (RuntimeException e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+		
 		return response;
 	}
 
@@ -95,6 +124,11 @@ public class StaffController {
 		StaffDto staff = service.login(staffId, password);
 
 		if (staff != null) {
+			if (staff.getMember_delete() == 1) {
+				response.put("success", false);
+				response.put("message", "삭제된 계정입니다. 관리자에게 문의하세요.");
+				return response;
+			}
 			session.setAttribute("loginStaff", staff);
 			response.put("success", true);
 			response.put("isAdmin", staff.getAdmins() == 1);
@@ -128,7 +162,7 @@ public class StaffController {
 		StaffDto currentStaff = service.read(staffDto.getMember_no());
 		if (!currentStaff.getMember_pw().equals(currentPassword)) {
 			response.put("success", false);
-			response.put("message", "현재 비밀번호가 일치하지 않습니다.");
+			response.put("message", "현재 비밀번호가 ���치하지 않습니다.");
 			return response;
 		}
 

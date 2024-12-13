@@ -1,5 +1,6 @@
 package com.spring.dto;
 
+import java.util.Date;
 import lombok.Data;
 
 @Data
@@ -19,6 +20,8 @@ public class StaffDto {
 	private String member_email;
 	private String member_joindate;
 	private int delete_right_no;
+	private int member_delete;
+	private Date member_delete_at;
 
 //이름 교체
 	public StaffDto(Long admin_no, Long member_no, String member_id, int delete_right_no) {

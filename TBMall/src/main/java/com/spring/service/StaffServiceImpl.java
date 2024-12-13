@@ -34,7 +34,14 @@ public class StaffServiceImpl implements StaffService {
 
 	@Override
 	public void remove(Long member_no) {
-		log.info("삭제" + member_no);
+		log.info("직원 삭제: " + member_no);
+		
+		// 삭제하려는 직원이 관리자인지 확인
+		StaffDto staff = mapper.read(member_no);
+		if (staff != null && staff.getAdmins() == 1) {
+			throw new RuntimeException("관리자는 삭제할 수 없습니다.");
+		}
+		
 		mapper.softDelete(member_no);
 	}
 
@@ -46,7 +53,7 @@ public class StaffServiceImpl implements StaffService {
 
 	@Override
 	public List<StaffDto> getDeletedList() {
-		log.info("삭제 권한 가진 admin 리스트");
+		log.info("삭제된 직원 목록 조회");
 		return mapper.getDeletedStaff();
 	}
 
@@ -54,6 +61,10 @@ public class StaffServiceImpl implements StaffService {
 	public StaffDto login(String member_id, String member_pw) {
 		StaffDto staff = mapper.login(member_id, member_pw);
 		if (staff != null) {
+			if (staff.getMember_delete() == 1) {
+				log.info("삭제된 계정으로 로그인 시도: " + member_id);
+				return null;
+			}
 			if (staff.getAdmins() == 1) {
 				log.info("관리자 로그인 성공: " + member_id);
 			} else {
