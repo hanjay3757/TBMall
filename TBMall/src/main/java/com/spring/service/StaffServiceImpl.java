@@ -28,40 +28,40 @@ public class StaffServiceImpl implements StaffService {
 	}
 
 	@Override
-	public StaffDto read(long bno) {
-		return mapper.read(bno);
+	public StaffDto read(long member_no) {
+		return mapper.read(member_no);
 	}
 
 	@Override
-	public void remove(Long bno) {
-		log.info("삭제" + bno);
-		mapper.softDelete(bno);
+	public void remove(Long member_no) {
+		log.info("삭제" + member_no);
+		mapper.softDelete(member_no);
 	}
 
 	@Override
-	public void restore(Long bno) {
-		log.info("복구: " + bno);
-		mapper.restore(bno);
+	public void restore(Long member_no) {
+		log.info("복구: " + member_no);
+		mapper.restore(member_no);
 	}
 
 	@Override
 	public List<StaffDto> getDeletedList() {
-		log.info("삭제된 비디오 목록 조회");
+		log.info("삭제 권한 가진 admin 리스트");
 		return mapper.getDeletedStaff();
 	}
 
 	@Override
-	public StaffDto login(String staffId, String password) {
-		StaffDto staff = mapper.login(staffId, password);
+	public StaffDto login(String member_id, String member_pw) {
+		StaffDto staff = mapper.login(member_id, member_pw);
 		if (staff != null) {
 			if (staff.getAdmins() == 1) {
-				log.info("관리자 로그인 성공: " + staffId);
+				log.info("관리자 로그인 성공: " + member_id);
 			} else {
-				log.info("일반 사용자 로그인 성공: " + staffId);
+				log.info("일반 사용자 로그인 성공: " + member_id);
 			}
 			return staff;
 		}
-		log.info("로그인 실패: " + staffId);
+		log.info("로그인 실패: " + member_id);
 		return null;
 	}
 
@@ -69,11 +69,5 @@ public class StaffServiceImpl implements StaffService {
 	public void update(StaffDto staffDto) {
 		log.info("직원 정보 수정: " + staffDto);
 		mapper.update(staffDto);
-	}
-
-	@Override
-	public void insertStaff(StaffDto staffDto) {
-		log.info("직원 등록: " + staffDto);
-		mapper.insertStaff(staffDto);
 	}
 }

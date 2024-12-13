@@ -8,17 +8,39 @@ public class StaffDto {
 	public StaffDto() {
 	};
 
-	private Long bno;
-	private String id;
-	private String password;
-	private String btext;
-	private int admins;
-	private int deleted;
+	private Long admin_no;
+	private Long member_no;
+	private String member_id;
+	private String member_pw;
+	private String member_nick;
+	private String member_gender;
+	private String member_birth;
+	private String member_phone;
+	private String member_email;
+	private String member_joindate;
+	private int delete_right_no;
 
-	public StaffDto(Long bno, String btext, int admins) {
+	public StaffDto(Long admin_no, Long member_no, String member_id, int delete_right_no) {
 		super();
-		this.bno = bno;
-		this.btext = btext;
-		this.admins = admins;
+		this.admin_no = admin_no;
+		this.member_no = member_no;
+		this.member_id = member_id;
+		this.delete_right_no = delete_right_no;
 	}
+
+	public int getAdmins() {
+		int adminint = 0;
+		if (this.admin_no != null) {
+			adminint = 1;
+		} else {
+			adminint = 0;
+		}
+		return adminint;
+	}
+
+	public void setPassword(String member_pw) {
+		this.member_pw = member_pw;
+
+	}
+
 }
