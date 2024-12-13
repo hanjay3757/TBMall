@@ -6,50 +6,49 @@
 	<!-- resultType 에 복수형(ArrayList 등)을 적는게 아님. 
 	그냥 dto 단수의 경로를 적어야됨. -->
 	<select id="getList" resultType="com.spring.dto.StaffDto">
-		SELECT * FROM tbl_guest 
-		WHERE deleted = 0
-		ORDER BY bno DESC
+		SELECT * FROM tbmall_member 
+		ORDER BY member_no DESC
 	</select>
 	
 	<select id="read" resultType="com.spring.dto.StaffDto">
-	select * from tbl_guest where bno = #{bno}
+	select * from tbmall_member where member_no = #{member_no}
+	</select>
+	<!-- 관리자 임명 삭제권한 x-->
+	<insert id="adminAppoint">
+		INSERT INTO tbmall_admin (member_no, delete_right_no) values (#{member_no},0)
+	</insert>
 	
-	</select>
+	<!-- 삭제 권한 부여 -->
 	<update id="softDelete">
-	UPDATE tbl_guest SET deleted = 1
-	where bno = #{bno}
+	UPDATE tbmall_admin SET delete_right_no = 1
+	where member_no = #{member_no}
 	</update>
+	<!-- 삭제 권한 회수 -->
 	<update id="restore">
-	UPDATE tbl_guest SET deleted = 0
-	where bno = #{bno}
+	UPDATE tbmall_admin SET delete_right_no = 0
+	where member_no = #{member_no}
 	</update>
+	<!-- 삭제 권한 가진 admin 호출 -->
 	<select id="getDeletedStaff" resultType="com.spring.dto.StaffDto">
-	 SELECT bno, btext, deleted
-        FROM tbl_guest
-        WHERE deleted = 1
+	 SELECT tbmall_admin.admin_no,tbmall_member.member_no, tbmall_member.member_nick
+        FROM tbmall_admin
+        JOIN tbmall_member
+        ON tbmall_admin.member_no= tbmall_member.member_no
+        WHERE tbmall_admin.delete_right_no =1
 	</select>
+	<!-- 로그인 -->
 	<select id="login" resultType="com.spring.dto.StaffDto">
-		SELECT * FROM tbl_guest 
-		WHERE btext = #{staffId} AND password = #{password}
-		AND deleted = 0
+		SELECT * FROM tbmall_member 
+		WHERE member_id = #{member_id} AND member_pw = #{member_pw}
 	</select>
+	<!-- 계정정보 수정 인듯? -->
 	<update id="update" parameterType="com.spring.dto.StaffDto">
-    UPDATE tbl_guest 
+    UPDATE tbmall_member 
     SET 
-        btext = #{btext},
-        password = #{password},
-        admins = #{admins}
-    WHERE bno = #{bno}
+        member_nick = #{member_nick},
+        member_pw = #{member_pw},
+        member_phone = #{member_phone}
+        member_email =#{member_email}
+    WHERE member_no = #{member_no}
 </update>
-<insert id="insertStaff">
-    INSERT INTO tbl_guest (
-        btext,      /* 아이디 */
-        password,   /* 비밀번호 */
-        admins      /* 관리자 여부 */
-    ) VALUES (
-        #{btext},
-        #{password},
-        #{admins}
-    )
-</insert>
 </mapper>

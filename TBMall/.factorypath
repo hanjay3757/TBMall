@@ -62,6 +62,6 @@
     <factorypathentry kind="EXTJAR" id="C:\Program Files\Apache Software Foundation\Tomcat 9.0\lib\tomcat-util.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="C:\Program Files\Apache Software Foundation\Tomcat 9.0\lib\tomcat-websocket.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="C:\Program Files\Apache Software Foundation\Tomcat 9.0\lib\websocket-api.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="C:\Users\sdedu\Documents\GitHub\TBMall\TBMall\mysql-connector-j-8.0.33.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="C:\Users\sdedu\Documents\GitHub\gittest\TBMall\mysql-connector-j-8.0.33.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="PLUGIN" id="org.eclipse.jst.ws.annotations.core" enabled="true" runInBatchMode="false"/>
 </factorypath>
