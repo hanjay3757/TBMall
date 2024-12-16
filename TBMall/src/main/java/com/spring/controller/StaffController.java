@@ -35,6 +35,12 @@ public class StaffController {
 		return service.getList();
 	}
 
+	// 관리자 정보 불러오기
+	@GetMapping("/adminlist")
+	public List<StaffDto> getAdminlist() {
+		return service.getAdminList();
+	}
+
 	@GetMapping("/read")
 	public StaffDto read(@RequestParam("bno") Long bno) {
 		return service.read(bno);
@@ -61,13 +67,13 @@ public class StaffController {
 		try {
 			service.remove(bno);
 			response.put("success", true);
-			
+
 			response.put("message", "직원이 성공적으로 삭제되었습니다.");
 		} catch (RuntimeException e) {
 			response.put("success", false);
 			response.put("message", e.getMessage());
 		}
-		
+
 		return response;
 	}
 
@@ -97,7 +103,7 @@ public class StaffController {
 			response.put("success", false);
 			response.put("message", e.getMessage());
 		}
-		
+
 		return response;
 	}
 

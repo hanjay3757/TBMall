@@ -5,9 +5,16 @@
 <mapper namespace="com.spring.mapper.StaffMapper">
 	<!-- resultType 에 복수형(ArrayList 등)을 적는게 아님. 
 	그냥 dto 단수의 경로를 적어야됨. -->
+	<!-- 모든 회원 정보 -->
 	<select id="getList" resultType="com.spring.dto.StaffDto">
 		SELECT * FROM tbmall_member 
 		ORDER BY member_no DESC
+	</select>
+	
+	<!-- 관리자 정보만 불러오기 -->
+	<select id="getAdminList" resultType="com.spring.dto.StaffDto">
+		SELECT * FROM tbmall_member
+		INNER JOIN tbmall_admin on tbmall_member.member_no = tbmall_admin.member_no
 	</select>
 	
 	<select id="read" resultType="com.spring.dto.StaffDto">

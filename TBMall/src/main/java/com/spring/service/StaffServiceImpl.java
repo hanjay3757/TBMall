@@ -27,6 +27,13 @@ public class StaffServiceImpl implements StaffService {
 		return mapper.getList();
 	}
 
+	// 관리자 정보 가져오기
+	@Override
+	public ArrayList<StaffDto> getAdminList() {
+		log.info("관리자 API 가져와");
+		return mapper.getAdminList();
+	}
+
 	@Override
 	public StaffDto read(long member_no) {
 		return mapper.read(member_no);
@@ -35,13 +42,13 @@ public class StaffServiceImpl implements StaffService {
 	@Override
 	public void remove(Long member_no) {
 		log.info("직원 삭제: " + member_no);
-		
+
 		// 삭제하려는 직원이 관리자인지 확인
 		StaffDto staff = mapper.read(member_no);
 		if (staff != null && staff.getAdmins() == 1) {
 			throw new RuntimeException("관리자는 삭제할 수 없습니다.");
 		}
-		
+
 		mapper.softDelete(member_no);
 	}
 

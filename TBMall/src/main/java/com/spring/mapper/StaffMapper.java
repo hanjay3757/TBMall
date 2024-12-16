@@ -8,7 +8,9 @@ import org.apache.ibatis.annotations.Param;
 import com.spring.dto.StaffDto;
 
 public interface StaffMapper {
-	public ArrayList<StaffDto> getList(); // 회원 정보들 불러오는거?
+	public ArrayList<StaffDto> getList(); // 모든 회원 정보 불러오기
+
+	public ArrayList<StaffDto> getAdminList(); // 관리자 정보 불러오기
 
 	public StaffDto read(long member_no); // 회원 정보 보기
 
