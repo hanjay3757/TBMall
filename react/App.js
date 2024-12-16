@@ -20,6 +20,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);  // 로그인 여부
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });  // 로그인 폼 데이터
   const [staffList, setStaffList] = useState([]);  // 직원 목록
+  const [cartItems, setCartItems] = useState([]);  // 장바구니 상태 추가
   const navigate = useNavigate();  // 페이지 이동을 위한 navigate 훅
   const location = useLocation();  // 현재 URL 정보
 
@@ -124,6 +125,56 @@ function App() {
   function editStaff(bno) {
     navigate(`/staff/edit?bno=${bno}`);  // 수정 페이지로 이동
   }
+
+  // 장바구니에 물건 추가하는 함수
+  const handleAddToCart = async (itemId, quantity = 1) => {
+    try {
+      if (!isLoggedIn) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      // 먼저 재고 확인
+      const stockResponse = await axios.get(`http://localhost:8080/mvc/stuff/check-stock/${itemId}`);
+      const currentStock = stockResponse.data;
+
+      if (currentStock < quantity) {
+        alert('재고가 부족합니다.');
+        return;
+      }
+
+      const params = new URLSearchParams();
+      params.append('itemId', itemId);
+      params.append('quantity', quantity);
+
+      // 장바구니 추가 및 재고 업데이트 요청
+      const response = await axios.post('http://localhost:8080/mvc/cart/add', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      if (response.data.success) {
+        // 재고 업데이트 성공 시
+        const updatedItem = {
+          ...response.data.item,
+          item_stock: currentStock - quantity
+        };
+        
+        setCartItems(prevItems => [...prevItems, updatedItem]);
+        alert('장바구니에 추가되었습니다.');
+      } else {
+        alert(response.data.message || '장바구니 추가에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('장바구니 추가 중 오류:', error);
+      if (error.response && error.response.status === 400) {
+        alert('재고가 부족합니다.');
+      } else {
+        alert('장바구니 추가 중 오류가 발생했습니다.');
+      }
+    }
+  };
 
   // TopMenu 컴포넌트 (물건 목록 상단 메뉴)
   const TopMenu = () => (
@@ -231,7 +282,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ItemList />} />  {/* 물건 목록 페이지 */}
         <Route path="/staff/edit" element={<StaffEdit />} />  {/* 직원 수정 페이지 */}
-        <Route path="/stuff/item/list" element={<ItemList />} />  {/* 물건 목록 페이지 */}
+        <Route path="/stuff/item/list" element={<ItemList onAddToCart={handleAddToCart} isLoggedIn={isLoggedIn} />} />  {/* 물건 목록 페이지 */}
         <Route path="/stuff/item/register" element={<ItemRegister />} />  {/* 물건 등록 페이지 */}
         <Route path="/stuff/item/deleted" element={<DeletedItems />} />  {/* 삭제된 물건 목록 페이지 */}
         <Route path="/stuff/cart" element={<Cart />} />  {/* 장바구니 페이지 */}

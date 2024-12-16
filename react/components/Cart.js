@@ -1,112 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Cart() {
-  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 데이터 불러오기
   useEffect(() => {
-    const fetchCartData = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/mvc/stuff/cart/list', {
-          credentials: 'include'
-        });
-        const data = await response.json();
-        setCartItems(data);
-      } catch (error) {
-        console.error('장바구니 데이터 조회 실패:', error);
-      }
-    };
-
-    fetchCartData();
+    loadCartItems();
   }, []);
 
-  // 장바구니 아이템 삭제
-  const removeItem = async (cartId) => {
+  const loadCartItems = async () => {
     try {
-      await fetch(`http://localhost:8080/mvc/stuff/cart/${cartId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      setCartItems(cartItems.filter(item => item.cartId !== cartId));
+      const response = await axios.get('http://localhost:8080/mvc/cart/items');
+      setCartItems(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('장바구니 로딩 실패:', error);
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveItem = async (cartItemId) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/mvc/cart/remove/${cartItemId}`);
+      if (response.data.success) {
+        loadCartItems();
+      }
     } catch (error) {
       console.error('장바구니 아이템 삭제 실패:', error);
     }
   };
 
-  // 수량 업데이트
-  const updateQuantity = async (cartId, newQuantity) => {
+  const handleUpdateQuantity = async (cartItemId, newQuantity) => {
     try {
-      await fetch(`http://localhost:8080/mvc/stuff/cart/${cartId}`, {
-        method: 'PATCH',
+      const params = new URLSearchParams();
+      params.append('quantity', newQuantity);
+      
+      const response = await axios.post(`http://localhost:8080/mvc/cart/update/${cartItemId}`, params, {
         headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ quantity: newQuantity })
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
       });
-      setCartItems(cartItems.map(item => 
-        item.cartId === cartId ? {...item, quantity: newQuantity} : item
-      ));
+      
+      if (response.data.success) {
+        loadCartItems();
+      }
     } catch (error) {
       console.error('수량 업데이트 실패:', error);
+      if (error.response && error.response.status === 400) {
+        alert('재고가 부족합니다.');
+      }
     }
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
-
-  const handleCheckout = async () => {
-    try {
-      await fetch('http://localhost:8080/mvc/stuff/cart/checkout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-      setCartItems([]); // 장바구니 비우기
-      alert('주문이 완료되었습니다.');
-    } catch (error) {
-      console.error('주문 처리 실패:', error);
-      alert('주문 처리 중 오류가 발생했습니다.');
-    }
-  };
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
 
   return (
-    <div className="cart-container">
-      <div className="cart-header">
-        <h2>장바구니</h2>
-        <button 
-          onClick={() => navigate('/stuff/item/list')} 
-          className="back-button"
-        >
-          상품 목록으로 돌아가기
-        </button>
-      </div>
+    <div className="cart">
+      <h2>장바구니</h2>
       {cartItems.length === 0 ? (
         <p>장바구니가 비어있습니다.</p>
       ) : (
-        <>
-          <div className="cart-items">
-            {cartItems.map(item => (
-              <div key={item.cartId} className="cart-item">
-                <h3>{item.itemName}</h3>
-                <p>가격: {item.price.toLocaleString()}원</p>
-                <input 
-                  type="number" 
-                  min="1" 
+        <div className="cart-items">
+          {cartItems.map(item => (
+            <div key={item.cart_item_id} className="cart-item">
+              <h3>{item.item_name}</h3>
+              <p>가격: {item.item_price}원</p>
+              <div className="quantity-controls">
+                <input
+                  type="number"
+                  min="1"
+                  max={item.item_stock + item.quantity}
                   value={item.quantity}
-                  onChange={(e) => updateQuantity(item.cartId, parseInt(e.target.value))}
+                  onChange={(e) => handleUpdateQuantity(item.cart_item_id, parseInt(e.target.value))}
                 />
-                <button onClick={() => removeItem(item.cartId)}>삭제</button>
+                <button onClick={() => handleRemoveItem(item.cart_item_id)}>
+                  삭제
+                </button>
               </div>
-            ))}
-          </div>
+              <p>총 가격: {item.item_price * item.quantity}원</p>
+            </div>
+          ))}
           <div className="cart-total">
-            <h3>총 금액: {calculateTotal().toLocaleString()}원</h3>
-            <button onClick={handleCheckout}>주문하기</button>
+            <h3>총 결제 금액: {cartItems.reduce((total, item) => total + (item.item_price * item.quantity), 0)}원</h3>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
