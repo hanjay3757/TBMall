@@ -12,10 +12,10 @@ public interface StaffService {
 
 	public void remove(Long member_no);
 
-	// 관리자 삭제 권한 부여
+	// 삭제된 계정 복구
 	public void restore(Long member_no);
 
-	// 삭제 권한 가진 관리자 목록 조회
+	// 삭제 계정 목록 조회
 	public List<StaffDto> getDeletedList();
 
 	public StaffDto login(String member_id, String member_pw);

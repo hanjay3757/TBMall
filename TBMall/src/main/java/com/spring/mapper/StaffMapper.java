@@ -16,11 +16,14 @@ public interface StaffMapper {
 
 	public void softDelete(Long member_no); // 관리자 삭제 권한 부여
 
-	// 관리자 삭제 권한 부여
+	// 계정 복구
 	public void restore(Long member_no);
 
-	// 삭제권한 가진 관리자 목록 조회
+	// 삭제된 관리자,계정 목록 조회
 	public List<StaffDto> getDeletedStaff();
+
+	// 삭제 권한 가진 관리자 목록 조회
+	public List<StaffDto> getRightofDelete();
 
 	// 로그인
 	StaffDto login(@Param("member_id") String member_id, @Param("member_pw") String member_pw);

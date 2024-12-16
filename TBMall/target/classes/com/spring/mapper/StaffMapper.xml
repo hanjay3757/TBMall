@@ -13,7 +13,7 @@
 	<select id="read" resultType="com.spring.dto.StaffDto">
 	select * from tbmall_member where member_no = #{member_no}
 	</select>
-	<!-- 관리자 임명 삭제권한1123123123 x-->
+	<!-- 관리자 임명 삭제권한 x-->
 	<insert id="adminAppoint">
 		INSERT INTO tbmall_admin (member_no, delete_right_no) values (#{member_no},0)
 	</insert>
@@ -31,15 +31,25 @@
         WHERE member_no = #{member_no}
     </update>
 	
+	<!-- 삭제된 계정 복구 -->
 	<update id="restore">
 	UPDATE tbmall_member 
 	SET member_delete = 0,
 		member_delete_at = NULL
 	WHERE member_no = #{member_no}
 	</update>
-	<!-- 삭제 권한 가진 admin 호출 -->
+	<!-- 삭제 권한 있는 관리자 호출 -->
+	<select id="getRightofDelete" resultType="com.spring.dto.StaffDto">
+		SELECT m.member_no,m.member_id ,m.member_nick ,a.admin_no, m.member_delete, a.delete_right_no
+        FROM tbmall_member m
+        LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
+        WHERE a.delete_right_no = 1<!-- delete_right_no 가 1일시 삭제 권한이 있음 ,0이면 없음 -->
+	</select>
+	
+	
+	<!-- 삭제된 계정 (관리자 포함) 호출 -->
 	<select id="getDeletedStaff" resultType="com.spring.dto.StaffDto">
-	 SELECT m.*, a.admin_no, m.member_delete_at
+	 SELECT m.member_no,m.member_id,m.member_nick ,a.admin_no, m.member_delete_at
         FROM tbmall_member m
         LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
         WHERE m.member_delete = 1
