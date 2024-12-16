@@ -1,0 +1,510 @@
+:root {
+  --primary-color: #4CAF50;
+  --primary-hover: #45a049;
+  --secondary-color: #f44336;
+  --secondary-hover: #e53935;
+  --text-color: #333;
+  --border-color: #ddd;
+  --background-color: #f5f5f5;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --border-radius: 0.25rem;
+  --spacing-unit: 1rem;
+}
+
+/* 공통 스타일 */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.button-group {
+  margin-top: calc(var(--spacing-unit) * 1.5);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-unit);
+}
+
+.button-group button,
+.button-group a {
+  padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.button-group button {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.button-group button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+.button-group a {
+  background-color: var(--secondary-color);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-group a:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-2px);
+}
+
+/* 로그인 페이지 스타일 */
+.login-container {
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.login-btn {
+  width: 100%;
+  padding: calc(var(--spacing-unit) * 0.75);
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.login-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* 에러 메시지 스타일 */
+.error-message {
+  color: var(--secondary-color);
+  margin-bottom: calc(var(--spacing-unit) * 0.75);
+  font-weight: bold;
+  padding: calc(var(--spacing-unit) / 2);
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: var(--border-radius);
+}
+
+/* 폼 컨테이너 스타일 */
+.edit-form,
+.password-form,
+.register-form {
+  width: min(90%, 420px);
+  margin: 50px auto;
+  padding: var(--spacing-unit);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  background: #fff;
+}
+
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.item-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+}
+
+.item-card h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.item-card p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.disabled-button {
+  background-color: #cccccc !important;
+  cursor: not-allowed !important;
+}
+
+.disabled-button:hover {
+  background-color: #cccccc !important;
+  transform: none !important;
+}
+
+.error-message {
+  color: #ff0000;
+  text-align: center;
+  padding: 20px;
+  font-weight: bold;
+}
+
+/* 장바구니에 담기 버튼 */
+.cart-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+  margin-top: auto;
+}
+
+.cart-button:hover {
+  background-color: var(--primary-hover);
+}
+
+/* 헤더 스타일 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-unit);
+  background-color: #fff;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: calc(var(--spacing-unit) / 2);
+}
+
+.auth-buttons a {
+  padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
+  text-decoration: none;
+  color: #fff;
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+}
+
+.auth-buttons a:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* 테이블 스타일 */
+.staff-grid,
+.staff-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: var(--spacing-unit);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.staff-grid th,
+.staff-grid td,
+.staff-table th,
+.staff-table td {
+  padding: calc(var(--spacing-unit) * 0.75);
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.staff-grid th,
+.staff-table th {
+  background-color: var(--background-color);
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+/* 관리자 메뉴 스타일 */
+.admin-menu {
+  margin: var(--spacing-unit);
+  padding: var(--spacing-unit);
+  background-color: var(--background-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.admin-menu button {
+  margin-right: var(--spacing-unit);
+  padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-menu button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* 섹션 제목 스타일 */
+.section-title {
+  margin: calc(var(--spacing-unit) * 10) 1 var(--spacing-unit);
+  padding-bottom: calc(var(--spacing-unit) / 2);
+  border-bottom: 1px solid var(--primary-color);
+  font-weight: bold;
+  color: var(--text-color);
+  text-align: center;
+}
+
+/* 상단 메뉴 스타일 */
+.top-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-unit);
+  background-color: var(--background-color);
+  margin-bottom: var(--spacing-unit);
+  border-radius: var(--border-radius);
+}
+
+/* 장바구니 링크 스타일 */
+.cart-link {
+  padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border-radius: var(--border-radius);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) / 2);
+  transition: all 0.3s ease;
+}
+
+.cart-link:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-unit);
+}
+
+/* 관리자용 상품 등록 폼 */
+.register-container {
+  background-color: var(--background-color);
+  padding: var(--spacing-unit);
+  border-radius: var(--border-radius);
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* 상품 목록 */
+.shop-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  justify-content: flex-start;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.shop-item {
+  flex: 0 0 300px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: white;
+}
+
+.shop-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px var(--shadow-color);
+}
+
+/* 장바구니 섹션 */
+.cart-section {
+  background-color: var(--background-color);
+  padding: var(--spacing-unit);
+  border-radius: var(--border-radius);
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* 삭제된 상품 목록 */
+.deleted-items-section {
+  background-color: var(--background-color);
+  padding: var(--spacing-unit);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 576px) {
+  :root {
+    --spacing-unit: 0.875rem;
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .shop-items {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1200px) {
+  .item-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .item-grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+  
+  .item-card {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+/* 버튼 기본 스타일 */
+.btn {
+  padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.login-form {
+  margin: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.login-button, .logout-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.login-button:hover, .logout-button:hover {
+  background-color: #0056b3;
+}
+
+.logout-button {
+  margin: 20px;
+}
+
+/* 기존 CSS에 추가 */
+.cart-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  padding: 8px 16px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+.register-btn {
+  margin-left: 10px;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.register-btn:hover {
+  background-color: #45a049;
+}
