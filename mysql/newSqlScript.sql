@@ -98,10 +98,29 @@ CREATE TABLE tbmall_stuff (
     item_description TEXT,
     reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     admin_no int not null,
-    foreign key (admin_no) references tbmall_admin(admin_no) on delete cascade
+    foreign key (admin_no) references tbmall_admin(admin_no) on delete cascade,
+   item_delete TINYINT DEFAULT 0,
+   delete_date TIMESTAMP NULL
 );
-
+ALTER TABLE tbmall_stuff 
+ADD COLUMN item_delete TINYINT DEFAULT 0,
+ADD COLUMN delete_date TIMESTAMP NULL;
 select * from tbmall_stuff;
+
+INSERT INTO tbmall_stuff (
+    item_name, 
+    item_price, 
+    item_stock, 
+    item_description, 
+    admin_no
+) 
+VALUES 
+    ('아이폰 15', 1200000, 50, 'Apple 최신 모델, 고급 스마트폰', 1),
+    ('갤럭시 S24', 1100000, 30, 'Samsung 최신 모델, 성능 좋은 스마트폰', 1),
+    ('에어팟 프로 2', 250000, 100, 'Apple 무선 이어폰, 고음질', 1),
+    ('삼성 65인치 TV', 1500000, 20, '4K 해상도, 스마트 TV', 1);
+
+
 
 DESC tblmall_member;
 DROP TABLE IF EXISTS tbl_orders;
@@ -125,6 +144,6 @@ ALTER TABLE tbl_cart
 ADD UNIQUE KEY uk_item_user (item_id, user_id);
 ALTER TABLE tbl_stuff ADD COLUMN image_url VARCHAR(255);
 select* from tbl_stuff; 
-INSERT INTO tbl_stuff (item_name, price, stock, description,deleted) VALUES 
+INSERT INTO tbmall_stuff (item_name, price, stock, description,deleted) VALUES 
 ('4', 30000, 30, '테스트 상품 3 설명',0);
 SELECT * FROM tbl_stuff;
