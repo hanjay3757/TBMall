@@ -8,6 +8,8 @@ drop table tbmall_admin_account;
 drop table tbmall_orders;
 drop table tbmall_stuff;
 drop table tbl_member;
+DROP database my_cat; 
+create database my_cat;
 
 create table tbmall_board(		
 	board_no int auto_increment primary key,
@@ -33,9 +35,8 @@ CREATE TABLE tbmall_member (
     member_birth date not null,
     member_phone varchar(20),
     member_email varchar(40) not null,
-    member_joindate date not null,
-    member_delete
-    );
+    member_joindate date not null
+       );
 insert into tbmall_member (member_id,member_pw,member_nick,member_gender,member_birth,member_phone,member_email,member_joindate) values('abbcccddd',1234,'testtest1','m','1996-06-14','010-0000-0000','adfad@adfa.com',sysdate());
 select * from tbmall_member;
 rename table tbl_member to tbmall_member;
@@ -72,10 +73,10 @@ create table tbmall_admin(
     foreign key (member_no) references tbmall_member(member_no) on delete cascade
 );
 
-insert into tbmall_admin (member_no,delete_right_no) values('2','0');
+insert into tbmall_admin (member_no,delete_right_no) values('1','1');
 delete tbmall_member  member_no=2;
 select * from tbmall_admin;
-
+drop table tbmall_admin;
 select * from tbmall_member a inner join tbmall_admin b on a.member_no = b.member_no;
 -- 관리자 권한이 있는 사용자 확인
 SELECT m.*, a.admin_no, a.delete_right_no
