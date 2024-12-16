@@ -34,13 +34,10 @@ public class StaffDto {
 	}
 
 	public int getAdmins() {
-		int adminint = 0;
-		if (this.admin_no != null) {
-			adminint = 1;
-		} else {
-			adminint = 0;
+		if (this.admin_no != null && this.delete_right_no == 1) {
+			return 1;
 		}
-		return adminint;
+		return 0;
 	}
 
 	public void setPassword(String member_pw) {

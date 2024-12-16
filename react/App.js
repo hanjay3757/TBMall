@@ -207,14 +207,14 @@ function App() {
           </thead>
           <tbody>
             {staffList.map(staff => (
-              <tr key={staff.bno}>
-                <td>{staff.bno}</td>
-                <td>{staff.id}</td>
-                <td>{staff.btext}</td>
+              <tr key={staff.member_no}>
+                <td>{staff.member_no}</td>
+                <td>{staff.member_id}</td>
+                <td>{staff.member_nick}</td>
                 <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
                 <td>
-                  <button onClick={() => confirmDelete(staff.bno)}>삭제</button>
-                  <button onClick={() => editStaff(staff.bno)}>수정</button>
+                  <button onClick={() => confirmDelete(staff.member_no)}>삭제</button>
+                  <button onClick={() => editStaff(staff.member_no)}>수정</button>
                 </td>
               </tr>
             ))}

@@ -63,10 +63,30 @@
 	</select>
 	<!-- 로그인 -->
 	<select id="login" resultType="com.spring.dto.StaffDto">
-		SELECT * FROM tbmall_member 
-		WHERE member_id = #{member_id} 
-		AND member_pw = #{member_pw}
-		AND (member_delete = 0 OR member_delete IS NULL)
+		SELECT 
+			m.*,
+			a.admin_no,
+			a.delete_right_no
+		FROM 
+			tbmall_member m
+			LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
+		WHERE 
+			m.member_id = #{member_id} 
+			AND m.member_pw = #{member_pw}
+			AND (m.member_delete = 0 OR m.member_delete IS NULL)
+	</select>
+	<!-- 관리자 권한 확인 -->
+	<select id="checkAdminAuth" resultType="com.spring.dto.StaffDto">
+		SELECT 
+			m.*,
+			a.admin_no,
+			a.delete_right_no
+		FROM 
+			tbmall_member m
+			INNER JOIN tbmall_admin a ON m.member_no = a.member_no
+		WHERE 
+			m.member_no = #{member_no}
+			AND a.delete_right_no = 1
 	</select>
 	<!-- 계정정보 수정 인듯? -->
 	<update id="update" parameterType="com.spring.dto.StaffDto">

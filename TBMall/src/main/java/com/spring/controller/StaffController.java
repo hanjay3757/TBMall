@@ -168,7 +168,7 @@ public class StaffController {
 		StaffDto currentStaff = service.read(staffDto.getMember_no());
 		if (!currentStaff.getMember_pw().equals(currentPassword)) {
 			response.put("success", false);
-			response.put("message", "현재 비밀번호가 ���치하지 않습니다.");
+			response.put("message", "현재 비밀번호가 올바르지 않습니다.");
 			return response;
 		}
 
@@ -212,8 +212,18 @@ public class StaffController {
 	public Map<String, Object> checkLoginStatus(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-		response.put("isLoggedIn", loginStaff != null);
-		response.put("isAdmin", loginStaff != null && loginStaff.getAdmins() == 1);
+		
+		if (loginStaff != null) {
+			response.put("isLoggedIn", true);
+			// getAdmins()가 1이면 관리자
+			response.put("isAdmin", loginStaff.getAdmins() == 1);
+			response.put("admin_no", loginStaff.getAdmin_no());
+			response.put("delete_right_no", loginStaff.getDelete_right_no());
+		} else {
+			response.put("isLoggedIn", false);
+			response.put("isAdmin", false);
+		}
+		
 		return response;
 	}
 }
