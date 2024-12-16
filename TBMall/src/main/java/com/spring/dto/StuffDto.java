@@ -11,7 +11,7 @@ public class StuffDto {
     private int item_stock;
     private String item_description;
     private Date reg_date;
-    private int admin_no;
+    private Long admin_no;
     private int member_delete;
     private int item_delete;
     private Date delete_date;

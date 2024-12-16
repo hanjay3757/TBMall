@@ -25,4 +25,9 @@ public interface StaffService {
 	// 직원 정보 수정(닉네임, 비번, 휴대폰번호, 이메일 수정 가능)
 	public void update(StaffDto staffDto);
 
+	boolean checkIdDuplicate(String member_id);
+	void register(StaffDto staffDto);
+
+	public void adminAppoint(Long member_no);  // 추가
+
 }

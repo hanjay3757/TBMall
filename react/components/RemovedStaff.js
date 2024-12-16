@@ -5,49 +5,38 @@ function RemovedStaff() {
   const [staffList, setStaffList] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchRemovedStaff = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/mvc/staff/removelist', {
-          withCredentials: true
-        });
-        
-        if (response.data.success) {
-          setStaffList(response.data.list || []); // list 필드에서 데이터 추출
-        } else {
-          throw new Error(response.data.message || '데이터를 불러오는데 실패했습니다.');
-        }
-      } catch (error) {
-        console.error('삭제된 직원 목록 조회 실패:', error);
-        setError(error.response?.data?.message || '삭제된 직원 목록을 불러오는데 실패했습니다.');
-        setStaffList([]); // 에러 시 빈 배열로 초기화
+  const fetchRemovedStaff = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/mvc/staff/removelist', {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        setStaffList(response.data.list || []); 
+      } else {
+        throw new Error(response.data.message || '데이터를 불러오는데 실패했습니다.');
       }
-    };
+    } catch (error) {
+      console.error('삭제된 직원 목록 조회 실패:', error);
+      setError(error.response?.data?.message || '삭제된 직원 목록을 불러오는데 실패했습니다.');
+      setStaffList([]); 
+    }
+  };
 
+  useEffect(() => {
     fetchRemovedStaff();
   }, []);
 
-  const handleRestore = async (bno) => {
+  const handleRestore = async (member_no) => {
     try {
-      const params = new URLSearchParams();
-      params.append('bno', bno);
-      
-      const response = await axios.post(`http://localhost:8080/mvc/staff/restore`, params, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+      const response = await axios.get(`http://localhost:8080/mvc/staff/restore`, {
+        params: { member_no },
+        withCredentials: true
       });
 
       if (response.data.success) {
-        // 복구 성공 시 목록 새로고침
-        const listResponse = await axios.get('http://localhost:8080/mvc/staff/removelist', {
-          withCredentials: true
-        });
-        if (listResponse.data.success) {
-          setStaffList(listResponse.data.list || []);
-          alert('직원이 복구되었습니다.');
-        }
+        fetchRemovedStaff();
+        alert('직원이 복구되었습니다.');
       } else {
         throw new Error(response.data.message || '복구에 실패했습니다.');
       }
@@ -58,39 +47,57 @@ function RemovedStaff() {
   };
 
   return (
-    <div className="removed-staff-container">
+    <div className="removed-staff-container" role="main">
       <h2>삭제된 직원 목록</h2>
       {error ? (
-        <div className="error-message">{error}</div>
+        <div className="error-message" role="alert">{error}</div>
       ) : (
-        <table className="staff-table">
-          <thead>
-            <tr>
-              <th>직원번호</th>
-              <th>이름</th>
-              <th>관리자 여부</th>
-              <th>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(staffList) && staffList.length > 0 ? (
-              staffList.map(staff => (
-                <tr key={staff.bno}>
-                  <td>{staff.bno}</td>
-                  <td>{staff.btext}</td>
-                  <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
-                  <td>
-                    <button onClick={() => handleRestore(staff.bno)}>복구</button>
-                  </td>
-                </tr>
-              ))
-            ) : (
+        <div className="table-responsive">
+          <table className="staff-table" role="grid">
+            <caption className="sr-only">삭제된 직원 목록 테이블</caption>
+            <thead>
               <tr>
-                <td colSpan="4" style={{textAlign: 'center'}}>삭제된 직원이 없습니다.</td>
+                <th scope="col">직원번호</th>
+                <th scope="col">아이디</th>
+                <th scope="col">닉네임</th>
+                <th scope="col">관리자 여부</th>
+                <th scope="col">삭제일</th>
+                <th scope="col">관리</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {Array.isArray(staffList) && staffList.length > 0 ? (
+                staffList.map(staff => (
+                  <tr key={staff.member_no}>
+                    <td>{staff.member_no}</td>
+                    <td>{staff.member_id}</td>
+                    <td>{staff.member_nick}</td>
+                    <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+                    <td>{new Date(staff.member_delete_at).toLocaleDateString()}</td>
+                    <td>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        handleRestore(staff.member_no);
+                      }}>
+                        <button 
+                          type="submit"
+                          aria-label={`${staff.member_nick} 직원 복구`}
+                          className="restore-button"
+                        >
+                          복구
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{textAlign: 'center'}}>삭제된 직원이 없습니다.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

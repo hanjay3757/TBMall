@@ -13,13 +13,15 @@
             s.item_description,
             s.reg_date,
             s.admin_no,
-            m.member_delete
+            m.member_delete,
+            s.item_delete
         FROM 
             tbmall_stuff s
             JOIN tbmall_admin a ON s.admin_no = a.admin_no
             JOIN tbmall_member m ON a.member_no = m.member_no
         WHERE 
-            m.member_delete = 0 OR m.member_delete IS NULL
+            (m.member_delete = 0 OR m.member_delete IS NULL)
+            AND (s.item_delete = 0 OR s.item_delete IS NULL)
         ORDER BY 
             s.item_id DESC
     </select>
@@ -117,5 +119,20 @@
             s.item_delete = 1
         ORDER BY 
             s.item_id DESC
+    </select>
+    
+    <!-- 삭제된 물건 목록 조회 -->
+    <select id="getDeletedItemList" resultType="com.spring.dto.StuffDto">
+        SELECT 
+            s.*,
+            m.member_delete
+        FROM 
+            tbmall_stuff s
+            JOIN tbmall_admin a ON s.admin_no = a.admin_no
+            JOIN tbmall_member m ON a.member_no = m.member_no
+        WHERE 
+            s.item_delete = 1
+        ORDER BY 
+            s.delete_date DESC
     </select>
 </mapper> 

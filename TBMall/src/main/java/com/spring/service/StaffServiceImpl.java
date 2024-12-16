@@ -42,20 +42,29 @@ public class StaffServiceImpl implements StaffService {
 	@Override
 	public void remove(Long member_no) {
 		log.info("직원 삭제: " + member_no);
-
+		
 		// 삭제하려는 직원이 관리자인지 확인
 		StaffDto staff = mapper.read(member_no);
 		if (staff != null && staff.getAdmins() == 1) {
 			throw new RuntimeException("관리자는 삭제할 수 없습니다.");
 		}
-
-		mapper.softDelete(member_no);
+		
+		// 소프트 삭제 실행
+		int result = mapper.softDelete(member_no);
+		if (result != 1) {
+			throw new RuntimeException("직원 삭제에 실패했습니다.");
+		}
 	}
 
 	@Override
 	public void restore(Long member_no) {
-		log.info("복구: " + member_no);
-		mapper.restore(member_no);
+		log.info("직원 복구: " + member_no);
+		
+		// 복구 실행
+		int result = mapper.restore(member_no);
+		if (result != 1) {
+			throw new RuntimeException("직원 복구에 실패했습니다.");
+		}
 	}
 
 	@Override
@@ -86,6 +95,32 @@ public class StaffServiceImpl implements StaffService {
 	@Override
 	public void update(StaffDto staffDto) {
 		log.info("직원 정보 수정: " + staffDto);
-		mapper.update(staffDto);
+		
+		// 수정 실행
+		int result = mapper.update(staffDto);
+		if (result != 1) {
+			throw new RuntimeException("직원 정보 수정에 실패했습니다.");
+		}
+	}
+
+	@Override
+	public boolean checkIdDuplicate(String member_id) {
+		return mapper.checkIdDuplicate(member_id) > 0;
+	}
+
+	@Override
+	public void register(StaffDto staffDto) {
+		log.info("직원 등록: " + staffDto);
+		try {
+			mapper.register(staffDto);
+		} catch (Exception e) {
+			log.error("직원 등록 실패: " + e.getMessage());
+			throw new RuntimeException("직원 등록에 실패했습니다: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public void adminAppoint(Long member_no) {
+		mapper.adminAppoint(member_no);
 	}
 }

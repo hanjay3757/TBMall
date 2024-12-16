@@ -10,9 +10,9 @@
     <title>삭제된 직원 목록</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/styles.css">
     <script>
-        function confirmRestore(bno) {
+        function confirmRestore(member_no) {
             if(confirm('이 직원을 복구하시겠습니까?')) {
-                document.getElementById('restoreForm_' + bno).submit();
+                document.getElementById('restoreForm_' + member_no).submit();
             }
         }
     </script>
@@ -36,13 +36,13 @@
         <c:forEach items="${list}" var="staff" varStatus="status">
             <tr>
                 <td>${status.index + 1}</td>
-                <td>${staff.btext}</td>
+                <td>${staff.member_nick}</td>
                 <td>${staff.admins == 0 ? '직원' : '관리자'}</td>
                 <td>
                     <c:if test="${loginStaff.admins == 1}">
-                        <form id="restoreForm_${staff.bno}" action="${cp}/staff/restore" method="post">
-                            <input type="hidden" name="bno" value="${staff.bno}">
-                            <button type="button" class="restore-btn" onclick="confirmRestore(${staff.bno})">복구</button>
+                        <form id="restoreForm_${staff.member_no}" action="${cp}/staff/restore" method="post">
+                            <input type="hidden" name="member_no" value="${staff.member_no}">
+                            <button type="button" class="restore-btn" onclick="confirmRestore(${staff.member_no})">복구</button>
                         </form>
                     </c:if>
                     <c:if test="${loginStaff.admins == 0}">

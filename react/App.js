@@ -86,9 +86,12 @@ function App() {
 
   // 직원 목록 불러오기
   function loadStaffList() {
-    axios.get('http://localhost:8080/mvc/staff/list')
+    axios.get('http://localhost:8080/mvc/staff/list', {
+      withCredentials: true
+    })
       .then(response => {
-        setStaffList(response.data || []);  // 직원 목록 업데이트
+        console.log('직원 목록:', response.data); // 디버깅용
+        setStaffList(response.data || []);
       })
       .catch(error => {
         console.error('직원 목록 조회 실패:', error);
@@ -96,33 +99,32 @@ function App() {
   }
 
   // 직원 삭제 확인
-  function confirmDelete(bno) {
+  function confirmDelete(member_no) {
     if (window.confirm('이 직원을 삭제하시겠습니까?')) {
-      const params = new URLSearchParams();
-      params.append('bno', bno);
-
-      axios.post('http://localhost:8080/mvc/staff/remove', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+      axios.get(`http://localhost:8080/mvc/staff/remove`, {
+        params: {
+          member_no: member_no
+        },
+        withCredentials: true
       })
         .then(response => {
           if (response.data.success) {
-            alert('직원이 삭제되었습니다.');
-            loadStaffList();  // 직원 목록 재불러오기
-          } else {
             alert(response.data.message);
+            loadStaffList();  // 직원 목록 재로딩
+          } else {
+            alert(response.data.message || '직원 삭제에 실패했습니다.');
           }
         })
         .catch(error => {
-          alert('직원 삭제에 실패했습니다.');
+          console.error('직원 삭제 실패:', error);
+          alert(error.response?.data?.message || '직원 삭제에 실패했습니다.');
         });
     }
   }
 
   // 직원 수정
-  function editStaff(bno) {
-    navigate(`/staff/edit?bno=${bno}`);  // 수정 페이지로 이동
+  function editStaff(member_no) {
+    navigate(`/staff/edit?member_no=${member_no}`);  // bno -> member_no로 변경
   }
 
   // 장바구니에 물건 추가하는 함수
@@ -200,24 +202,26 @@ function App() {
             <tr>
               <th>직원번호</th>
               <th>아이디</th>
-              <th>이름</th>
+              <th>닉네임</th>
               <th>관리자 여부</th>
               <th>관리</th>
             </tr>
           </thead>
           <tbody>
-            {staffList.map(staff => (
-              <tr key={staff.member_no}>
-                <td>{staff.member_no}</td>
-                <td>{staff.member_id}</td>
-                <td>{staff.member_nick}</td>
-                <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
-                <td>
-                  <button onClick={() => confirmDelete(staff.member_no)}>삭제</button>
-                  <button onClick={() => editStaff(staff.member_no)}>수정</button>
-                </td>
-              </tr>
-            ))}
+            {staffList
+              .filter(staff => !staff.member_delete) // 삭제된 직원 필터링
+              .map(staff => (
+                <tr key={staff.member_no}>
+                  <td>{staff.member_no}</td>
+                  <td>{staff.member_id}</td>
+                  <td>{staff.member_nick}</td>
+                  <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+                  <td>
+                    <button onClick={() => confirmDelete(staff.member_no)}>삭제</button>
+                    <button onClick={() => editStaff(staff.member_no)}>수정</button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </>

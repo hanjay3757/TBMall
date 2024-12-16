@@ -100,14 +100,16 @@ public class StuffController {
 	@ResponseBody
 	public Map<String, Object> register(StuffDto stuff, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		if (!isAdmin(session)) {
+		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			response.put("success", false);
 			response.put("message", "관리자 권한이 필요합니다.");
 			return response;
 		}
 
 		try {
+			stuff.setAdmin_no(loginStaff.getAdmin_no());
 			service.registerItem(stuff);
 			response.put("success", true);
 			response.put("message", "물건이 등록되었습니다.");
@@ -164,13 +166,27 @@ public class StuffController {
 
 	@GetMapping("/item/deleted")
 	@ResponseBody
-	public List<StuffDto> getDeletedItems(HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+	public Map<String, Object> getDeletedItems(HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-			throw new RuntimeException("관리자 권한이 필요합니다.");
+			response.put("success", false);
+			response.put("message", "관리자 권한이 필요합니다.");
+			return response;
 		}
 
-		return service.getDeletedItemList();
+		try {
+			List<StuffDto> deletedItems = service.getDeletedItemList();
+			response.put("success", true);
+			response.put("data", deletedItems);
+		} catch (Exception e) {
+			log.error("삭제된 물건 목록 조회 실패: " + e.getMessage());
+			response.put("success", false);
+			response.put("message", "삭제된 물건 목록을 불러오는데 실패했습니다.");
+		}
+
+		return response;
 	}
 
 	// 물건 삭제
