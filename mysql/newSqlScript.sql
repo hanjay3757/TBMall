@@ -77,9 +77,18 @@ delete tbmall_member  member_no=2;
 select * from tbmall_admin;
 
 select * from tbmall_member a inner join tbmall_admin b on a.member_no = b.member_no;
-
+-- 관리자 권한이 있는 사용자 확인
+SELECT m.*, a.admin_no, a.delete_right_no
+FROM tbmall_member m
+INNER JOIN tbmall_admin a ON m.member_no = a.member_no
+WHERE a.delete_right_no = 1;
 -- 삭제 권한 가진 관리자 호출(회원번호, 아이디 )
 select tbmall_admin.admin_no,tbmall_member.member_no, tbmall_member.member_nick from tbmall_admin join tbmall_member on tbmall_admin.member_no= tbmall_member.member_no where tbmall_admin.delete_right_no =1;
+
+UPDATE tbmall_admin
+SET admin_no = 1, delete_right_no = 1
+WHERE member_no = 1;
+
 
 
 
