@@ -13,7 +13,7 @@
 	<select id="read" resultType="com.spring.dto.StaffDto">
 	select * from tbmall_member where member_no = #{member_no}
 	</select>
-	<!-- 관리자 임명 삭제권한 x-->
+	<!-- 관리자 임명 삭제권한1123123123 x-->
 	<insert id="adminAppoint">
 		INSERT INTO tbmall_admin (member_no, delete_right_no) values (#{member_no},0)
 	</insert>
