@@ -11,7 +11,7 @@ function Cart() {
 
   const loadCartItems = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/mvc/cart/items');
+      const response = await axios.get('http://localhost:8080/mvc/stuff/cart/list');
       setCartItems(response.data);
       setLoading(false);
     } catch (error) {
@@ -20,10 +20,10 @@ function Cart() {
     }
   };
 
-  const handleRemoveItem = async (cartItemId) => {
+  const handleRemoveItem = async (cartId) => {
     try {
-      const response = await axios.post(`http://localhost:8080/mvc/cart/remove/${cartItemId}`);
-      if (response.data.success) {
+      const response = await axios.delete(`http://localhost:8080/mvc/stuff/cart/${cartId}`);
+      if (response.status === 200) {
         loadCartItems();
       }
     } catch (error) {
@@ -31,18 +31,13 @@ function Cart() {
     }
   };
 
-  const handleUpdateQuantity = async (cartItemId, newQuantity) => {
+  const handleUpdateQuantity = async (cartId, newQuantity) => {
     try {
-      const params = new URLSearchParams();
-      params.append('quantity', newQuantity);
-      
-      const response = await axios.post(`http://localhost:8080/mvc/cart/update/${cartItemId}`, params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+      const response = await axios.patch(`http://localhost:8080/mvc/stuff/cart/${cartId}`, {
+        quantity: newQuantity
       });
       
-      if (response.data.success) {
+      if (response.status === 200) {
         loadCartItems();
       }
     } catch (error) {
@@ -65,26 +60,26 @@ function Cart() {
       ) : (
         <div className="cart-items">
           {cartItems.map(item => (
-            <div key={item.cart_item_id} className="cart-item">
-              <h3>{item.item_name}</h3>
-              <p>가격: {item.item_price}원</p>
+            <div key={item.cartId} className="cart-item">
+              <h3>{item.itemName}</h3>
+              <p>가격: {item.itemPrice}원</p>
               <div className="quantity-controls">
                 <input
                   type="number"
                   min="1"
-                  max={item.item_stock + item.quantity}
+                  max={item.itemStock + item.quantity}
                   value={item.quantity}
-                  onChange={(e) => handleUpdateQuantity(item.cart_item_id, parseInt(e.target.value))}
+                  onChange={(e) => handleUpdateQuantity(item.cartId, parseInt(e.target.value))}
                 />
-                <button onClick={() => handleRemoveItem(item.cart_item_id)}>
+                <button onClick={() => handleRemoveItem(item.cartId)}>
                   삭제
                 </button>
               </div>
-              <p>총 가격: {item.item_price * item.quantity}원</p>
+              <p>총 가격: {item.itemPrice * item.quantity}원</p>
             </div>
           ))}
           <div className="cart-total">
-            <h3>총 결제 금액: {cartItems.reduce((total, item) => total + (item.item_price * item.quantity), 0)}원</h3>
+            <h3>총 결제 금액: {cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0)}원</h3>
           </div>
         </div>
       )}

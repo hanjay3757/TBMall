@@ -20,7 +20,6 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);  // 로그인 여부
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });  // 로그인 폼 데이터
   const [staffList, setStaffList] = useState([]);  // 직원 목록
-  const [cartItems, setCartItems] = useState([]);  // 장바구니 상태 추가
   const navigate = useNavigate();  // 페이지 이동을 위한 navigate 훅
   const location = useLocation();  // 현재 URL 정보
 
@@ -134,35 +133,20 @@ function App() {
         return;
       }
 
-      // 먼저 재고 확인
-      const stockResponse = await axios.get(`http://localhost:8080/mvc/stuff/check-stock/${itemId}`);
-      const currentStock = stockResponse.data;
-
-      if (currentStock < quantity) {
-        alert('재고가 부족합니다.');
-        return;
-      }
-
+      // 장바구니 추가 요청
       const params = new URLSearchParams();
       params.append('itemId', itemId);
       params.append('quantity', quantity);
 
-      // 장바구니 추가 및 재고 업데이트 요청
-      const response = await axios.post('http://localhost:8080/mvc/cart/add', params, {
+      const response = await axios.post('http://localhost:8080/mvc/stuff/cart/add', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
 
-      if (response.data.success) {
-        // 재고 업데이트 성공 시
-        const updatedItem = {
-          ...response.data.item,
-          item_stock: currentStock - quantity
-        };
-        
-        setCartItems(prevItems => [...prevItems, updatedItem]);
+      if (response.data.status === 'success') {
         alert('장바구니에 추가되었습니다.');
+        // 장바구니 페이지로 이동하거나 다른 필요한 작업 수행
       } else {
         alert(response.data.message || '장바구니 추가에 실패했습니다.');
       }
