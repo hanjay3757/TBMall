@@ -28,8 +28,8 @@
                         <button type="submit" class="restore-btn">복구</button>
                     </form>
                 </td>
-            </tr>
         </c:forEach>
+            </tr>
     </table>
     
     <div style="margin-top: 20px">
