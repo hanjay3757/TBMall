@@ -128,7 +128,8 @@
 			member_birth,
 			member_phone,
 			member_email,
-			member_joindate
+			member_joindate,
+			member_delete
 		) VALUES (
 			#{member_id},
 			#{member_pw},
@@ -137,7 +138,8 @@
 			#{member_birth},
 			#{member_phone},
 			#{member_email},
-			CURRENT_TIMESTAMP
+			CURRENT_TIMESTAMP,
+			0
 		)
 	</insert>
 </mapper>

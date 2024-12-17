@@ -26,8 +26,9 @@ public interface StaffService {
 	public void update(StaffDto staffDto);
 
 	boolean checkIdDuplicate(String member_id);
-	void register(StaffDto staffDto);
 
-	public void adminAppoint(Long member_no);  // 추가
+	public void register(StaffDto staffDto);
+
+	public void adminAppoint(Long member_no); // 추가
 
 }
