@@ -8,14 +8,15 @@ function Register() {
   const [formData, setFormData] = useState({
     member_id: '',
     member_pw: '',
+    confirmPassword: '',
     member_nick: '',
-    member_gender: 'M',
+    member_gender: '',
     member_birth: '',
     member_phone: '',
     member_email: '',
-    confirmPassword: '',
     admins: 0
   });
+  
 
   useEffect(() => {
     axios.get('http://localhost:8080/mvc/staff/check-login', { withCredentials: true })
@@ -35,45 +36,39 @@ function Register() {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (checked ? 1 : 0) : value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (formData.member_pw !== formData.confirmPassword) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
-
+  
     try {
-      const params = new URLSearchParams();
-      Object.keys(formData).forEach(key => {
-        if (key !== 'confirmPassword') {
-          params.append(key, formData[key]);
-        }
+      const response = await fetch('http://localhost:8080/mvc/staff/register', {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
       });
-
-      const response = await axios.post(
-        'http://localhost:8080/mvc/staff/register', 
-        params,
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-
-      if (response.data.success) {
-        alert('직원이 등록되었습니다.');
-        navigate('/stuff/item/list');
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        alert(data.message);
+        navigate('/');
       } else {
-        alert(response.data.message || '직원 등록에 실패했습니다.');
+        alert(data.message);
       }
     } catch (error) {
       console.error('직원 등록 실패:', error);
-      alert(error.response?.data?.message || '직원 등록에 실패했습니다.');
+      alert('직원 등록에 실패했습니다.');
     }
   };
 
@@ -82,9 +77,8 @@ function Register() {
       <h2>직원 등록</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="member_id">아이디</label>
+          <label>아이디</label>
           <input
-            id="member_id"
             type="text"
             name="member_id"
             value={formData.member_id}
@@ -93,20 +87,8 @@ function Register() {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="member_nick">닉네임</label>
+          <label>비밀번호</label>
           <input
-            id="member_nick"
-            type="text"
-            name="member_nick"
-            value={formData.member_nick}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="member_pw">비밀번호</label>
-          <input
-            id="member_pw"
             type="password"
             name="member_pw"
             value={formData.member_pw}
@@ -115,9 +97,8 @@ function Register() {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="confirmPassword">비밀번호 확인</label>
+          <label>비밀번호 확인</label>
           <input
-            id="confirmPassword"
             type="password"
             name="confirmPassword"
             value={formData.confirmPassword}
@@ -125,23 +106,30 @@ function Register() {
             required
           />
         </div>
+         <div className="form-group">
+          <label>사원명</label>
+          <input
+            type="text"
+            name="member_nick"
+            value={formData.member_nick}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <div className="form-group">
-          <label htmlFor="member_gender">성별</label>
-          <select
-            id="member_gender"
+          <label>성별</label>
+          <input
+            type="text"
             name="member_gender"
             value={formData.member_gender}
             onChange={handleChange}
-          >
-            <option value="M">남성</option>
-            <option value="F">여성</option>
-          </select>
+            required
+          />
         </div>
         <div className="form-group">
-          <label htmlFor="member_birth">생년월일</label>
+          <label>생일</label>
           <input
-            id="member_birth"
-            type="date"
+            type="text"
             name="member_birth"
             value={formData.member_birth}
             onChange={handleChange}
@@ -149,10 +137,9 @@ function Register() {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="member_phone">전화번호</label>
+          <label>전화번호</label>
           <input
-            id="member_phone"
-            type="tel"
+            type="text"
             name="member_phone"
             value={formData.member_phone}
             onChange={handleChange}
@@ -160,32 +147,35 @@ function Register() {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="member_email">이메일</label>
+          <label>메일</label>
           <input
-            id="member_email"
-            type="email"
+            type="text"
             name="member_email"
             value={formData.member_email}
             onChange={handleChange}
             required
           />
         </div>
-        {isAdmin && (
+
+
+        {/* {isAdmin && (
           <div className="form-group">
             <label>
               <input
                 type="checkbox"
                 name="admins"
                 checked={formData.admins === 1}
-                onChange={handleChange}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  admins: e.target.checked ? 1 : 0
+                })}
               />
-              관리자 권한 부여
+              관리자
             </label>
           </div>
-        )}
+        )} */}
         <div className="button-group">
           <button type="submit">등록하기</button>
-          <button type="button" onClick={() => navigate('/stuff/item/list')}>취소</button>
         </div>
       </form>
     </div>
