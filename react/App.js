@@ -5,7 +5,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import StaffEdit from './components/StaffEdit';
 import ItemList from './components/ItemList';
 import ItemRegister from './components/ItemRegister';
-import StaffRegister from './components/Register'; //추가 24.12.17
+import StaffRegister from './components/Register';
 import DeletedItems from './components/DeletedItems';
 import Cart from './components/Cart';
 import RemovedStaff from './components/RemovedStaff';
@@ -110,10 +110,10 @@ function App() {
 
 
   // 직원 삭제
-  function confirmDelete(member_no) {
+  function confirmDelete(bno) {
     if (window.confirm('이 직원을 삭제하시겠습니까?')) {
       const params = new URLSearchParams();
-      params.append('member_no', member_no);
+      params.append('bno', bno);
 
       axios.post('http://localhost:8080/mvc/staff/remove', params, {
         headers: {
@@ -146,14 +146,11 @@ function App() {
       <div className="top-menu">
         <h1 className="section-title" style={{ margin: 0 }}>물건 목록</h1>
         <div>
-          {location.search.includes('message=addedToCart') && (
-            <span style={{ color: 'green', marginRight: '20px' }}>
-              장바구니에 추가되었습니다!
-            </span>
+          {isLoggedIn && (
+            <a href="/stuff/cart" className="cart-link">
+              🛒 장바구니
+            </a>
           )}
-          <a href="/stuff/cart" className="cart-link">
-            🛒 장바구니
-          </a>
         </div>
       </div>
     </div>
@@ -164,7 +161,7 @@ function App() {
     isAdmin && (
       <div className="admin-menu">
         <button onClick={() => navigate('/stuff/item/register')}>물건 등록</button>
-        <button onClick={() => navigate('/staff/register')}>사원 등록</button> 
+        <button onClick={() => navigate('/staff/register')}>사원 등록</button>
         <button onClick={() => navigate('/stuff/item/deleted')}>삭제된 건 목록</button>
         <button onClick={() => navigate('/staff/removelist')}>삭제된 직원 목록</button>
       </div>
@@ -191,7 +188,7 @@ function App() {
               <tr key={staff.member_no}>
                 <td>{staff.member_no}</td>
                 <td>{staff.member_id}</td>
-                <td>{staff.member_nick}</td>
+                <td>{staff.btext}</td>
                 <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
                 <td>
                   <button onClick={() => confirmDelete(staff.member_no)}>삭제</button>
@@ -247,9 +244,9 @@ function App() {
       {/* 라우트 설정 수정 */}
       <Routes>
         {/* 메인 페이지에 ItemList 표시 */}
-        <Route path="/" element={<ItemList />} />
+        <Route path="/" element={<ItemList isLoggedIn={isLoggedIn} isAdmin={isAdmin} />} />
         <Route path="/staff/edit" element={<StaffEdit />} />
-        <Route path="/stuff/item/list" element={<ItemList />} />
+        <Route path="/stuff/item/list" element={<ItemList isLoggedIn={isLoggedIn} isAdmin={isAdmin} />} />
         <Route path="/staff/register" element={<StaffRegister />} />
         <Route path="/stuff/item/register" element={<ItemRegister />} />
         <Route path="/stuff/item/deleted" element={<DeletedItems />} />

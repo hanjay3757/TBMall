@@ -70,8 +70,8 @@ function DeletedItems() {
           {deletedItems.map(item => (
             <div key={item.item_id} className="item-card">
               <h3>{item.item_name}</h3>
-              <p>가격: {item.item_price}원</p>
-              <p>재고: {item.item_stock}개</p>
+              <p>가격: {(item.item_price).toLocaleString()}원</p>
+              <p>재고: {(item.item_stock).toLocaleString()}개</p>
               <p>{item.item_description}</p>
               <p>삭제일: {new Date(item.delete_date).toLocaleDateString()}</p>
               <button 

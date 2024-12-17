@@ -107,7 +107,7 @@ function RegisterItem() {
             type="number"
             id="item_price"
             name="item_price"
-            value={formData.item_price}
+            value={formData.item_price.toLocaleString()}
             onChange={handleChange}
             min="0"
             required
@@ -120,7 +120,7 @@ function RegisterItem() {
             type="number"
             id="item_stock"
             name="item_stock"
-            value={formData.item_stock}
+            value={formData.item_stock.toLocaleString()}
             onChange={handleChange}
             min="0"
             required

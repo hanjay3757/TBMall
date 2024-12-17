@@ -54,7 +54,7 @@ function StaffEdit() {
     e.preventDefault();
     try {
       const params = new URLSearchParams();
-      params.append('member_no', member_no);
+      params.append('member_no', member_no.toLocaleString());
       params.append('member_nick', formData.member_nick);
       params.append('member_phone', formData.member_phone);
       params.append('member_email', formData.member_email);
