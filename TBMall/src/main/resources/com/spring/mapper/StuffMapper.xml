@@ -79,16 +79,15 @@
     <!-- 재고 업데이트 -->
     <update id="updateStock">
         UPDATE tbmall_stuff 
-        SET item_stock = item_stock - #{quantity}
-        WHERE item_id = #{item_id}
-        AND item_stock >= #{quantity}
+        SET item_stock = item_stock + #{quantity}
+        WHERE item_id = #{itemId}
     </update>
     
     <!-- 재고 확인 -->
     <select id="checkStock" resultType="int">
         SELECT item_stock 
         FROM tbmall_stuff 
-        WHERE item_id = #{item_id}
+        WHERE item_id = #{itemId}
     </select>
     
     <!-- 물건 삭제 (소프트 삭제) -->
@@ -135,4 +134,79 @@
         ORDER BY 
             s.delete_date DESC
     </select>
+    
+    <!-- 장바구니 아이템 조회 -->
+    <select id="getCartItems" resultType="com.spring.dto.CartDto">
+        SELECT 
+            o.order_id as cartId,
+            o.item_id as itemId,
+            o.member_no as memberNo,
+            o.order_quantity as quantity,
+            s.item_name as itemName,
+            s.item_price as itemPrice,
+            s.item_stock as itemStock,
+            (s.item_price * o.order_quantity) as totalPrice,
+            o.order_date as orderDate,
+            s.item_delete as itemDelete
+        FROM 
+            tbmall_orders o
+            JOIN tbmall_stuff s ON o.item_id = s.item_id
+        WHERE 
+            o.member_no = #{member_no}
+            AND s.item_delete = false
+        ORDER BY 
+            o.order_date DESC
+    </select>
+    
+    <!-- 장바구니에 추가 -->
+    <insert id="addToCart">
+        INSERT INTO tbmall_orders (
+            member_no,
+            item_id,
+            order_quantity,
+            order_date
+        ) VALUES (
+            #{userId},
+            #{itemId},
+            #{quantity},
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+    
+    <!-- 장바구니 아이템 삭제 -->
+    <delete id="removeFromCart">
+        DELETE FROM tbmall_orders 
+        WHERE order_id = #{cartId}
+    </delete>
+    
+    <!-- 장바구니 비우기 -->
+    <delete id="clearCart">
+        DELETE FROM tbmall_orders 
+        WHERE member_no = #{member_no}
+    </delete>
+    
+    <!-- 장바구니 아이템 단일 조회 -->
+    <select id="getCartItem" resultType="com.spring.dto.CartDto">
+        SELECT 
+            o.order_id as cartId,
+            o.member_no as memberNo,
+            o.item_id as itemId,
+            o.board_no,
+            o.order_quantity as quantity,
+            s.item_name as itemName,
+            s.item_price as itemPrice,
+            s.item_stock as itemStock
+        FROM 
+            tbmall_orders o
+            JOIN tbmall_stuff s ON o.item_id = s.item_id
+        WHERE 
+            o.order_id = #{cartId}
+    </select>
+    
+    <!-- 장바구니 수량 업데이트 -->
+    <update id="updateCartItemQuantity">
+        UPDATE tbmall_orders 
+        SET order_quantity = #{quantity}
+        WHERE order_id = #{cartId}
+    </update>
 </mapper> 

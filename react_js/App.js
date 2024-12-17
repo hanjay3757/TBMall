@@ -146,14 +146,11 @@ function App() {
       <div className="top-menu">
         <h1 className="section-title" style={{ margin: 0 }}>물건 목록</h1>
         <div>
-          {location.search.includes('message=addedToCart') && (
-            <span style={{ color: 'green', marginRight: '20px' }}>
-              장바구니에 추가되었습니다!
-            </span>
+          {isLoggedIn && (
+            <a href="/stuff/cart" className="cart-link">
+              🛒 장바구니
+            </a>
           )}
-          <a href="/stuff/cart" className="cart-link">
-            🛒 장바구니
-          </a>
         </div>
       </div>
     </div>
@@ -247,9 +244,9 @@ function App() {
       {/* 라우트 설정 수정 */}
       <Routes>
         {/* 메인 페이지에 ItemList 표시 */}
-        <Route path="/" element={<ItemList />} />
+        <Route path="/" element={<ItemList isLoggedIn={isLoggedIn} isAdmin={isAdmin} />} />
         <Route path="/staff/edit" element={<StaffEdit />} />
-        <Route path="/stuff/item/list" element={<ItemList />} />
+        <Route path="/stuff/item/list" element={<ItemList isLoggedIn={isLoggedIn} isAdmin={isAdmin} />} />
         <Route path="/staff/register" element={<StaffRegister />} />
         <Route path="/stuff/item/register" element={<ItemRegister />} />
         <Route path="/stuff/item/deleted" element={<DeletedItems />} />

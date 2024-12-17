@@ -11,7 +11,9 @@ function Cart() {
 
   const loadCartItems = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/mvc/stuff/cart/list');
+      const response = await axios.get('http://localhost:8080/mvc/stuff/api/cart', {
+        withCredentials: true
+      });
       setCartItems(response.data);
       setLoading(false);
     } catch (error) {
@@ -22,8 +24,11 @@ function Cart() {
 
   const handleRemoveItem = async (cartId) => {
     try {
-      const response = await axios.delete(`http://localhost:8080/mvc/stuff/cart/${cartId}`);
-      if (response.status === 200) {
+      const response = await axios.delete(
+        `http://localhost:8080/mvc/stuff/api/cart/${cartId}`,
+        { withCredentials: true }
+      );
+      if (response.data.status === 'success') {
         loadCartItems();
       }
     } catch (error) {
@@ -31,20 +36,38 @@ function Cart() {
     }
   };
 
-  const handleUpdateQuantity = async (cartId, newQuantity) => {
+  const handleUpdateQuantity = async (cart_id, newQuantity) => {
     try {
-      const response = await axios.patch(`http://localhost:8080/mvc/stuff/cart/${cartId}`, {
-        quantity: newQuantity
-      });
+      const response = await axios.patch(
+        `http://localhost:8080/mvc/stuff/api/cart/${cart_id}`,
+        { quantity: newQuantity },
+        { withCredentials: true }
+      );
       
-      if (response.status === 200) {
+      if (response.data.status === 'success') {
         loadCartItems();
       }
     } catch (error) {
       console.error('수량 업데이트 실패:', error);
-      if (error.response && error.response.status === 400) {
-        alert('재고가 부족합니다.');
+      alert('재고가 부족합니다.');
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const response = await axios.post(
+        'http://localhost:8080/mvc/stuff/api/cart/checkout',
+        {},
+        { withCredentials: true }
+      );
+
+      if (response.data.status === 'success') {
+        alert('주문이 완료되었습니다.');
+        setCartItems([]);
       }
+    } catch (error) {
+      console.error('주문 처리 실패:', error);
+      alert(error.response?.data?.message || '주문 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -71,7 +94,10 @@ function Cart() {
                   value={item.quantity}
                   onChange={(e) => handleUpdateQuantity(item.cartId, parseInt(e.target.value))}
                 />
-                <button onClick={() => handleRemoveItem(item.cartId)}>
+                <button 
+                  onClick={() => handleRemoveItem(item.cartId)}
+                  className="remove-button"
+                >
                   삭제
                 </button>
               </div>
@@ -80,6 +106,13 @@ function Cart() {
           ))}
           <div className="cart-total">
             <h3>총 결제 금액: {cartItems.reduce((total, item) => total + (item.itemPrice * item.quantity), 0)}원</h3>
+            <button 
+              onClick={handleCheckout}
+              disabled={!cartItems.length}
+              className="checkout-button"
+            >
+              주문하기
+            </button>
           </div>
         </div>
       )}
@@ -87,4 +120,4 @@ function Cart() {
   );
 }
 
-export default Cart;
+export default Cart; 

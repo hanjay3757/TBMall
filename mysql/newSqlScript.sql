@@ -131,7 +131,7 @@ VALUES
     ('삼성 65인치 TV', 1500000, 20, '4K 해상도, 스마트 TV', 1);
 
 
-
+select * from tbmall_orders;
 DESC tblmall_member;
 DROP TABLE IF EXISTS tbl_orders;
 CREATE TABLE tbmall_orders (
@@ -146,6 +146,21 @@ CREATE TABLE tbmall_orders (
     foreign key (board_no) references tbmall_board(board_no) on delete cascade
 );
 
+-- //하셔야 합니다 
+ALTER TABLE tbmall_orders 
+DROP FOREIGN KEY tbmall_orders_ibfk_3;
+
+-- 2. board_no 컬럼을 NULL 허용으로 변경
+ALTER TABLE tbmall_orders 
+MODIFY COLUMN board_no INT NULL;
+
+-- 3. 새로운 외래 키 제약조건 추가 (NULL 허용 및 ON DELETE SET NULL)
+ALTER TABLE tbmall_orders 
+ADD CONSTRAINT fk_orders_board
+FOREIGN KEY (board_no) 
+REFERENCES tbmall_board(board_no) 
+ON DELETE SET NULL;
+-- 요기 까지
 select * from tbmall_orders;
 
 

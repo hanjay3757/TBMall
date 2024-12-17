@@ -30,257 +30,304 @@ import com.spring.service.StaffService;
 import com.spring.service.StuffService;
 
 @RestController
-@RequestMapping(value = "/stuff", produces = "application/json;charset=UTF-8")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", allowedHeaders = "*", methods = {
-		RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS })
+@RequestMapping("/stuff")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", allowedHeaders = "*")
 public class StuffController {
 
-	private static final Logger log = LoggerFactory.getLogger(StuffController.class);
+    private static final Logger log = LoggerFactory.getLogger(StuffController.class);
 
-	@Autowired
-	private StuffService service;
+    @Autowired
+    private StuffService service;
 
-	@Autowired
-	private StaffService staffService; // StaffService 주입
+    @Autowired
+    private StaffService staffService;
 
-	// 세션 키 상수 추가
-	private static final String LOGIN_STAFF = "loginStaff";
+    private static final String LOGIN_STAFF = "loginStaff";
 
-	// 세션 체크 메서드 추가
-	private boolean isAdmin(HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		return loginStaff != null && loginStaff.getAdmins() == 1;
-	}
+    private boolean isAdmin(HttpSession session) {
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        return loginStaff != null && loginStaff.getAdmins() == 1;
+    }
 
-	@PostMapping("/cart/checkout")
-	public String checkout(HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null) {
-			return "redirect:/staff/login";
-		}
+    // 장바구니 체크아웃 API
+    @PostMapping("/api/cart/checkout") 
+    @ResponseBody
+    public Map<String, String> checkout(HttpSession session) {
+        Map<String, String> response = new HashMap<>();
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 
-		try {
-			service.processCheckout(loginStaff.getMember_no());
-			return "redirect:/stuff/item/list?message=orderComplete";
-		} catch (Exception e) {
-			log.error("결제 실패: " + e.getMessage());
-			return "redirect:/stuff/cart?error=" + e.getMessage();
-		}
-	}
+        if (loginStaff == null) {
+            response.put("status", "error");
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
 
-	@PostMapping("/cart/remove")
-	public String removeFromCart(@RequestParam("cartId") Long cartId, HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null) {
-			return "redirect:/staff/login";
-		}
+        try {
+            service.processCheckout(loginStaff.getMember_no());
+            response.put("status", "success"); 
+            response.put("message", "주문이 완료되었습니다.");
+        } catch (Exception e) {
+            log.error("결제 실패: " + e.getMessage());
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
 
-		service.removeFromCart(cartId);
-		return "redirect:/stuff/cart";
-	}
+    @PostMapping("/cart/remove")
+    public String removeFromCart(@RequestParam("cartId") Long cartId, HttpSession session) {
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        if (loginStaff == null) {
+            return "redirect:/staff/login";
+        }
 
-	// 물건 목록 조회
-	@GetMapping("/item/list")
-	@ResponseBody
-	public List<StuffDto> getList() {
-		return service.getItemList();
-	}
+        service.removeFromCart(cartId);
+        return "redirect:/stuff/cart";
+    }
 
-	// 물건 등록 페이지
-	@GetMapping("/item/register")
-	public String registerForm(HttpSession session) {
-		if (!isAdmin(session)) {
-			return "redirect:/staff/login";
-		}
-		return "stuff/register";
-	}
+    // 물건 목록 조회
+    @GetMapping("/item/list")
+    @ResponseBody
+    public List<StuffDto> getList() {
+        return service.getItemList();
+    }
 
-	// 물건 등록 처리
-	@PostMapping("/item/register")
-	@ResponseBody
-	public Map<String, Object> register(StuffDto stuff, HttpSession session) {
-		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+    // 물건 등록 페이지
+    @GetMapping("/item/register")
+    public String registerForm(HttpSession session) {
+        if (!isAdmin(session)) {
+            return "redirect:/staff/login";
+        }
+        return "stuff/register";
+    }
 
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-			response.put("success", false);
-			response.put("message", "관리자 권한이 필요합니다.");
-			return response;
-		}
+    // 물건 등록 처리
+    @PostMapping("/item/register")
+    @ResponseBody
+    public Map<String, Object> register(StuffDto stuff, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		try {
-			stuff.setAdmin_no(loginStaff.getAdmin_no());
-			service.registerItem(stuff);
-			response.put("success", true);
-			response.put("message", "물건이 등록되었습니다.");
-		} catch (Exception e) {
-			log.error("물건 등록 실패: " + e.getMessage());
-			response.put("success", false);
-			response.put("message", e.getMessage());
-		}
+        if (loginStaff == null || loginStaff.getAdmins() != 1) {
+            response.put("success", false);
+            response.put("message", "관리자 권한이 필요합니다.");
+            return response;
+        }
 
-		return response;
-	}
+        try {
+            stuff.setAdmin_no(loginStaff.getAdmin_no());
+            service.registerItem(stuff);
+            response.put("success", true);
+            response.put("message", "물건이 등록되었습니다.");
+        } catch (Exception e) {
+            log.error("물건 등록 실패: " + e.getMessage());
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
 
-	// 장바구니에 추가
-	@PostMapping("/cart/add")
-	@ResponseBody
-	public Map<String, String> addToCart(@RequestBody Map<String, Object> request, HttpSession session) {
-		Map<String, String> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        return response;
+    }
 
-		if (loginStaff == null) {
-			response.put("status", "error");
-			response.put("message", "로그인이 필요합니다.");
-			return response;
-		}
+    // 장바구니에 추가
+    @PostMapping("/api/cart/add")
+    @ResponseBody
+    public Map<String, String> addToCart(
+            @RequestParam("itemId") Long itemId,
+            @RequestParam("quantity") int quantity,
+            HttpSession session) {
+        Map<String, String> response = new HashMap<>();
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 
-		try {
-			Long itemId = ((Number) request.get("itemId")).longValue();
-			int quantity = ((Number) request.get("quantity")).intValue();
+        if (loginStaff == null) {
+            response.put("status", "error");
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
 
-			service.addToCart(itemId, loginStaff.getMember_no(), quantity);
+        try {
+            // 재고 확인
+            StuffDto item = service.getItem(itemId);
+            if (item == null) {
+                response.put("status", "error");
+                response.put("message", "상품을 찾을 수 없습니다.");
+                return response;
+            }
 
-			response.put("status", "success");
-			response.put("message", "장바구니에 추가되었습니다.");
-		} catch (Exception e) {
-			log.error("장바구니 추가 실패: " + e.getMessage());
-			response.put("status", "error");
-			response.put("message", e.getMessage());
-		}
+            if (item.getItem_stock() < quantity) {
+                response.put("status", "error");
+                response.put("message", "재고가 부족합니다. 현재 재고: " + item.getItem_stock());
+                return response;
+            }
 
-		return response;
-	}
+            service.addToCart(itemId, loginStaff.getMember_no(), quantity);
+            response.put("status", "success");
+            response.put("message", "장바구니에 추가되었습니다.");
+        } catch (Exception e) {
+            log.error("장바구니 추가 실패: " + e.getMessage());
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
 
-	// 장바구니 조회
-	@GetMapping("/cart")
-	public String viewCart(HttpSession session, Model model) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null) {
-			return "redirect:/staff/login";
-		}
+        return response;
+    }
 
-		model.addAttribute("cartItems", service.getCartItems(loginStaff.getMember_no()));
-		return "stuff/cart";
-	}
+    // 장바구니 조회
+    @GetMapping("/cart")
+    public String viewCart(HttpSession session, Model model) {
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        if (loginStaff == null) {
+            return "redirect:/staff/login";
+        }
 
-	@GetMapping("/item/deleted")
-	@ResponseBody
-	public Map<String, Object> getDeletedItems(HttpSession session) {
-		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+        model.addAttribute("cartItems", service.getCartItems(loginStaff.getMember_no()));
+        return "stuff/cart";
+    }
 
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-			response.put("success", false);
-			response.put("message", "관리자 권한이 필요합니다.");
-			return response;
-		}
+    @GetMapping("/item/deleted")
+    @ResponseBody
+    public Map<String, Object> getDeletedItems(HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		try {
-			List<StuffDto> deletedItems = service.getDeletedItemList();
-			response.put("success", true);
-			response.put("data", deletedItems);
-		} catch (Exception e) {
-			log.error("삭제된 물건 목록 조회 실패: " + e.getMessage());
-			response.put("success", false);
-			response.put("message", "삭제된 물건 목록을 불러오는데 실패했습니다.");
-		}
+        if (loginStaff == null || loginStaff.getAdmins() != 1) {
+            response.put("success", false);
+            response.put("message", "관리자 권한이 필요합니다.");
+            return response;
+        }
 
-		return response;
-	}
+        try {
+            List<StuffDto> deletedItems = service.getDeletedItemList();
+            response.put("success", true);
+            response.put("data", deletedItems);
+        } catch (Exception e) {
+            log.error("삭제된 물건 목록 조회 실패: " + e.getMessage());
+            response.put("success", false);
+            response.put("message", "삭제된 물건 목록을 불러오는데 실패했습니다.");
+        }
 
-	// 물건 삭제
-	@PostMapping("/item/delete")
-	public String deleteItem(@RequestParam("itemId") Long itemId, HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-			return "redirect:/staff/login";
-		}
+        return response;
+    }
 
-		service.deleteItem(itemId);
-		return "redirect:/stuff/item/list";
-	}
+    // 물건 삭제
+    @PostMapping("/item/delete")
+    public String deleteItem(@RequestParam("itemId") Long itemId, HttpSession session) {
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        if (loginStaff == null || loginStaff.getAdmins() != 1) {
+            return "redirect:/staff/login";
+        }
 
-	// 물건 수정 페이지
-	@GetMapping("/item/edit")
-	public String editItemForm(@RequestParam("itemId") Long itemId, Model model, HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-			return "redirect:/staff/login";
-		}
+        service.deleteItem(itemId);
+        return "redirect:/stuff/item/list";
+    }
 
-		model.addAttribute("item", service.getItem(itemId));
-		return "stuff/edit";
-	}
+    // 물건 수정 페이지
+    @GetMapping("/item/edit")
+    public String editItemForm(@RequestParam("itemId") Long itemId, Model model, HttpSession session) {
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        if (loginStaff == null || loginStaff.getAdmins() != 1) {
+            return "redirect:/staff/login";
+        }
 
-	// 물건 수정 처리
-	@PostMapping("/item/edit")
-	public String editItem(StuffDto stuff, HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-			return "redirect:/staff/login";
-		}
+        model.addAttribute("item", service.getItem(itemId));
+        return "stuff/edit";
+    }
 
-		service.updateItem(stuff);
-		return "redirect:/stuff/item/list";
-	}
+    // 물건 수정 처리
+    @PostMapping("/item/edit")
+    public String editItem(StuffDto stuff, HttpSession session) {
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        if (loginStaff == null || loginStaff.getAdmins() != 1) {
+            return "redirect:/staff/login";
+        }
 
-	// 물건 복구
-	@PostMapping("/item/restore")
-	@ResponseBody
-	public Map<String, String> restoreItem(@RequestParam("itemId") Long itemId, HttpSession session) {
-		Map<String, String> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        service.updateItem(stuff);
+        return "redirect:/stuff/item/list";
+    }
 
-		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-			response.put("status", "error");
-			response.put("message", "관리자 권한이 필요합니다.");
-			return response;
-		}
+    // 물건 복구
+    @PostMapping("/item/restore")
+    @ResponseBody
+    public Map<String, String> restoreItem(@RequestParam("itemId") Long itemId, HttpSession session) {
+        Map<String, String> response = new HashMap<>();
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 
-		try {
-			service.restoreItem(itemId);
-			response.put("status", "success");
-			response.put("message", "물건이 복구되었습니다.");
-		} catch (Exception e) {
-			response.put("status", "error");
-			response.put("message", e.getMessage());
-		}
+        if (loginStaff == null || loginStaff.getAdmins() != 1) {
+            response.put("status", "error");
+            response.put("message", "관리자 권한이 필요합니다.");
+            return response;
+        }
 
-		return response;
-	}
+        try {
+            service.restoreItem(itemId);
+            response.put("status", "success");
+            response.put("message", "물건이 복구되었습니다.");
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
 
-	// 장바구니 조회 API 수정
-	@GetMapping("/cart/list")
-	@ResponseBody
-	public List<CartDto> getCartItems(HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null) {
-			throw new RuntimeException("로그인이 필요합니다.");
-		}
-		return service.getCartItems(loginStaff.getMember_no());
-	}
+        return response;
+    }
 
-	// 장바구니 아이템 삭제 API 추가
-	@DeleteMapping("/cart/{cartId}")
-	@ResponseBody
-	public void deleteCartItem(@PathVariable Long cartId, HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null) {
-			throw new RuntimeException("로그인이 필요합니다.");
-		}
-		service.removeFromCart(cartId);
-	}
+    // 장바구니 조회 API
+    @GetMapping("/api/cart")
+    @ResponseBody
+    public List<CartDto> getCartItems(HttpSession session) {
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+        if (loginStaff == null) {
+            throw new RuntimeException("로그인이 필요합니다.");
+        }
+        return service.getCartItems(loginStaff.getMember_no());
+    }
 
-	// 장바구니 수량 업데이트 API 추가
-	@PatchMapping("/cart/{cartId}")
-	@ResponseBody
-	public void updateCartItemQuantity(@PathVariable Long cartId, @RequestBody Map<String, Integer> payload,
-			HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
-		if (loginStaff == null) {
-			throw new RuntimeException("로그인이 필요합니다.");
-		}
-		service.updateCartItemQuantity(cartId, payload.get("quantity"));
-	}
+    // 장바구니 아이템 삭제 API
+    @DeleteMapping("/api/cart/{cartId}")
+    @ResponseBody
+    public Map<String, String> deleteCartItem(@PathVariable Long cartId, HttpSession session) {
+        Map<String, String> response = new HashMap<>();
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+
+        if (loginStaff == null) {
+            response.put("status", "error");
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+
+        try {
+            service.removeFromCart(cartId);
+            response.put("status", "success");
+            response.put("message", "상품이 장바구니에서 제거되었습니다.");
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    // 장바구니 수량 업데이트 API
+    @PatchMapping("/api/cart/{cart_id}")
+    @ResponseBody
+    public Map<String, String> updateCartItemQuantity(
+            @PathVariable Long cart_id,
+            @RequestBody Map<String, Integer> payload,
+            HttpSession session) {
+        Map<String, String> response = new HashMap<>();
+        StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+
+        if (loginStaff == null) {
+            response.put("status", "error");
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+
+        try {
+            service.updateCartItemQuantity(cart_id, payload.get("quantity"));
+            response.put("status", "success");
+            response.put("message", "수량이 업데이트되었습니다.");
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
 }
