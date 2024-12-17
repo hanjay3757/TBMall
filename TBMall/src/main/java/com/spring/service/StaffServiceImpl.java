@@ -40,15 +40,15 @@ public class StaffServiceImpl implements StaffService {
 	}
 
 	@Override
-	public void remove(Long member_no) {
+	public void softDelete(Long member_no) {
 		log.info("직원 삭제: " + member_no);
-		
+
 		// 삭제하려는 직원이 관리자인지 확인
 		StaffDto staff = mapper.read(member_no);
 		if (staff != null && staff.getAdmins() == 1) {
 			throw new RuntimeException("관리자는 삭제할 수 없습니다.");
 		}
-		
+
 		// 소프트 삭제 실행
 		int result = mapper.softDelete(member_no);
 		if (result != 1) {
@@ -59,7 +59,7 @@ public class StaffServiceImpl implements StaffService {
 	@Override
 	public void restore(Long member_no) {
 		log.info("직원 복구: " + member_no);
-		
+
 		// 복구 실행
 		int result = mapper.restore(member_no);
 		if (result != 1) {
@@ -95,7 +95,7 @@ public class StaffServiceImpl implements StaffService {
 	@Override
 	public void update(StaffDto staffDto) {
 		log.info("직원 정보 수정: " + staffDto);
-		
+
 		// 수정 실행
 		int result = mapper.update(staffDto);
 		if (result != 1) {

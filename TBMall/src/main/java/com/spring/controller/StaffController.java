@@ -47,7 +47,8 @@ public class StaffController {
 	}
 	// 작동중
 
-	@GetMapping("/remove")
+	// 직원 삭제 Get ->Post 변경
+	@PostMapping("/remove")
 	public Map<String, Object> remove(@RequestParam("member_no") Long member_no, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
@@ -71,7 +72,7 @@ public class StaffController {
 				return response;
 			}
 
-			service.remove(member_no);
+			service.softDelete(member_no);
 			response.put("success", true);
 			response.put("message", "직원이 성공적으로 삭제되었습니다.");
 		} catch (RuntimeException e) {
@@ -83,7 +84,7 @@ public class StaffController {
 	}
 
 //c
-	@GetMapping("/restore")
+	@PostMapping("/restore")
 	public Map<String, Object> restore(@RequestParam("member_no") Long member_no, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
