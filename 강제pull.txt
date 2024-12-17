@@ -1,0 +1,7 @@
+ctrl+` 하시면 cmd 열립니다.
+ 
+git fetch --all
+git reset --hard origin/master
+git pull origin master
+
+입력하시면 강제로 pull 합니다. (강제로 덮어쓰기 이니 조심해서 쓰시면됩니다.)
