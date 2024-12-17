@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Register = () => {
+function Register() {
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [formData, setFormData] = useState({
     member_id: '',
     member_pw: '',
@@ -20,6 +21,7 @@ const Register = () => {
   useEffect(() => {
     axios.get('http://localhost:8080/mvc/staff/check-login', { withCredentials: true })
       .then(response => {
+        setIsAdmin(response.data.isAdmin);
         if (!response.data.isAdmin) {
           navigate('/');
         }

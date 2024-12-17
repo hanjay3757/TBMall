@@ -65,7 +65,7 @@ function ItemRegister() {
           <input
             type="number"
             name="item_price"
-            value={itemData.item_price.toLocaleString()}
+            value={itemData.item_price}
             onChange={handleChange}
             required
             min="0"
@@ -76,7 +76,7 @@ function ItemRegister() {
           <input
             type="number"
             name="item_stock"
-            value={itemData.item_stock.toLocaleString()}
+            value={itemData.item_stock}
             onChange={handleChange}
             required
             min="0"

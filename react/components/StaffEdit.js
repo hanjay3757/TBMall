@@ -1,46 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 function StaffEdit() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const member_no = queryParams.get('member_no');
-
+  const { bno } = useParams();
   const [formData, setFormData] = useState({
-    member_nick: '',
-    member_phone: '',
-    member_email: '',
-    member_pw: '',
-    currentPassword: ''
+    name: '',
+    email: '',
+    phone: '',
+    department: ''
   });
 
   useEffect(() => {
     const fetchStaffData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/mvc/staff/read`, {
-          params: { member_no },
-          withCredentials: true
-        });
-        
-        // 응답 데이터로 폼 초기화
-        setFormData(prevState => ({
-          ...prevState,
-          member_nick: response.data.member_nick,
-          member_phone: response.data.member_phone,
-          member_email: response.data.member_email
-        }));
+        const response = await fetch(`/api/staff/${bno}`);
+        const data = await response.json();
+        setFormData(data);
       } catch (error) {
         console.error('직원 정보를 가져오는데 실패했습니다:', error);
-        alert('직원 정보를 불러오는데 실패했습니다.');
       }
     };
 
-    if (member_no) {
-      fetchStaffData();
-    }
-  }, [member_no]);
+    fetchStaffData();
+  }, [bno]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,97 +35,80 @@ function StaffEdit() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const params = new URLSearchParams();
-      params.append('member_no', member_no.toLocaleString());
-      params.append('member_nick', formData.member_nick);
-      params.append('member_phone', formData.member_phone);
-      params.append('member_email', formData.member_email);
-      params.append('currentPassword', formData.currentPassword);
-      
-      // 새 비밀번호가 있는 경우에만 추가
-      if (formData.member_pw) {
-        params.append('member_pw', formData.member_pw);
-      }
+      const response = await fetch(`/api/staff/${bno}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
 
-      const response = await axios.post(
-        'http://localhost:8080/mvc/staff/edit',
-        params,
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-
-      if (response.data.success) {
-        alert(response.data.message);
-        navigate('/stuff/item/list');
+      if (response.ok) {
+        alert('직원 정보가 성공적으로 수정되었습니다.');
       } else {
-        alert(response.data.message || '수정에 실패했습니다.');
+        alert('직원 정보 수정에 실패했습니다.');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert(error.response?.data?.message || '수정 중 오류가 발생했습니다.');
+      alert('직원 정보 수정 중 오류가 발생했습니다.');
     }
   };
 
   return (
-    <div className="staff-edit-form">
+    <div className="edit-form">
       <h2>직원 정보 수정</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>닉네임:</label>
+          <label htmlFor="name">이름:</label>
           <input
             type="text"
-            name="member_nick"
-            value={formData.member_nick}
+            id="name"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             required
           />
         </div>
+
         <div className="form-group">
-          <label>전화번호:</label>
-          <input
-            type="text"
-            name="member_phone"
-            value={formData.member_phone}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>이메일:</label>
+          <label htmlFor="email">이메일:</label>
           <input
             type="email"
-            name="member_email"
-            value={formData.member_email}
+            id="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
             required
           />
         </div>
+
         <div className="form-group">
-          <label>새 비밀번호:</label>
+          <label htmlFor="phone">전화번호:</label>
           <input
-            type="password"
-            name="member_pw"
-            value={formData.member_pw}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label>현재 비밀번호:</label>
-          <input
-            type="password"
-            name="currentPassword"
-            value={formData.currentPassword}
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
             onChange={handleChange}
             required
           />
         </div>
+
+        <div className="form-group">
+          <label htmlFor="department">부서:</label>
+          <input
+            type="text"
+            id="department"
+            name="department"
+            value={formData.department}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
         <div className="button-group">
           <button type="submit">수정</button>
-          <button type="button" onClick={() => navigate('/stuff/item/list')}>취소</button>
+          <button type="button" onClick={() => window.history.back()}>취소</button>
         </div>
       </form>
     </div>
