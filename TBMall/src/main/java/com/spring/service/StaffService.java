@@ -12,7 +12,7 @@ public interface StaffService {
 
 	public StaffDto read(long member_no);
 
-	public void remove(Long member_no);
+	public void softDelete(Long member_no);
 
 	// 삭제된 계정 복구
 	public void restore(Long member_no);
