@@ -15,24 +15,53 @@ const dummyProducts = [
     id: '1',
     name: '[KF365] 양파 1.5kg',
     price: 4280,
-    image: 'https://placeholder.com/product1',
+    image: 'https://via.placeholder.com/150',
     discount: 10,
   },
   {
     id: '2',
     name: '[홍대한우] 1++ 등심 200g',
     price: 28900,
-    image: 'https://placeholder.com/product2',
+    image: 'https://via.placeholder.com/150',
   },
-  // 추가 상품...
+  {
+    id: '3',
+    name: '[피코크] 올리브유 500ml',
+    price: 8900,
+    image: 'https://via.placeholder.com/150',
+    discount: 15,
+  },
+  {
+    id: '4',
+    name: '[농심] 신라면 5개입',
+    price: 4500,
+    image: 'https://via.placeholder.com/150',
+  },
+  {
+    id: '5',
+    name: '[CJ] 비비고 왕교자 1kg',
+    price: 12900,
+    image: 'https://via.placeholder.com/150',
+    discount: 20,
+  },
+  {
+    id: '6',
+    name: '[동원] 참치캔 150g x 3',
+    price: 6900,
+    image: 'https://via.placeholder.com/150',
+  },
 ];
 
 const HomeScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>TBMall</Text>
+      </View>
+
       <View style={styles.banner}>
         <Image 
-          source={{ uri: 'https://placeholder.com/banner' }}
+          source={{ uri: 'https://via.placeholder.com/800x400' }}
           style={styles.bannerImage}
         />
       </View>
@@ -68,6 +97,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  header: {
+    backgroundColor: '#5f0080',
+    padding: 15,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   banner: {
     height: 200,

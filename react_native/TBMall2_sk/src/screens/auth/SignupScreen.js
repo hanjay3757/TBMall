@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import { useEmailVerification } from '../../context/EmailVerificationContext';
 
 const SignupScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const SignupScreen = ({ navigation }) => {
     name: '',
     phone: '',
   });
+  const { isEmailVerified } = useEmailVerification();
 
   const handleSignup = () => {
     // 유효성 검사
@@ -25,6 +27,11 @@ const SignupScreen = ({ navigation }) => {
       return;
     }
     
+    if (!isEmailVerified(formData.email)) {
+      Alert.alert('알림', '이메일 인증이 필요합니다.');
+      return;
+    }
+
     if (formData.password !== formData.passwordConfirm) {
       Alert.alert('알림', '비밀번호가 일치하지 않습니다.');
       return;
@@ -38,13 +45,24 @@ const SignupScreen = ({ navigation }) => {
       <View style={styles.formContainer}>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>이메일</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.email}
-            onChangeText={(text) => setFormData({...formData, email: text})}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.emailContainer}>
+            <TextInput
+              style={[styles.input, styles.emailInput]}
+              value={formData.email}
+              onChangeText={(text) => setFormData({...formData, email: text})}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={styles.verifyButton}
+              onPress={() => navigation.navigate('이메일인증', { email: formData.email })}
+            >
+              <Text style={styles.verifyButtonText}>인증</Text>
+            </TouchableOpacity>
+          </View>
+          {isEmailVerified(formData.email) && (
+            <Text style={styles.verifiedText}>✓ 인증완료</Text>
+          )}
         </View>
 
         <View style={styles.inputGroup}>
@@ -127,6 +145,27 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emailContainer: {
+    flexDirection: 'row',
+  },
+  emailInput: {
+    flex: 1,
+    marginRight: 10,
+  },
+  verifyButton: {
+    backgroundColor: '#5f0080',
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    borderRadius: 5,
+  },
+  verifyButtonText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  verifiedText: {
+    color: '#5f0080',
+    marginTop: 5,
   },
 });
 

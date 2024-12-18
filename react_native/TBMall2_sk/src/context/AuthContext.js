@@ -1,25 +1,74 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [userToken, setUserToken] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 
-  const login = (token) => {
-    setIsLoggedIn(true);
-    setUserToken(token);
-    // AsyncStorage에 토큰 저장 로직 추가
+  useEffect(() => {
+    // 앱 시작시 로그인 상태 체크
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const savedUserInfo = await AsyncStorage.getItem('userInfo');
+      const savedKeepLoggedIn = await AsyncStorage.getItem('keepLoggedIn');
+      
+      if (token && savedUserInfo && savedKeepLoggedIn === 'true') {
+        setUserToken(token);
+        setUserInfo(JSON.parse(savedUserInfo));
+        setKeepLoggedIn(true);
+      }
+    } catch (error) {
+      console.error('로그인 상태 체크 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const logout = () => {
-    setIsLoggedIn(false);
-    setUserToken(null);
-    // AsyncStorage에서 토큰 제거 로직 추가
+  const login = async (token, user, keep = false) => {
+    try {
+      await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('userInfo', JSON.stringify(user));
+      await AsyncStorage.setItem('keepLoggedIn', keep.toString());
+      setUserToken(token);
+      setUserInfo(user);
+      setKeepLoggedIn(keep);
+    } catch (error) {
+      console.error('로그인 정보 저장 실패:', error);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('keepLoggedIn');
+      setUserToken(null);
+      setUserInfo(null);
+      setKeepLoggedIn(false);
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userToken, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isLoading,
+        userToken,
+        userInfo,
+        keepLoggedIn,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

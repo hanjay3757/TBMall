@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { useCart } from '../context/CartContext';
 
@@ -15,6 +16,13 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.name}</Text>
+        {item.selectedOptions && Object.entries(item.selectedOptions).length > 0 && (
+          <Text style={styles.optionsText}>
+            {Object.entries(item.selectedOptions)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(', ')}
+          </Text>
+        )}
         <Text style={styles.productPrice}>
           {item.price.toLocaleString()}원
         </Text>
@@ -45,7 +53,30 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
 };
 
 const CartScreen = () => {
-  const { cartItems, updateQuantity, removeFromCart, getTotalPrice } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
+
+  const handleClearCart = () => {
+    Alert.alert(
+      '장바구니 비우기',
+      '장바구니를 비우시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '확인',
+          onPress: () => clearCart(),
+        },
+      ],
+    );
+  };
+
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -57,6 +88,12 @@ const CartScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>장바구니</Text>
+        <TouchableOpacity onPress={handleClearCart}>
+          <Text style={styles.clearText}>비우기</Text>
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={cartItems}
         renderItem={({ item }) => (
@@ -72,7 +109,7 @@ const CartScreen = () => {
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>총 금액</Text>
           <Text style={styles.totalPrice}>
-            {getTotalPrice().toLocaleString()}원
+            {calculateTotal().toLocaleString()}원
           </Text>
         </View>
         <TouchableOpacity style={styles.orderButton}>
@@ -171,6 +208,27 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  clearText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  optionsText: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 5,
   },
 });
 

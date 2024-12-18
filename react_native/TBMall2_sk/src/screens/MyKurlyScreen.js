@@ -1,24 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   ScrollView,
-  TouchableOpacity 
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 import { useWishlist } from '../context/WishlistContext';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useAuth } from '../context/AuthContext';
 
 const MyKurlyScreen = ({ navigation }) => {
   const { wishlist } = useWishlist();
+  const { logout, userInfo } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      '로그아웃',
+      '로그아웃 하시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '확인',
+          onPress: () => logout(),
+        },
+      ],
+    );
+  };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>로그인이 필요합니다</Text>
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginButtonText}>로그인/회원가입</Text>
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {userInfo ? `${userInfo.name}님` : '로그인이 필요합니다'}
+        </Text>
+        {userInfo ? (
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>로그아웃</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.loginButton}>
+            <Text style={styles.loginButtonText}>로그인/회원가입</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -92,6 +120,18 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     padding: 10,
+  },
+  logoutButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#fff',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 14,
   },
 });
 

@@ -7,23 +7,47 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import ReviewList from '../components/ReviewList';
+import ProductOptions from '../components/ProductOptions';
 
 const { width } = Dimensions.get('window');
 
 const ProductDetailScreen = ({ route, navigation }) => {
   const { product } = route.params;
   const [quantity, setQuantity] = useState(1);
+  const [selectedOptions, setSelectedOptions] = useState({});
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const isWished = isInWishlist(product.id);
 
+  const handleSelectOption = (type, value) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
+
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    const requiredOptions = product.options?.filter(opt => opt.required);
+    const missingOptions = requiredOptions?.filter(
+      opt => !selectedOptions[opt.type]
+    );
+
+    if (missingOptions?.length > 0) {
+      Alert.alert('알림', `${missingOptions[0].type}을(를) 선택해주세요.`);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      selectedOptions,
+      quantity,
+    });
     navigation.navigate('장바구니');
   };
 
@@ -89,6 +113,17 @@ const ProductDetailScreen = ({ route, navigation }) => {
 
           {/* 리뷰 섹션 */}
           <ReviewList productId={product.id} navigation={navigation} />
+
+          {product.options && (
+            <View style={styles.optionsContainer}>
+              <Text style={styles.optionsTitle}>상품 옵션</Text>
+              <ProductOptions
+                options={product.options}
+                selectedOptions={selectedOptions}
+                onSelectOption={handleSelectOption}
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -242,6 +277,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
+  },
+  optionsContainer: {
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  optionsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
 
