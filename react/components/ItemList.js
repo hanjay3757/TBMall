@@ -35,9 +35,8 @@ function ItemList({ onAddToCart, isLoggedIn , isAdmin }) {
   };
 
   const handleDelete = async (itemId) => {
-
-    console.log('itemId :',itemId);
-    if(!itemId){
+    console.log('itemId :', itemId);
+    if (!itemId) {
       alert("삭제할 물건이 없습니다.")
       return;
     }
@@ -45,17 +44,20 @@ function ItemList({ onAddToCart, isLoggedIn , isAdmin }) {
       try {
         const response = await axios.post(
           'http://localhost:8080/mvc/stuff/item/delete',
-          null, // POST 데이터는 없으므로 null로 설정
+          null,
           {
-            params: { item_id: itemId } // Spring이 기대하는 키 이름으로 수정
+            params: { item_id: itemId }
           }
         );
-        console.log("response:",response);
-        if (response.data.success) {
-          alert('해당 물건을 게시하지 않습니다.');
-          loadItems();
+        
+        console.log("response:", response);
+        
+        // 리다이렉트 응답 처리
+        if (response.data === 'redirect:/stuff/item/list' || response.status === 200) {
+          alert('물건이 삭제되었습니다.');
+          loadItems(); // 목록 새로고침
         } else {
-          alert(response.data.message);
+          alert('물건 삭제에 실패했습니다.');
         }
       } catch (error) {
         console.error('물건 삭제 실패:', error);
