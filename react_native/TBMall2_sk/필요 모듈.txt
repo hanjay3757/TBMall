@@ -1,5 +1,8 @@
-필요 모듈
+아이디: 1234
+비밀번호: 1234
 
+
+필요 모듈
 
 npm install react-native-vector-icons
 npm install react-native-reanimated
