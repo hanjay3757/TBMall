@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function ItemList({ onAddToCart, isLoggedIn , isAdmin }) {
+function ItemList({ isLoggedIn, isAdmin }) {
   const [items, setItems] = useState([]);
   const [quantities, setQuantities] = useState({});
 
   useEffect(() => {
     loadItems();
-    
   }, []);
 
   const loadItems = async () => {
     try {
       const response = await axios.get('http://localhost:8080/mvc/stuff/item/list');
-      
-      console.log("리스폰스 데이터:",response.data);
+      console.log("리스폰스 데이터:", response.data);
       setItems(response.data);
-      // 각 아이템의 수량을 1로 초기화
+      
       const initialQuantities = {};
       response.data.forEach(item => {
         initialQuantities[item.item_id] = 1;
@@ -32,6 +30,38 @@ function ItemList({ onAddToCart, isLoggedIn , isAdmin }) {
       ...prev,
       [itemId]: Math.max(1, Math.min(value, items.find(item => item.item_id === itemId).item_stock))
     }));
+  };
+
+  const handleAddToCart = async (itemId, quantity) => {
+    try {
+      const params = new URLSearchParams();
+      params.append('itemId', itemId);
+      params.append('quantity', quantity);
+
+      const response = await axios.post(
+        'http://localhost:8080/mvc/stuff/api/cart/add',
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          withCredentials: true
+        }
+      );
+
+      if (response.data === 'redirect:/stuff/cart' || response.status === 200) {
+        alert('장바구니에 추가되었습니다.');
+      } else {
+        alert(response.data.message || '장바구니 추가에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('장바구니 추가 실패:', error);
+      if (error.response) {
+        alert(error.response.data.message || '장바구니 추가 중 오류가 발생했습니다.');
+      } else {
+        alert('서버와의 통신 중 오류가 발생했습니다.');
+      }
+    }
   };
 
   const handleDelete = async (itemId) => {
@@ -66,7 +96,6 @@ function ItemList({ onAddToCart, isLoggedIn , isAdmin }) {
     }
   };
 
-
   return (
     <div className="item-list">
       <h2>물건 목록</h2>
@@ -74,8 +103,8 @@ function ItemList({ onAddToCart, isLoggedIn , isAdmin }) {
         {items.map(item => (
           <div key={item.item_id} className="item-card">
             <h3>{item.item_name}</h3>
-            <p>가격: {item.item_price}원</p>
-            <p>재고: {item.item_stock}개</p>
+            <p>가격: {item.item_price.toLocaleString()}원</p>
+            <p>재고: {item.item_stock.toLocaleString()}개</p>
             <p>{item.item_description}</p>
             {isLoggedIn && item.item_stock > 0 && (
               <div className="cart-controls">
@@ -87,20 +116,16 @@ function ItemList({ onAddToCart, isLoggedIn , isAdmin }) {
                   onChange={(e) => handleQuantityChange(item.item_id, parseInt(e.target.value))}
                 />
                 <button 
-                  onClick={() => onAddToCart(item.item_id, quantities[item.item_id])}
+                  onClick={() => handleAddToCart(item.item_id, quantities[item.item_id])}
                   disabled={item.item_stock === 0}
                 >
                   장바구니에 추가
                 </button>
-                {/*관리자용 삭제 버튼 */}
-                {isAdmin &&(
-                  <button 
-                  onClick={() => handleDelete(item.item_id)}
-                >
-                  물건 삭제
-                </button>
+                {isAdmin && (
+                  <button onClick={() => handleDelete(item.item_id)}>
+                    물건 삭제
+                  </button>
                 )}
-
               </div>
             )}
           </div>
