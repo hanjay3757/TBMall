@@ -8,7 +8,8 @@ function ItemRegister() {
     item_name: '',
     item_price: '',
     item_stock: '',
-    item_description: ''
+    item_description: '',
+    image_url: ''
   });
 
   const handleSubmit = async (e) => {
@@ -20,11 +21,15 @@ function ItemRegister() {
         params.append(key, itemData[key]);
       });
 
-      const response = await axios.post('http://localhost:8080/mvc/stuff/item/register', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+      const response = await axios.post(
+        'http://localhost:8080/mvc/stuff/item/register',
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         }
-      });
+      );
 
       if (response.data.success) {
         alert('물건이 등록되었습니다.');
@@ -38,60 +43,78 @@ function ItemRegister() {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setItemData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   return (
     <div className="item-register">
       <h2>물건 등록</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>물건 이름:</label>
+        <div className="form-group">
+          <label>이미지 URL</label>
+          <input
+            type="text"
+            name="image_url"
+            value={itemData.image_url}
+            onChange={(e) => setItemData({...itemData, image_url: e.target.value})}
+            placeholder="이미지 URL을 입력하세요"
+          />
+          {itemData.image_url && (
+            <div className="image-preview">
+              <img 
+                src={itemData.image_url} 
+                alt="미리보기" 
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/400x200';
+                }}
+              />
+            </div>
+          )}
+        </div>
+        <div className="form-group">
+          <label>물건 이름</label>
           <input
             type="text"
             name="item_name"
             value={itemData.item_name}
-            onChange={handleChange}
+            onChange={(e) => setItemData({...itemData, item_name: e.target.value})}
             required
           />
         </div>
-        <div>
-          <label>가격:</label>
+        <div className="form-group">
+          <label>가격</label>
           <input
             type="number"
             name="item_price"
             value={itemData.item_price}
-            onChange={handleChange}
+            onChange={(e) => setItemData({...itemData, item_price: e.target.value})}
             required
             min="0"
           />
         </div>
-        <div>
-          <label>재고:</label>
+        <div className="form-group">
+          <label>재고</label>
           <input
             type="number"
             name="item_stock"
             value={itemData.item_stock}
-            onChange={handleChange}
+            onChange={(e) => setItemData({...itemData, item_stock: e.target.value})}
             required
             min="0"
           />
         </div>
-        <div>
-          <label>설명:</label>
+        <div className="form-group">
+          <label>설명</label>
           <textarea
             name="item_description"
             value={itemData.item_description}
-            onChange={handleChange}
+            onChange={(e) => setItemData({...itemData, item_description: e.target.value})}
             required
           />
         </div>
-        <button type="submit">등록</button>
+        <div className="button-group">
+          <button type="submit">등록</button>
+          <button type="button" onClick={() => navigate('/stuff/item/list')}>
+            취소
+          </button>
+        </div>
       </form>
     </div>
   );

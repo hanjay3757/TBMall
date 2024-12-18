@@ -230,7 +230,7 @@ public class StuffController {
 		return "stuff/edit";
 	}
 
-	// 물건 수정 처리 ghkrdls
+	// 물건 수정 처리
 	@PostMapping("/item/edit")
 	public String editItem(StuffDto stuff, HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);

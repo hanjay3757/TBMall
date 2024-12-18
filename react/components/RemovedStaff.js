@@ -13,14 +13,13 @@ function RemovedStaff() {
         });
         
         if (response.data.success) {
-          setStaffList(response.data.list || []); // list 필드에서 데이터 추출
+          setStaffList(response.data.list || []);
         } else {
           throw new Error(response.data.message || '데이터를 불러오는데 실패했습니다.');
         }
       } catch (error) {
-        console.error('삭제된 직원 목록 조회 실패:', error);
         setError(error.response?.data?.message || '삭제된 직원 목록을 불러오는데 실패했습니다.');
-        setStaffList([]); // 에러 시 빈 배열로 초기화
+        setStaffList([]);
       }
     };
 
@@ -58,38 +57,33 @@ function RemovedStaff() {
   };
 
   return (
-    <div className="removed-staff-container">
+    <div className="removed-staff">
       <h2>삭제된 직원 목록</h2>
       {error ? (
-        <div className="error-message">{error}</div>
+        <p className="error-message">{error}</p>
       ) : (
         <table className="staff-table">
           <thead>
             <tr>
               <th>직원번호</th>
+              <th>아이디</th>
               <th>이름</th>
               <th>관리자 여부</th>
               <th>관리</th>
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(staffList) && staffList.length > 0 ? (
-              staffList.map(staff => (
-                <tr key={staff.member_no}>
-                  <td>{staff.member_no}</td>
-                  <td>{staff.member_id}</td>
-                  <td>{staff.member_nick}</td>
-                  <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
-                  <td>
-                    <button onClick={() => handleRestore(staff.member_no)}>복구</button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" style={{textAlign: 'center'}}>삭제된 직원이 없습니다.</td>
+            {staffList.map(staff => (
+              <tr key={staff.member_no}>
+                <td>{staff.member_no}</td>
+                <td>{staff.member_id}</td>
+                <td>{staff.member_nick}</td>
+                <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+                <td>
+                  <button onClick={() => handleRestore(staff.member_no)}>복구</button>
+                </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       )}
