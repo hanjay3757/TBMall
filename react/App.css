@@ -340,3 +340,43 @@ button[onClick*="cart"]:hover {
   border-radius: 4px;
   width: 100%;
 }
+
+/* 장바구니 스타일 */
+.cart-summary {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  margin-top: 20px;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.checkout-button {
+  background-color: var(--success-color);
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.checkout-button:hover {
+  background-color: var(--success-hover);
+}
+
+.quantity-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 15px 0;
+}
+
+.total-price {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-top: 10px;
+}

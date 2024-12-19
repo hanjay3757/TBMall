@@ -32,6 +32,7 @@ function DeletedItems() {
     try {
       const params = new URLSearchParams();
       params.append('itemId', itemId);
+      params.append('itemStock', 1);
 
       const response = await axios.post(
         'http://localhost:8080/mvc/stuff/item/restore',
