@@ -12,6 +12,7 @@ public class CartDto {
     private String itemName;
     private int itemPrice;
     private int itemStock;
+    private String imageUrl;
     private int totalPrice;
     private Date orderDate;
     private boolean itemDelete;

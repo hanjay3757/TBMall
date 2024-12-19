@@ -11,6 +11,7 @@
             s.item_price,
             s.item_stock,
             s.item_description,
+            s.image_url,
             s.reg_date,
             s.admin_no,
             m.member_delete,
@@ -33,12 +34,14 @@
             item_price,
             item_stock,
             item_description,
+            image_url,
             admin_no
         ) VALUES (
             #{item_name},
             #{item_price},
             #{item_stock},
             #{item_description},
+            #{image_url},
             #{admin_no}
         )
     </insert>
@@ -51,6 +54,7 @@
             s.item_price,
             s.item_stock,
             s.item_description,
+            s.image_url as imageUrl,
             s.reg_date,
             s.admin_no,
             m.member_delete
@@ -70,7 +74,8 @@
             item_name = #{item_name},
             item_price = #{item_price},
             item_stock = #{item_stock},
-            item_description = #{item_description}
+            item_description = #{item_description},
+            image_url = #{image_url}
         WHERE 
             item_id = #{item_id}
             AND admin_no = #{admin_no}
@@ -145,6 +150,7 @@
             s.item_name as itemName,
             s.item_price as itemPrice,
             s.item_stock as itemStock,
+            s.image_url as imageUrl,
             (s.item_price * o.order_quantity) as totalPrice,
             o.order_date as orderDate,
             s.item_delete as itemDelete
@@ -191,11 +197,13 @@
             o.order_id as cartId,
             o.member_no as memberNo,
             o.item_id as itemId,
-            o.board_no,
             o.order_quantity as quantity,
             s.item_name as itemName,
             s.item_price as itemPrice,
-            s.item_stock as itemStock
+            s.item_stock as itemStock,
+            s.image_url as imageUrl,
+            (s.item_price * o.order_quantity) as totalPrice,
+            o.order_date as orderDate
         FROM 
             tbmall_orders o
             JOIN tbmall_stuff s ON o.item_id = s.item_id

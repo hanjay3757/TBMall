@@ -10,6 +10,7 @@ public class StuffDto {
     private int item_price;
     private int item_stock;
     private String item_description;
+    private String image_url;
     private Date reg_date;
     private Long admin_no;
     private int member_delete;
