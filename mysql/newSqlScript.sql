@@ -21,7 +21,22 @@ create table tbmall_board(
     board_writdate date not null,
     foreign key (member_no) references tbmall_member(member_no) on delete cascade
     );		
+ALTER TABLE tbmall_board 
+ADD COLUMN board_delete TINYINT(1) DEFAULT 0 COMMENT '삭제 여부 (0: 활성, 1: 삭제됨)',
+ADD COLUMN board_delete_at TIMESTAMP NULL DEFAULT NULL COMMENT '삭제된 일시';
 
+DELIMITER $$
+
+CREATE TRIGGER update_board_delete_at
+BEFORE UPDATE ON tbmall_board
+FOR EACH ROW
+BEGIN
+    IF NEW.board_delete = 1 AND OLD.board_delete = 0 THEN
+        SET NEW.board_delete_at = CURRENT_TIMESTAMP;
+    END IF;
+END $$
+
+DELIMITER ;
 
 
 select * from tbmall_board;
