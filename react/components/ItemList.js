@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -9,6 +9,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const [quantities, setQuantities] = useState({});
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [rotations, setRotations] = useState({});
+  const cardRefs = useRef({});
 
   useEffect(() => {
     loadItems();
@@ -185,6 +187,33 @@ function ItemList({ isLoggedIn, isAdmin }) {
     }
   };
 
+  const handleMouseMove = (itemId, e) => {
+    if (!cardRefs.current[itemId]) return;
+
+    const card = cardRefs.current[itemId];
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = -((y - centerY) / 10) * 0.5;
+    const rotateY = ((x - centerX) / 10) * 0.5;
+
+    setRotations(prev => ({
+      ...prev,
+      [itemId]: { x: rotateX, y: rotateY }
+    }));
+  };
+
+  const handleMouseLeave = (itemId) => {
+    setRotations(prev => ({
+      ...prev,
+      [itemId]: { x: 0, y: 0 }
+    }));
+  };
+
   if (loading) {
     return (
       <div className="item-list">
@@ -205,7 +234,22 @@ function ItemList({ isLoggedIn, isAdmin }) {
       <h2>물건 목록</h2>
       <div className="items-container">
         {items.map(item => (
-          <div key={item.item_id} className="item-card">
+          <div
+            key={item.item_id}
+            ref={el => cardRefs.current[item.item_id] = el}
+            className="item-card"
+            onMouseMove={(e) => handleMouseMove(item.item_id, e)}
+            onMouseLeave={() => handleMouseLeave(item.item_id)}
+            style={{
+              transform: `
+                perspective(1000px)
+                rotateX(${rotations[item.item_id]?.x || 0}deg)
+                rotateY(${rotations[item.item_id]?.y || 0}deg)
+                translateZ(20px)
+              `,
+              transition: 'transform 0.3s ease'
+            }}
+          >
             <div className="item-image">
               <img 
                 src={item.image_url || 'https://via.placeholder.com/400x200'} 
