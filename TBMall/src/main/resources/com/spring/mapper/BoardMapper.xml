@@ -19,7 +19,15 @@
 	</insert>
 	<!-- 글 수정하기 -->
 	
+	
 	<!-- 글 삭제하기 -->
+	<!-- 글 삭제하기 (단일 글 삭제) -->
+	<update id="deleteOneContent" parameterType="long">
+		UPDATE tbmall_board
+		SET board_delete = 1
+		WHERE board_no = #{board_no}
+	</update>
+	
 	
 	<!-- 댓글 달기 (보고 있는 글 번호 가져와서 쓰기)-->
 	

@@ -80,12 +80,12 @@ public class BoardController {
 //	}
 //	// 작동중
 //
-//	// 직원 삭제 Get ->Post 변경
-//	@PostMapping("/remove")
-//	public Map<String, Object> remove(@RequestParam("member_no") Long member_no, HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
+	// 게시글 삭제 Get ->Post 변경 필요
+	@GetMapping("/deleteOneContent")
+	public Map<String, Object> deleteOneContent(@RequestParam("board_no") Long board_no, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+
 //		if (loginStaff == null) {
 //			response.put("success", false);
 //			response.put("message", "로그인이 필요합니다.");
@@ -104,17 +104,17 @@ public class BoardController {
 //				response.put("message", "자신의 계정은 삭제할 수 없습니다.");
 //				return response;
 //			}
-//
-//			service.softDelete(member_no);
-//			response.put("success", true);
-//			response.put("message", "직원이 성공적으로 삭제되었습니다.");
+
+		service.deleteOneContent(board_no);
+		response.put("success", true);
+		response.put("message", "게시글이 성공적으로 삭제되었습니다.");
 //		} catch (RuntimeException e) {
 //			response.put("success", false);
 //			response.put("message", e.getMessage());
 //		}
-//
-//		return response;
-//	}
+
+		return response;
+	}
 //
 ////c
 //	@PostMapping("/restore")

@@ -13,6 +13,9 @@ public interface BoardMapper {
 	// 게시글 쓰기
 	public void writeContent(BoardDto dto);
 
+	// 게시글 삭제
+	public int deleteOneContent(long board_no);
+
 //	public StaffDto read(long member_no); // 회원 정보 보기
 //
 //	public void adminAppoint(long member_no); // 관리자 권한 부여

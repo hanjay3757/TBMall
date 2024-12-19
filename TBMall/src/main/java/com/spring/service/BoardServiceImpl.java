@@ -39,6 +39,17 @@ public class BoardServiceImpl implements BoardService {
 		mapper.writeContent(dto);
 	}
 
+	@Override
+	public void deleteOneContent(long board_no) {
+		log.info("게시글 삭제");
+
+		int result = mapper.deleteOneContent(board_no);
+		if (result != 1) {
+			throw new RuntimeException("게시물 삭제에 실패했습니다.");
+		}
+
+	}
+
 //	@Override
 //	public ArrayList<StaffDto> getList() {
 //		log.info("비지니스 계층===========");

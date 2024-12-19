@@ -13,6 +13,9 @@ public interface BoardService {
 	// 게시판 글 쓰기
 	public void writeContent(BoardDto dto);
 
+	// 게시판 글 삭제
+	public void deleteOneContent(long board_no);
+
 //	public ArrayList<StaffDto> getAdminList(); // 모든 관리자 정보 가져오기
 //
 //	public StaffDto read(long member_no);

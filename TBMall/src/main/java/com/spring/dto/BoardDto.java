@@ -12,6 +12,8 @@ public class BoardDto {
 	private String board_content;
 	private int board_readcount;
 	private Date board_writedate;
+	private int board_delete;
+	private Date board_delete_at;
 
 	public BoardDto() {
 
