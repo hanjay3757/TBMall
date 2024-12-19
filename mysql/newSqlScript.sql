@@ -133,6 +133,10 @@ ALTER TABLE tbmall_stuff
 ADD COLUMN item_delete TINYINT DEFAULT 0,
 ADD COLUMN delete_date TIMESTAMP NULL;
 select * from tbmall_stuff;
+
+ALTER TABLE tbmall_stuff 
+ADD COLUMN image_url varchar(500) null;
+
 SELECT item_id, item_name, image_url FROM tbmall_stuff WHERE item_delete = 0;
 INSERT INTO tbmall_stuff (
     item_name, 
@@ -183,6 +187,11 @@ REFERENCES tbmall_board(board_no)
 ON DELETE SET NULL;
 -- 요기 까지
 select * from tbmall_orders;
+
+
+
+
+
 SELECT item_id, image_url FROM tbmall_stuff WHERE item_id IN (SELECT item_id FROM tbmall_orders);
 SELECT item_id, image_url FROM tbmall_stuff WHERE item_id = 1;
 SELECT * FROM tbmall_orders;

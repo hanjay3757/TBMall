@@ -8,6 +8,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const [items, setItems] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [refreshKey, setRefreshKey] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadItems();
@@ -21,37 +22,58 @@ function ItemList({ isLoggedIn, isAdmin }) {
 
   const loadItems = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`http://localhost:8080/mvc/stuff/item/list?_t=${Date.now()}`, {
         withCredentials: true
       });
       
       const itemsToProcess = response.data;
+      console.log('서버에서 받은 아이템 데이터:', itemsToProcess);
+
+      // 재고가 0인 아이템은 장바구니에 있는지 확인 후 삭제 처리
       for (const item of itemsToProcess) {
         if (item.item_stock === 0 && !item.item_delete) {
           try {
-            const params = new URLSearchParams();
-            params.append('item_id', item.item_id);
+            // 장바구니에 해당 아이템이 있는지 확인
+            const cartResponse = await axios.get('http://localhost:8080/mvc/stuff/api/cart', {
+              withCredentials: true
+            });
             
-            await axios.post(
-              'http://localhost:8080/mvc/stuff/item/delete',
-              params,
-              {
-                withCredentials: true,
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
+            const isInCart = cartResponse.data.some(cartItem => cartItem.itemId === item.item_id);
+            
+            // 장바구니에 없는 경우에만 삭제 처리
+            if (!isInCart) {
+              const params = new URLSearchParams();
+              params.append('item_id', item.item_id);
+              
+              await axios.post(
+                'http://localhost:8080/mvc/stuff/item/delete',
+                params,
+                {
+                  withCredentials: true,
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                  }
                 }
-              }
-            );
+              );
+            }
           } catch (error) {
-            // 에러 처리는 유지
+            console.error('아이템 처리 중 오류:', error);
           }
         }
       }
       
-      const activeItems = itemsToProcess.filter(item => 
-        !item.item_delete && item.item_stock > 0
-      );
-      
+      // 중복 제거 및 활성 아이템 필터링
+      const uniqueItems = Array.from(new Map(
+        itemsToProcess.map(item => [item.item_id, item])
+      ).values());
+
+      // 활성 아이템 필터링 - 삭제되지 않고 재고가 있는 아이템만 표시
+      const activeItems = uniqueItems.filter(item => {
+        // 삭제되지 않고 재고가 있는 아이템만 표시
+        return !item.item_delete && item.item_stock > 0;
+      });
+
       setItems(activeItems);
       
       const initialQuantities = {};
@@ -60,7 +82,9 @@ function ItemList({ isLoggedIn, isAdmin }) {
       });
       setQuantities(initialQuantities);
     } catch (error) {
-      // 에러 처리는 유지
+      console.error('아이템 목록 로딩 실패:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,6 +150,13 @@ function ItemList({ isLoggedIn, isAdmin }) {
         return;
       }
 
+      // 현재 아이템의 재고 확인
+      const item = items.find(item => item.item_id === itemId);
+      if (!item || item.item_stock <= 0) {
+        alert('재고가 부족합니다.');
+        return;
+      }
+
       const params = new URLSearchParams();
       params.append('itemId', itemId);
       params.append('quantity', quantity);
@@ -143,6 +174,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
 
       if (response.data.status === 'success') {
         alert(response.data.message);
+        // 서버의 최신 상태를 가져옴
         loadItems();
       } else {
         throw new Error(response.data.message);
@@ -152,6 +184,16 @@ function ItemList({ isLoggedIn, isAdmin }) {
       alert(error.response?.data?.message || '장바구니 추가에 실패했습니다.');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="item-list">
+        <div className="loading-spinner">
+          <p>물건 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="item-list">
@@ -169,7 +211,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
                 src={item.image_url || 'https://via.placeholder.com/400x200'} 
                 alt={item.item_name}
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/400x200'; 
+                  console.log('이미지 로드 실패:', item.image_url); // 이미지 로드 실패 시 로그
+                  e.target.src = 'https://via.placeholder.com/400x200';
                 }}
               />
             </div>

@@ -21,6 +21,8 @@ function ItemRegister() {
         params.append(key, itemData[key]);
       });
 
+      console.log('등록할 데이터:', Object.fromEntries(params));
+
       const response = await axios.post(
         'http://localhost:8080/mvc/stuff/item/register',
         params,
