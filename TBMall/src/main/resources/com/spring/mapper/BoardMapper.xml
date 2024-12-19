@@ -18,7 +18,14 @@
 		VALUES({#member_no},#{board_title},#{board_content},0,CURRENT_TIMESTAMP)
 	</insert>
 	<!-- 글 수정하기 -->
-	
+	<update id="editContent" parameterType="com.spring.dto.BoardDto">
+		UPDATE tbmall_board
+		SET
+			board_title =#{board_title},
+			board_content = #{board_content},
+			board_writedate = CURRENT_TIMESTAMP
+		WHERE board_no = #{board_no}	
+	</update>
 	
 	<!-- 글 삭제하기 -->
 	<!-- 글 삭제하기 (단일 글 삭제) -->

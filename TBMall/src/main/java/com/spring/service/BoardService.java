@@ -11,7 +11,7 @@ public interface BoardService {
 	public BoardDto readContent(long board_no);
 
 	// 게시판 글 쓰기
-	public void writeContent(BoardDto dto);
+	public void writeContent(BoardDto boarddto);
 
 	// 게시판 글 삭제
 	public void deleteOneContent(long board_no);
@@ -30,8 +30,8 @@ public interface BoardService {
 //
 //	public StaffDto login(String member_id, String member_pw);
 //
-//	// 직원 정보 수정(닉네임, 비번, 휴대폰번호, 이메일 수정 가능)
-//	public void update(StaffDto staffDto);
+	// 게시글 정보 수정(제목,글내용 수정 가능)
+	public void editContent(BoardDto boarddto);
 //
 //	boolean checkIdDuplicate(String member_id);
 //

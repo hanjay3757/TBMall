@@ -11,7 +11,7 @@ public interface BoardMapper {
 	public BoardDto readContent(long board_no);
 
 	// 게시글 쓰기
-	public void writeContent(BoardDto dto);
+	public void writeContent(BoardDto boarddto);
 
 	// 게시글 삭제
 	public int deleteOneContent(long board_no);
@@ -34,8 +34,8 @@ public interface BoardMapper {
 //	// 로그인
 //	StaffDto login(@Param("member_id") String member_id, @Param("member_pw") String member_pw);
 //
-//	// 직원 정보 수정(닉네임,비번,휴대폰 번호, 이메일 수정 가능)
-//	public int update(StaffDto staffDto);
+	// 게시글 정보 수정(제목,글내용)
+	public int editContent(BoardDto boarddto);
 //
 //	// 아이디 중복 체크
 //	public int checkIdDuplicate(String member_id);

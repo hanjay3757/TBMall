@@ -33,10 +33,10 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public void writeContent(BoardDto dto) {
+	public void writeContent(BoardDto boarddto) {
 		log.info("글 작성");
 
-		mapper.writeContent(dto);
+		mapper.writeContent(boarddto);
 	}
 
 	@Override
@@ -48,6 +48,17 @@ public class BoardServiceImpl implements BoardService {
 			throw new RuntimeException("게시물 삭제에 실패했습니다.");
 		}
 
+	}
+
+	@Override
+	public void editContent(BoardDto boarddto) {
+		log.info("게시글 수정 수정: " + boarddto);
+
+		// 수정 실행
+		int result = mapper.editContent(boarddto);
+		if (result != 1) {
+			throw new RuntimeException("게시글 수정에 실패했습니다.");
+		}
 	}
 
 //	@Override
