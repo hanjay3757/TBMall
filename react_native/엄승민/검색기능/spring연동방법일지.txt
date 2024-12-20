@@ -1,0 +1,99 @@
+**@RestController: 이 클래스가 RESTful 웹 서비스의 컨트롤러임을 나타냅니다. JSON 형식으로 응답을 반환합니다.**
+
+- **@RequestMapping("/search")**: 이 컨트롤러가 /search 경로로 들어오는 요청을 처리하도록 설정합니다.
+- **@PostMapping**: HTTP POST 요청을 처리하는 메서드임을 나타냅니다.
+- **@RequestBody**: 요청 본문에서 JSON 데이터를 Java 객체로 변환합니다. 여기서는 SearchRequest 객체로 변환됩니다.
+- **ResponseEntity**: HTTP 응답을 나타내는 객체로, 상태 코드와 응답 본문을 포함할 수 있습니다. 여기서는 검색 결과를 포함한 SearchResponse 객체를 반환합니다.
+
+```java
+ 컨트롤러로 변환
+// 빈 리스트를 생성하여 결과를 저장할 준비를 합니다.
+List<ItemResponse> results = new ArrayList<>();
+
+// items 리스트를 순회하면서 각 Item 객체를 ItemResponse로 변환하여 results 리스트에 추가합니다.
+for (Item item : items) {
+    // 각 Item 객체의 데이터를 기반으로 새로운 ItemResponse 객체를 생성합니다.
+    ItemResponse itemResponse = new ItemResponse(
+        item.getItemId(),           // Item의 ID를 가져옵니다.
+        item.getItemName(),         // Item의 이름을 가져옵니다.
+        item.getItemPrice(),        // Item의 가격을 가져옵니다.
+        item.getItemStock(),        // Item의 재고를 가져옵니다.
+        item.getItemDescription(),  // Item의 설명을 가져옵니다.
+        item.getImageUrl()          // Item의 이미지 URL을 가져옵니다.
+    );
+
+    // 변환된 ItemResponse 객체를 results 리스트에 추가합니다.
+    results.add(itemResponse);
+}
+
+// 변환된 결과 리스트(results)를 SearchResponse로 감싸서 ResponseEntity로 반환합니다.
+return ResponseEntity.ok(new SearchResponse(results));
+
+// ㄴ 위에꺼랑 같은거 이건 for문 
+//List<ItemResponse> results = new ArrayList<>();
+
+//for (Item item : items) {
+//    ItemResponse itemResponse = new ItemResponse(
+ //       item.getItemId(),
+//        item.getItemName(),
+ //       item.getItemPrice(),
+//        item.getItemStock(),
+//        item.getItemDescription(),
+//        item.getImageUrl()
+//    );
+//    results.add(itemResponse);
+//}
+
+//return ResponseEntity.ok(new SearchResponse(results));
+
+```
+
+---
+
+---
+
+- **SearchRequest: 클라이언트에서 보내는 요청 데이터를 담는 클래스입니다. 여기서는 검색어(keyword)를 포함합니다.**
+- **SearchResponse**: 서버에서 클라이언트로 반환하는 응답 데이터를 담는 클래스입니다. 여기서는 검색 결과(results)를 포함합니다.
+- **Getter와 Setter**: 클래스의 필드에 접근하고 수정할 수 있도록 하는 메서드입니다. Java Bean 규약에 따라 작성됩니다.
+
+```java
+package com.example.demo.controller;
+
+import java.util.List;
+dto 임
+public class ItemResponse {
+    private Long itemId;
+    private String itemName;
+https://www.notion.so/16278f0616b2808b8a27c47be9848da3?pvs=4
+
+   private int itemPrice;
+    private int itemStock;
+    private String itemDescription;
+    private String imageUrl;
+
+    // 생성자
+    public ItemResponse(Long itemId, String itemName, int itemPrice, int itemStock, String itemDescription, String imageUrl) {
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.itemPrice = itemPrice;
+        this.itemStock = itemStock;
+        this.itemDescription = itemDescription;
+        this.imageUrl = imageUrl;
+    }
+```
+
+```java
+public interface ItemRepository extends JpaRepository<Item, Long> {
+    @Query("SELECT i FROM Item i WHERE i.itemName LIKE %:keyword%")
+    List<Item> searchByItemName(@Param("keyword") String keyword);
+}
+```
+
+**검색 기능**: 일반적으로 검색 기능은 데이터를 조회하는 것이므로 GET 메서드를 사용하는 것이 더 적합합니다. 사용자가 입력한 검색어를 URL의 쿼리 파라미터로 전달하여 요청할 수 있습니다.
+
+- **검색 기능**: 일반적으로 검색 기능은 데이터를 조회하는 것이므로 GET 메서드를 사용하는 것이 더 적합합니다. 사용자가 입력한 검색어를 URL의 쿼리 파라미터로 전달하여 요청할 수 있습니다.
+- **POST 메서드 사용**: 그러나 검색어가 매우 길거나 복잡한 경우, 또는 보안상의 이유로 URL에 노출하고 싶지 않은 경우 POST 메서드를 사용할 수 있습니다.
+
+### **추천**
+
+대부분의 경우, 검색 기능은 GET 메서드를 사용하는 것이 좋습니다. 예를 들어, 사용자가 검색어를 입력하고 결과를 조회하는 경우, GET 메서드를 사용하여 다음과 같이 요청하는 것이 일반적입니다:
