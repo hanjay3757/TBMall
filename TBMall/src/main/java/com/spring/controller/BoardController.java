@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.dto.BoardDto;
@@ -50,6 +51,7 @@ public class BoardController {
 
 	// 게시판 글 작성 처리(Postmapping)
 	@PostMapping("/write")
+	@ResponseBody
 	public Map<String, Object> writeProcess(BoardDto dto, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
