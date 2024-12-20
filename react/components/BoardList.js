@@ -3,6 +3,7 @@ import axios from 'axios';
 import './BoardList.css'; // CSS 파일 임포트
 import { useNavigate, useLocation } from 'react-router-dom';
 
+
 function BoardList({ isLoggedIn, isAdmin }) {
   const [boards, setBoards] = useState([]); // 글 목록 상태
   const [loading, setLoading] = useState(true); // 로딩 상태
@@ -28,6 +29,11 @@ function BoardList({ isLoggedIn, isAdmin }) {
       setLoading(false); // 로딩 상태 해제
     }
   };
+
+  //서버에서 읽으려는 글 가져오기
+  const readContent = (board_no) =>{
+    navigate(`/board/read?board_no=${board_no}`);
+  }
 
   const handleDelete = async (board_no) => {
     try {
@@ -99,7 +105,13 @@ function BoardList({ isLoggedIn, isAdmin }) {
             <tr key={board.board_no}>
               <td>{index + 1}</td>
               <td>{board.board_title}</td>
-              <td>{board.board_content}</td>
+              <td>
+                <span
+                  className="board-content-link"
+                  onClick={()=>readContent(board.board_no)}>
+                     {board.board_content}
+                </span>
+                </td>
               {isAdmin && (
                 <td>
                   <button

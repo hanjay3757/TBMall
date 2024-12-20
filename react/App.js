@@ -11,6 +11,7 @@ import Cart from './components/Cart';
 import RemovedStaff from './components/RemovedStaff';
 import ItemEdit from './components/ItemEdit';
 import BoardList from './components/BoardList';
+import ReadContent from './components/ReadContent';
 
 // axios 기본 설정
 axios.defaults.withCredentials = true;
@@ -36,7 +37,7 @@ const StaffTable = ({ staffList, onDelete, onEdit }) => {
               <td>{staff.member_no}</td>
               <td>{staff.member_id}</td>
               <td>{staff.member_nick}</td>
-              <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+              <td>{staff.delete_right_no === 1 ? '관리자' : '일반 직원'}</td>
               <td>
                 <button onClick={() => onDelete(staff.member_no)}>삭제</button>
                 <button onClick={() => onEdit(staff.member_no)}>수정</button>
@@ -54,12 +55,14 @@ function App() {
   // 상태 변수들
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState(null); //사용자 정보를 저장
+  // const [userInfo, setUserInfo] = useState(null); //사용자 정보를 저장
   const [staffList, setStaffList] = useState([]);
   const [loading , setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+
+
     async function fetchData() {
       await checkLoginStatus();
       setLoading(false); //로딩 완료
@@ -258,6 +261,7 @@ function App() {
         <Route path="/stuff/cart" element={<Cart />} />
         <Route path="/staff/removelist" element={<RemovedStaff />} />
         <Route path="/board/list" element={<BoardList isLoggedIn={isLoggedIn} isAdmin={isAdmin}/> } />
+        <Route path="/board/read" element={<ReadContent /> } />
         <Route path="/staff/list" element={
           <StaffTable 
             staffList={staffList}

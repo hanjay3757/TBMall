@@ -37,7 +37,7 @@ public class BoardController {
 
 	// 게시판 내 글 내용 보기
 	@GetMapping("/read")
-	public BoardDto read(@RequestParam("board_no") Long board_no) {
+	public BoardDto readContent(@RequestParam("board_no") Long board_no) {
 		return service.readContent(board_no);
 	}
 
