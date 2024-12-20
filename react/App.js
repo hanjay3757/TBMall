@@ -10,6 +10,7 @@ import DeletedItems from './components/DeletedItems';
 import Cart from './components/Cart';
 import RemovedStaff from './components/RemovedStaff';
 import ItemEdit from './components/ItemEdit';
+import BoardList from './components/BoardList';
 
 // axios 기본 설정
 axios.defaults.withCredentials = true;
@@ -53,17 +54,23 @@ function App() {
   // 상태 변수들
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState(null); //사용자 정보를 저장
   const [staffList, setStaffList] = useState([]);
+  const [loading , setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkLoginStatus();
+    async function fetchData() {
+      await checkLoginStatus();
+      setLoading(false); //로딩 완료
+    }
+    fetchData();
     loadStaffList();
   }, []);
 
   // 로그인 상태 확인
   function checkLoginStatus() {
-    axios.get('http://localhost:8080/mvc/staff/check-login')
+    return axios.get('http://localhost:8080/mvc/staff/check-login')
       .then(response => {
         setIsLoggedIn(response.data.isLoggedIn);
         setIsAdmin(response.data.isAdmin);
@@ -73,6 +80,9 @@ function App() {
         setIsLoggedIn(false);
         setIsAdmin(false);
       });
+  }
+  if(loading){
+    return <p>초기 데이터를 불러오는 중입니다.</p>
   }
 
   // 로그인 처리
@@ -117,8 +127,8 @@ function App() {
       });
   }
 
-  // 직원 목록 불러오기
-  const loadStaffList = async () => {
+ // 직원 목록 불러오기 함수
+  async function loadStaffList() {
     try {
       const response = await axios.get(`http://localhost:8080/mvc/staff/list?_t=${Date.now()}`);
       const filteredList = response.data.filter(staff => !staff.member_delete);
@@ -141,7 +151,7 @@ function App() {
         },
         withCredentials: true
       })
-        .then(response => {
+        .then  (response => {
           if (response.data === 'redirect:/staff/list' || response.status === 200) {
             alert('직원이 삭제되었습니다.');
             loadStaffList();
@@ -179,6 +189,7 @@ function App() {
         <div className="menu-buttons">
           <button onClick={() => navigate('/stuff/item/list')}>물건 목록</button>
           <button onClick={() => navigate('/')}>메인 페이지</button>
+          <button onClick={() => navigate('/board/list')}>게시판 이동</button>
           {isLoggedIn && (
             <button onClick={() => navigate('/stuff/cart')}>🛒 장바구니</button>
           )}
@@ -246,6 +257,7 @@ function App() {
         <Route path="/stuff/item/deleted" element={<DeletedItems />} />
         <Route path="/stuff/cart" element={<Cart />} />
         <Route path="/staff/removelist" element={<RemovedStaff />} />
+        <Route path="/board/list" element={<BoardList isLoggedIn={isLoggedIn} isAdmin={isAdmin}/> } />
         <Route path="/staff/list" element={
           <StaffTable 
             staffList={staffList}

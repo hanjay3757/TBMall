@@ -81,9 +81,10 @@ public class BoardController {
 //	// 작동중
 //
 	// 게시글 삭제 Get ->Post 변경 필요
-	@GetMapping("/deleteOneContent")
+	@PostMapping("/deleteOneContent")
 	public Map<String, Object> deleteOneContent(@RequestParam("board_no") Long board_no,
-			@RequestParam("member_no") Long member_no, HttpSession session) {
+//			@RequestParam("member_no") Long member_no, 
+			HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
@@ -93,11 +94,11 @@ public class BoardController {
 			return response;
 		}
 //
-		if (loginStaff.getMember_no() != member_no) {
-			response.put("success", false);
-			response.put("message", "해당글 삭제에 관한 권한이 없습니다.");
-			return response;
-		}
+//		if (loginStaff.getMember_no() != member_no) {
+//			response.put("success", false);
+//			response.put("message", "해당글 삭제에 관한 권한이 없습니다.");
+//			return response;
+//		}
 //
 //		try {
 //			if (loginStaff.getMember_no().equals(member_no)) {

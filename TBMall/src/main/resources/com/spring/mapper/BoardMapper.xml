@@ -5,7 +5,7 @@
 <mapper namespace="com.spring.mapper.BoardMapper">
 	<!-- 게시판 글 목록 가져오기(페이징 아직 안됐음) -->
 	<select id="getBoardlist" resultType="com.spring.dto.BoardDto">
-		SELECT * FROM tbmall_board
+		SELECT * FROM tbmall_board where board_delete =0;
 	</select>
 	<!-- 게시판 글 읽기 -->
 	<select id="readContent" resultType="com.spring.dto.BoardDto">
