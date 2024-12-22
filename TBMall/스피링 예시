@@ -1,0 +1,36 @@
+ 컨트롤러 \
+@PostMapping("/item/delete")
+	public String deleteItem(@RequestParam("item_id") Long item_id, HttpSession session) {
+		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+		if (loginStaff == null || loginStaff.getAdmins() != 1) {
+			return "redirect:/staff/login";
+		}
+
+		service.deleteItem(item_id);
+		System.out.println("받은 item_id" + item_id);
+		return "redirect:/stuff/item/list";
+	}
+
+dto 변수명 지정 (생성)
+
+mapper java   dto 변수에 아이템 추가 수정 삭제 같은 다른 변수명 포합시키기 
+	public void deleteItem(Long item_id);
+
+	public List<StuffDto> getDeletedItemList();
+
+
+서비스로 
+	@Override
+	public void deleteItem(Long item_id) {
+		log.info("물건 삭제: " + item_id);
+		mapper.deleteItem(item_id);
+	}
+ 이런식으로 해당 명령어 실행이때 하는 일 지정 
+
+후에 삭제 
+    <update id="deleteItem">
+        UPDATE tbmall_stuff 
+        SET item_delete = 1,
+            delete_date = CURRENT_TIMESTAMP
+        WHERE item_id = #{item_id}
+    </update>
