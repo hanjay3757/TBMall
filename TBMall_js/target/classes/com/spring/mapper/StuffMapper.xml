@@ -231,27 +231,4 @@
         SET order_quantity = #{quantity}
         WHERE order_id = #{cartId}
     </update>
-    
-    <!-- 상품 검색 -->
-    <select id="searchItems" resultType="com.spring.dto.StuffDto">
-        SELECT 
-            s.item_id,
-            s.item_name,
-            s.item_price,
-            s.item_stock,
-            s.item_description,
-            s.image_url,
-            s.reg_date,
-            s.admin_no
-        FROM 
-            tbmall_stuff s
-        WHERE 
-            (s.item_delete = 0 OR s.item_delete IS NULL)
-            AND (
-                LOWER(s.item_name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
-                OR LOWER(s.item_description) LIKE CONCAT('%', LOWER(#{keyword}), '%')
-            )
-        ORDER BY 
-            s.item_id DESC
-    </select>
 </mapper> 

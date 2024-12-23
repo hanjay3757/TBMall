@@ -143,10 +143,4 @@ public class StuffServiceImpl implements StuffService {
 			mapper.updateStock(currentItem.getItemId(), stockDifference);
 		}
 	}
-
-	@Override
-	public List<StuffDto> searchItems(String keyword) {
-		log.info("상품 검색: " + keyword);
-		return mapper.searchItems(keyword);
-	}
 }

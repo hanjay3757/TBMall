@@ -32,7 +32,4 @@ public interface StuffService {
 	void processCheckout(Long userId);
 
 	void updateCartItemQuantity(Long cartId, int quantity);
-
-	// 상품 검색
-	public List<StuffDto> searchItems(String keyword);
 }

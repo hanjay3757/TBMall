@@ -1,9 +1,0 @@
-<Connector port="8080" protocol="HTTP/1.1"
-           address="0.0.0.0"
-           URIEncoding="UTF-8"
-           connectionTimeout="20000"
-           redirectPort="8443"
-           enableLookups="false"
-           maxPostSize="20971520"
-           acceptCount="100"
-           maxThreads="200" /> 

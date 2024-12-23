@@ -40,7 +40,4 @@ public interface StuffMapper {
 	public void updateCartItemQuantity(@Param("cartId") Long cartId, @Param("quantity") int quantity);
 
 	public void clearCart(@Param("member_no") Long memberNo);
-
-	// 상품 검색
-	public List<StuffDto> searchItems(@Param("keyword") String keyword);
 }

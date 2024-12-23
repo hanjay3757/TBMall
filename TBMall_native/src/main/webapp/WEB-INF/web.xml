@@ -8,6 +8,7 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>/WEB-INF/spring/root-context.xml</param-value>
 	</context-param>
+	
 	<!-- Creates the Spring Container shared by all Servlets and Filters -->
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
@@ -46,27 +47,5 @@
 		<filter-name>encodingFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-
-	<!-- 서버 설정 -->
-	<context-param>
-		<param-name>webAppRootKey</param-name>
-		<param-value>mvc.root</param-value>
-	</context-param>
-
-	<!-- 서버 IP 바인딩 설정 -->
-	<context-param>
-		<param-name>spring.profiles.active</param-name>
-		<param-value>production</param-value>
-	</context-param>
-	
-	<context-param>
-		<param-name>server.address</param-name>
-		<param-value>192.168.0.177</param-value>
-	</context-param>
-	
-	<context-param>
-		<param-name>server.port</param-name>
-		<param-value>8080</param-value>
-	</context-param>
 
 </web-app>
