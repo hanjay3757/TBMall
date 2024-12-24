@@ -1,0 +1,45 @@
+/* ReadContent.css */
+.board-detail-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .board-detail-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+  }
+  
+  .board-detail-content {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    white-space: pre-wrap; /* 줄바꿈 처리를 위해 */
+    margin-bottom: 20px;
+  }
+  
+  .board-detail-back-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .board-detail-back-button:hover {
+    background-color: #0056b3;
+  }
+  
