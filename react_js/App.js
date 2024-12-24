@@ -319,6 +319,8 @@ return (
       {/* "/staff/list" 경로에 StaffTable 컴포넌트를 렌더링 */}
       {/* staffList를 전달하여 직원 목록을 표시 */}
       {/* onDelete와 onEdit을 통해 삭제 및 수정 기능을 처리 */}
+      {/* 1. 라우터의 기본 개념
+웹 애플리케이션에서 라우터는 주로 HTTP 요청을 처리하는 엔드포인트를 정의하는 역할을 합니다. 각 요청(예: GET, POST, PUT, DELETE 등)에 대해 어떻게 응답할지 결정하는 코드가 라우터에 의해 설정됩니다. */}
       <Route path="/staff/list" element={
         <StaffTable 
           staffList={staffList}
