@@ -27,4 +27,12 @@ public class BoardDto {
 		this.board_content = board_content;
 	}
 
+	public BoardDto(Long member_no, String board_title, String board_content) {
+		super();
+
+		this.member_no = member_no;
+		this.board_title = board_title;
+		this.board_content = board_content;
+	}
+
 }

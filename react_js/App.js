@@ -12,6 +12,8 @@ import RemovedStaff from './components/RemovedStaff';
 import ItemEdit from './components/ItemEdit';
 import BoardList from './components/BoardList';
 import ReadContent from './components/ReadContent';
+import BoardWrite from './components/BoardWrite';
+import BoardEdit from './components/BoardEdit';
 //ㄴ 로딩되는 변수지정 폴더 위치 적어놓음
 // axios 기본 설정
 axios.defaults.withCredentials = true;
@@ -83,6 +85,7 @@ function App() {
   function checkLoginStatus() {
     return axios.get('http://localhost:8080/mvc/staff/check-login')
       .then(response => {
+        
         //서버에서 변환된 데이터를 이용해 로그인 상태와 관리자 여부를 확인 함 
         setIsLoggedIn(response.data.isLoggedIn); //로그인 상태 확인
         setIsAdmin(response.data.isAdmin);//관리자가 맞는 지 확인
@@ -120,6 +123,9 @@ function App() {
         /* 서버가 응답한 데이터가 성공적인 로그인인지 확인함 */
         if (response.data.success) {
           setIsLoggedIn(true); //로그인 상태를 true로 설정
+          //로그인 성공시 member_no 만 로컬 스토리지에 저장
+          localStorage.setItem('member_no',response.data.member_no);
+          console.log('stored member_no:',response.data.member_no);
           setIsAdmin(response.data.isAdmin); // isadmin 값으로 관리자여부를 설정함
           navigate('/stuff/item/list'); // 해당 페이지로 이동하는 함수
         } else {
@@ -315,6 +321,13 @@ return (
 
       {/* "/board/read" 경로에 ReadContent 컴포넌트를 렌더링 */}
       <Route path="/board/read" element={<ReadContent />} />
+       
+      {/*글 작성 라우트 설정중....*/ }
+      <Route path="/board/write" element={<BoardWrite /> } />
+      
+      {/* "/board/editContent" 경로에 BoardEdit 컴포넌트를 렌더링 */}
+      <Route path="/board/editContent" element={<BoardEdit isLoggedIn={isLoggedIn} isAdmin ={isAdmin}/> } />
+
 
       {/* "/staff/list" 경로에 StaffTable 컴포넌트를 렌더링 */}
       {/* staffList를 전달하여 직원 목록을 표시 */}

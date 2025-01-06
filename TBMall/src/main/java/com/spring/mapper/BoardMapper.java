@@ -35,7 +35,7 @@ public interface BoardMapper {
 //	StaffDto login(@Param("member_id") String member_id, @Param("member_pw") String member_pw);
 //
 	// 게시글 정보 수정(제목,글내용)
-	public int editContent(BoardDto boarddto);
+	public int editContent(BoardDto boardDto);
 //
 //	// 아이디 중복 체크
 //	public int checkIdDuplicate(String member_id);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.dto.BoardDto;
 import com.spring.mapper.BoardMapper;
@@ -51,14 +52,18 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public void editContent(BoardDto boarddto) {
-		log.info("게시글 수정 수정: " + boarddto);
+	@Transactional
+	public void editContent(BoardDto boardDto) {
+		log.info("게시글 수정 수정: " + boardDto);
 
-		// 수정 실행
-		int result = mapper.editContent(boarddto);
-		if (result != 1) {
-			throw new RuntimeException("게시글 수정에 실패했습니다.");
+		try {
+			// 수정 실행
+			mapper.editContent(boardDto);
+
+		} catch (Exception e) {
+			log.error("게시글 수정 오류:", e);
 		}
+
 	}
 
 //	@Override

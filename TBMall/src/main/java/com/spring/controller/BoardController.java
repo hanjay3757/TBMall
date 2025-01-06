@@ -6,9 +6,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,12 +55,13 @@ public class BoardController {
 	// 게시판 글 작성 처리(Postmapping)
 	@PostMapping("/write")
 	@ResponseBody
-	public Map<String, Object> writeProcess(BoardDto dto, HttpSession session) {
+	public Map<String, Object> writeProcess(@ModelAttribute BoardDto dto, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
 		try {
 			dto.setMember_no(loginStaff.getMember_no());
+			System.out.println("받아온 boardDto:" + dto);// 디버깅용
 			service.writeContent(dto);
 			response.put("success", true);
 			response.put("message", "글이 작성되었습니다.");
@@ -196,11 +200,37 @@ public class BoardController {
 //		response.put("success", true);
 //		return response;
 //	}
-//
+	//물건 수정 페이지 
 	@GetMapping("/editContent")
-	public Map<String, Object> editContent(@RequestParam("board_no") Long board_no,
-			@RequestParam("board_title") String board_title, @RequestParam("member_no") Long member_no,
-			@RequestParam("board_content") String board_content,
+	@ResponseBody
+	public String editContentForm(@RequestParam("boardNo") Long board_no, Model model, HttpSession session) {
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+		if (loginStaff == null) {
+			//로그인 페이지로 리다이렉트
+			return "redirect:/staff/login";
+		}
+		
+		//수정하려는 게시글 데이터 가져오기
+		BoardDto board = service.readContent(board_no);
+		if(board == null) {
+			model.addAttribute("error", "게시글이 존재하지 않습니다.");
+			return "error";
+		}
+		
+		//권한 확인: 작성자이거나 관리자인 경우에 접근 가능
+		if (!board.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1) {
+			model.addAttribute("error", "권한이 없습니다.");
+			return "error";
+		}
+
+		//수정 폼에 데이터 전달
+		model.addAttribute("board", board);
+		return "board/edit";
+	}
+	
+//
+	@PostMapping("/editContent")
+	public Map<String, Object> editContent(@RequestBody BoardDto boardDto,
 //			@RequestParam(value = "member_pw", required = false) String member_pw,
 //			@RequestParam("currentPassword") String currentPassword,
 			HttpSession session) {
@@ -208,11 +238,7 @@ public class BoardController {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		if (loginStaff == null) {
-			response.put("success", false);
-			response.put("message", "로그인이 필요합니다.");
-			return response;
-		}
+		
 
 //		StaffDto currentStaff = service.read(member_no);
 //		if (!currentStaff.getMember_pw().equals(currentPassword)) {
@@ -220,32 +246,23 @@ public class BoardController {
 //			response.put("message", "현재 비밀번호가 올바르지 않습니다.");
 //			return response;
 //		}
+		if (loginStaff == null || (!boardDto.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
+	        response.put("success", false);
+	        response.put("message", "권한이 없습니다.");
+	        return response;
+	    }
 
-		if (loginStaff.getMember_no() != member_no) {
-			response.put("success", false);
-			response.put("message", "권한이 없습니다.");
-			return response;
-		}
+	    try {
+	        service.editContent(boardDto); // 수정 로직
+	        response.put("success", true);
+	        response.put("message", "정보가 수정되었습니다.");
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        response.put("success", false);
+	        response.put("message", "수정 중 오류가 발생했습니다.");
+	    }
 
-		try {
-			BoardDto boardDto = new BoardDto();
-
-			boardDto.setBoard_title(board_title);
-			boardDto.setBoard_content(board_content);
-//			boardDto.setMember_email(member_email);
-//			if (member_pw != null && !member_pw.isEmpty()) {
-//				staffDto.setMember_pw(member_pw);
-//			}
-
-			service.editContent(boardDto);
-			response.put("success", true);
-			response.put("message", "정보가 수정되었습니다.");
-		} catch (Exception e) {
-			response.put("success", false);
-			response.put("message", "수정 중 오류가 발생했습니다.");
-		}
-
-		return response;
+	    return response;
 	}
 //
 //	@PostMapping("/changePassword")

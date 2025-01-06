@@ -13,18 +13,18 @@
 	</select>
 	
 	<!-- 게시판 글 쓰기 -->	
-	<insert id="writeContent">
-		INSERT INTO tbmall_board (member_no , board_title, board_content, board_readcount, board_writedate)
-		VALUES({#member_no},#{board_title},#{board_content},0,CURRENT_TIMESTAMP)
+	<insert id="writeContent" parameterType="com.spring.dto.BoardDto">
+		INSERT INTO tbmall_board (member_no , board_title, board_content, board_writedate)
+		VALUES(#{member_no},#{board_title},#{board_content},CURRENT_TIMESTAMP)
 	</insert>
-	<!-- 글 수정하기 -->
+	<!-- 글 수정 -->
 	<update id="editContent" parameterType="com.spring.dto.BoardDto">
 		UPDATE tbmall_board
 		SET
-			board_title =#{board_title},
+			board_title = #{board_title},
 			board_content = #{board_content},
 			board_writedate = CURRENT_TIMESTAMP
-		WHERE board_no = #{board_no}	
+		WHERE board_no = #{board_no} AND member_no = #{member_no}	
 	</update>
 	
 	<!-- 글 삭제하기 -->

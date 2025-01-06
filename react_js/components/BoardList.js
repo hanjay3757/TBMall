@@ -30,10 +30,16 @@ function BoardList({ isLoggedIn, isAdmin }) {
     }
   };
 
+  //글작성 핸들러 작성중...
+  const handleWrite = () =>{
+    navigate(`/board/write`);
+  };
+
+
   //서버에서 읽으려는 글 가져오기
   const readContent = (board_no) =>{
     navigate(`/board/read?board_no=${board_no}`);
-  }
+  };
 
   const handleDelete = async (board_no) => {
     try {
@@ -97,6 +103,7 @@ function BoardList({ isLoggedIn, isAdmin }) {
             <th>번호</th>
             <th>제목</th>
             <th>내용</th>
+            <th>작성일</th>
             {isAdmin && <th>관리</th>}
           </tr>
         </thead>
@@ -108,10 +115,12 @@ function BoardList({ isLoggedIn, isAdmin }) {
               <td>
                 <span
                   className="board-content-link"
-                  onClick={()=>readContent(board.board_no)}>
-                     {board.board_content}
+                  onClick={() => readContent(board.board_no)}
+                >
+                  {board.board_content}
                 </span>
-                </td>
+              </td>
+              <td>{board.board_writedate}</td>
               {isAdmin && (
                 <td>
                   <button
@@ -126,6 +135,18 @@ function BoardList({ isLoggedIn, isAdmin }) {
           ))}
         </tbody>
       </table>
+
+      {/* 글 작성 버튼 - 로그인한 사용자만 표시 */}
+      {isLoggedIn && (
+        <div style={{ marginTop: '20px' }}>
+          <button
+            onClick={handleWrite}
+            className="write-button"
+          >
+            글 작성
+          </button>
+        </div>
+      )}
     </div>
   );
 }

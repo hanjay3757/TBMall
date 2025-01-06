@@ -143,6 +143,7 @@ public class StaffController {
 			}
 			session.setAttribute("loginStaff", staff);
 			response.put("success", true);
+			response.put("member_no", staff.getMember_no());
 			response.put("isAdmin", staff.getAdmins() == 1);
 		} else {
 			response.put("success", false);

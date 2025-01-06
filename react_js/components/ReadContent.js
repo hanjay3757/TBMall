@@ -46,6 +46,16 @@ const ReadContent = ()=>{
       >
         목록으로 돌아가기
       </a>
+      <a
+        href="#"
+        className="board-edit-button"
+        onClick={(e) => {
+          e.preventDefault();
+          navigate(`/board/editContent?board_no=${board.board_no}`); // 뒤로 가기
+        }}
+      >
+        글 수정
+      </a>
         </div>
         
       );
