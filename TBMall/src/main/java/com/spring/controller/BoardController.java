@@ -202,7 +202,6 @@ public class BoardController {
 //	}
 	//물건 수정 페이지 
 	@GetMapping("/editContent")
-	@ResponseBody
 	public String editContentForm(@RequestParam("boardNo") Long board_no, Model model, HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 		if (loginStaff == null) {
@@ -229,24 +228,51 @@ public class BoardController {
 	}
 	
 //
-	@PostMapping("/editContent")
-	public Map<String, Object> editContent(@RequestBody BoardDto boardDto,
-//			@RequestParam(value = "member_pw", required = false) String member_pw,
-//			@RequestParam("currentPassword") String currentPassword,
-			HttpSession session) {
+//	@PostMapping("/editContent")
+//	public Map<String, Object> editContent(
+////			@RequestBody BoardDto boardDto,
+//			@RequestParam("boardNo") Long board_no,
+//			@RequestParam("memberNo") Long member_no,
+//			@RequestParam("board_title") String board_title,
+//			@RequestParam("board_content") String board_content,
+//			HttpSession session) {
+//
+//		Map<String, Object> response = new HashMap<>();
+//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+//		
+//		BoardDto boardDto = new BoardDto();
+//		
+//
+////		StaffDto currentStaff = service.read(member_no);
+////		if (!currentStaff.getMember_pw().equals(currentPassword)) {
+////			response.put("success", false);
+////			response.put("message", "현재 비밀번호가 올바르지 않습니다.");
+////			return response;
+////		}
+//		if (loginStaff == null || (!boardDto.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
+//	        response.put("success", false);
+//	        response.put("message", "권한이 없습니다.");
+//	        return response;
+//	    }
+//
+//	    try {
+//	        service.editContent(boardDto); // 수정 로직
+//	        response.put("success", true);
+//	        response.put("message", "정보가 수정되었습니다.");
+//	    } catch (Exception e) {
+//	        e.printStackTrace();
+//	        response.put("success", false);
+//	        response.put("message", "수정 중 오류가 발생했습니다.");
+//	    }
+//
+//	    return response;
+//	}
+	@PostMapping("board/editContent")
+	public Map<String, Object> editContent(@RequestBody BoardDto boardDto, HttpSession session) {
+	    Map<String, Object> response = new HashMap<>();
+	    StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-
-		
-
-//		StaffDto currentStaff = service.read(member_no);
-//		if (!currentStaff.getMember_pw().equals(currentPassword)) {
-//			response.put("success", false);
-//			response.put("message", "현재 비밀번호가 올바르지 않습니다.");
-//			return response;
-//		}
-		if (loginStaff == null || (!boardDto.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
+	    if (loginStaff == null || (!boardDto.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
 	        response.put("success", false);
 	        response.put("message", "권한이 없습니다.");
 	        return response;
@@ -264,6 +290,7 @@ public class BoardController {
 
 	    return response;
 	}
+	
 //
 //	@PostMapping("/changePassword")
 //	public Map<String, Object> changePassword(@RequestParam("currentPassword") String currentPassword,
