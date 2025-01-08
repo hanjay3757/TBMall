@@ -1,12 +1,14 @@
 package com.spring.service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.dto.BoardDto;
+import com.spring.dto.CommentDto;
 import com.spring.mapper.BoardMapper;
 
 import lombok.Setter;
@@ -64,6 +66,20 @@ public class BoardServiceImpl implements BoardService {
 			log.error("게시글 수정 오류:", e);
 		}
 
+	}
+	
+	@Override
+	public List<CommentDto> getCommentList(Long board_no) {
+		log.info("해당 board_no 내에 모든 댓글 가져오기");
+		return mapper.getCommentList(board_no);
+	}
+	
+	@Override
+	public void writeComment(CommentDto commentDto) {
+		if (commentDto.getBoard_no() == null || commentDto.getMember_no() == null || commentDto.getComment_content() == null) {
+	        throw new IllegalArgumentException("댓글 정보가 올바르지 않습니다.");
+	    }
+		mapper.writeComment(commentDto);
 	}
 
 //	@Override

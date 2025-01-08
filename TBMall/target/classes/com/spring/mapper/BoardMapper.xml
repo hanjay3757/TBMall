@@ -36,8 +36,32 @@
 	</update>
 	
 	
-	<!-- 댓글 달기 (보고 있는 글 번호 가져와서 쓰기)-->
-	
+	<!-- 모든 댓글 리스트 가져오기 (보고 있는 글 번호)-->
+	<select id="getCommentList" resultType="com.spring.dto.CommentDto">
+		SELECT 
+			c.board_no,
+			c.member_no,
+			c.comment_content,
+			c.comment_writedate
+		FROM tbmall_comment c
+		INNER JOIN tbmall_board b 
+		ON c.board_no = b.board_no
+		WHERE c.board_no = #{board_no}	
+	</select>
+	<!--댓글 작성  -->
+	<insert id="writeComment" parameterType="com.spring.dto.CommentDto">
+		INSERT INTO tbmall_comment
+			(board_no,
+			member_no,
+			comment_content,
+			comment_writedate)
+			VALUES
+			(#{board_no},
+			#{member_no},
+			#{comment_content},
+			CURRENT_TIMESTAMP
+			)
+	</insert>
 	<!-- (관리자 기능) 다른 유저 글 로그 보기 -->
 
 </mapper>
