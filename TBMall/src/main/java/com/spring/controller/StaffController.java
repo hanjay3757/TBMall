@@ -1,12 +1,17 @@
 package com.spring.controller;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,10 +26,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @Log4j
-@RequestMapping("/staff/*")
+@RequestMapping("/staff")
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-		RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS }, allowCredentials = "true")
+@CrossOrigin(origins = "http://192.168.0.141:3000", allowedHeaders = "*", methods = { RequestMethod.GET,
+		RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH,
+		RequestMethod.OPTIONS }, allowCredentials = "true")
 @AllArgsConstructor
 public class StaffController {
 	private StaffService service;
@@ -32,6 +38,17 @@ public class StaffController {
 	@PostMapping("/list")
 	public List<StaffDto> getList() {
 		return service.getList();
+	}
+
+	@GetMapping("/list")
+	public ResponseEntity<?> getStaffList() {
+		try {
+			List<StaffDto> staffList = service.getList();
+			return ResponseEntity.ok(staffList);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("error", e.getMessage()));
+		}
 	}
 
 	// 관리자 정보 불러오기
@@ -159,54 +176,43 @@ public class StaffController {
 		return response;
 	}
 
-	@PostMapping("/edit")
-	public Map<String, Object> edit(@RequestParam("member_no") Long member_no,
-			@RequestParam("member_nick") String member_nick, @RequestParam("member_phone") String member_phone,
-			@RequestParam("member_email") String member_email,
-			@RequestParam(value = "member_pw", required = false) String member_pw,
-			@RequestParam("currentPassword") String currentPassword, HttpSession session) {
-
+	@RequestMapping(value = "/edit", method = {RequestMethod.GET, RequestMethod.POST})
+	public ResponseEntity<?> editStaff(@RequestBody(required = false) StaffDto staffDto, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-
-		if (loginStaff == null) {
-			response.put("success", false);
-			response.put("message", "로그인이 필요합니다.");
-			return response;
-		}
-
-		StaffDto currentStaff = service.read(member_no);
-		if (!currentStaff.getMember_pw().equals(currentPassword)) {
-			response.put("success", false);
-			response.put("message", "현재 비밀번호가 올바르지 않습니다.");
-			return response;
-		}
-
-		if (loginStaff.getAdmins() != 1 && !loginStaff.getMember_no().equals(member_no)) {
-			response.put("success", false);
-			response.put("message", "권한이 없습니다.");
-			return response;
-		}
-
 		try {
-			StaffDto staffDto = new StaffDto();
-			staffDto.setMember_no(member_no);
-			staffDto.setMember_nick(member_nick);
-			staffDto.setMember_phone(member_phone);
-			staffDto.setMember_email(member_email);
-			if (member_pw != null && !member_pw.isEmpty()) {
-				staffDto.setMember_pw(member_pw);
+			StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+			
+			// GET 요청 처리
+			if (staffDto == null) {
+				if (loginStaff == null) {
+					return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+							.body(Collections.singletonMap("message", "로그인이 필요합니다."));
+				}
+				return ResponseEntity.ok(service.read(loginStaff.getMember_no()));
+			}
+			
+			// POST 요청 처리
+			if (loginStaff == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(Collections.singletonMap("message", "로그인이 필요합니다."));
+			}
+
+			if (loginStaff.getAdmins() != 1 && !loginStaff.getMember_no().equals(staffDto.getMember_no())) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN)
+						.body(Collections.singletonMap("message", "수정 권한이 없습니다."));
 			}
 
 			service.update(staffDto);
 			response.put("success", true);
-			response.put("message", "정보가 수정되었습니다.");
+			response.put("message", "직원 정보가 수정되었습니다.");
+			return ResponseEntity.ok(response);
+
 		} catch (Exception e) {
 			response.put("success", false);
-			response.put("message", "수정 중 오류가 발생했습니다.");
+			response.put("message", e.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(response);
 		}
-
-		return response;
 	}
 
 	@PostMapping("/changePassword")

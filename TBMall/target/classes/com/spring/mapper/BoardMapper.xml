@@ -30,8 +30,9 @@
 	<!-- 글 삭제하기 -->
 	<!-- 글 삭제하기 (단일 글 삭제) -->
 	<update id="deleteOneContent" parameterType="long">
-		UPDATE tbmall_board
-		SET board_delete = 1
+		UPDATE tbmall_board 
+		SET board_delete = 1,
+			board_writedate = CURRENT_TIMESTAMP
 		WHERE board_no = #{board_no}
 	</update>
 	

@@ -32,7 +32,7 @@ function Register() {
       });
 
       const response = await axios.post(
-        'http://localhost:8080/mvc/staff/register',
+        'http://192.168.0.141:8080/mvc/staff/register',
         requestData,
         {
           headers: {

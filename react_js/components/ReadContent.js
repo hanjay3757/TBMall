@@ -23,7 +23,7 @@ const ReadContent = () => {
   
     axios
       .post(
-        'http://localhost:8080/mvc/board/comment',
+        'http://192.168.0.141:8080/mvc/board/comment',
         { comment_content: newComment },
         { withCredentials: true } // 세션 유지 설정
       )
@@ -53,7 +53,7 @@ const ReadContent = () => {
   useEffect(() => {
     // 게시물 정보 가져오기
     axios
-      .get('http://localhost:8080/mvc/board/read', { params: { board_no: boardNo } }) // 쿼리 파라미터 전달
+      .get('http://192.168.0.141:8080/mvc/board/read', { params: { board_no: boardNo } }) // 쿼리 파라미터 전달
       .then((response) => {
         setBoard(response.data); // 데이터 저장
       })
@@ -63,7 +63,7 @@ const ReadContent = () => {
 
     // 댓글 목록 조회 API 호출
     axios
-      .get('http://localhost:8080/mvc/board/commentlist', { params: { board_no: boardNo } }) // 쿼리 파라미터 전달
+      .get('http://192.168.0.141:8080/mvc/board/commentlist', { params: { board_no: boardNo } }) // 쿼리 파라미터 전달
       .then((response) => {
         setComments(response.data); // 댓글 목록 저장
       })
@@ -73,7 +73,7 @@ const ReadContent = () => {
 
       // Spring에서 세션에 currentBoard를 설정하기 위해 호출
     axios
-      .get('http://localhost:8080/mvc/board/comment', { params: { board_no: boardNo } })
+      .get('http://192.168.0.141:8080/mvc/board/comment', { params: { board_no: boardNo } })
       .then((response) => {
       console.log('세션 설정 완료:', response.data);
       })

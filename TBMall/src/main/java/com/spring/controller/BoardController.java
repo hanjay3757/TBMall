@@ -84,42 +84,46 @@ public class BoardController {
 		return response;
 	}
 
-//
 	// 게시글 삭제 Get ->Post 변경 필요
-	@PostMapping("/deleteOneContent")
-	public Map<String, Object> deleteOneContent(@RequestParam("board_no") Long board_no,
-//			@RequestParam("member_no") Long member_no, 
-			HttpSession session) {
+	@RequestMapping(value = "/deleteOneContent", method = {RequestMethod.GET, RequestMethod.POST})
+	public Map<String, Object> deleteOneContent(@RequestBody Map<String, Long> params, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+		try {
+			StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+			Long board_no = params.get("board_no");
+			
+			if (board_no == null) {
+				response.put("success", false);
+				response.put("message", "게시글 번호가 필요합니다.");
+				return response;
+			}
+			
+			if (loginStaff == null) {
+				response.put("success", false);
+				response.put("message", "로그인이 필요합니다.");
+				return response;
+			}
 
-		if (loginStaff == null) {
+			if (loginStaff.getAdmins() != 1) {
+				response.put("success", false);
+				response.put("message", "관리자 권한이 필요합니다.");
+				return response;
+			}
+
+			// 게시글 삭제 처리
+			int result = service.deleteOneContent(board_no);
+			if (result > 0) {
+				response.put("success", true);
+				response.put("message", "게시글이 성공적으로 삭제되었습니다.");
+			} else {
+				response.put("success", false);
+				response.put("message", "게시글 삭제에 실패했습니다.");
+			}
+		} catch (Exception e) {
+			log.error("게시글 삭제 실패: " + e.getMessage());
 			response.put("success", false);
-			response.put("message", "로그인이 필요합니다.");
-			return response;
+			response.put("message", "게시글 삭제 중 오류가 발생했습니다.");
 		}
-//
-//		if (loginStaff.getMember_no() != member_no) {
-//			response.put("success", false);
-//			response.put("message", "해당글 삭제에 관한 권한이 없습니다.");
-//			return response;
-//		}
-//
-//		try {
-//			if (loginStaff.getMember_no().equals(member_no)) {
-//				response.put("success", false);
-//				response.put("message", "자신의 계정은 삭제할 수 없습니다.");
-//				return response;
-//			}
-
-		service.deleteOneContent(board_no);
-		response.put("success", true);
-		response.put("message", "게시글이 성공적으로 삭제되었습니다.");
-//		} catch (RuntimeException e) {
-//			response.put("success", false);
-//			response.put("message", e.getMessage());
-//		}
-
 		return response;
 	}
 
@@ -150,46 +154,6 @@ public class BoardController {
 		return "board/edit";
 	}
 
-//
-//	@PostMapping("/editContent")
-//	public Map<String, Object> editContent(
-////			@RequestBody BoardDto boardDto,
-//			@RequestParam("boardNo") Long board_no,
-//			@RequestParam("memberNo") Long member_no,
-//			@RequestParam("board_title") String board_title,
-//			@RequestParam("board_content") String board_content,
-//			HttpSession session) {
-//
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//		
-//		BoardDto boardDto = new BoardDto();
-//		
-//
-////		StaffDto currentStaff = service.read(member_no);
-////		if (!currentStaff.getMember_pw().equals(currentPassword)) {
-////			response.put("success", false);
-////			response.put("message", "현재 비밀번호가 올바르지 않습니다.");
-////			return response;
-////		}
-//		if (loginStaff == null || (!boardDto.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
-//	        response.put("success", false);
-//	        response.put("message", "권한이 없습니다.");
-//	        return response;
-//	    }
-//
-//	    try {
-//	        service.editContent(boardDto); // 수정 로직
-//	        response.put("success", true);
-//	        response.put("message", "정보가 수정되었습니다.");
-//	    } catch (Exception e) {
-//	        e.printStackTrace();
-//	        response.put("success", false);
-//	        response.put("message", "수정 중 오류가 발생했습니다.");
-//	    }
-//
-//	    return response;
-//	}
 	@PostMapping("board/editContent")
 	public Map<String, Object> editContent(@RequestBody BoardDto boardDto, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
@@ -215,7 +179,6 @@ public class BoardController {
 		return response;
 	}
 
-//
 	// 읽고 있는 글에 달린 댓글 모두 가져오기
 	@GetMapping("/commentlist")
 	public List<CommentDto> getCommentList(@RequestParam("board_no") Long board_no) {

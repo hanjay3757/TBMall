@@ -24,7 +24,7 @@ function ItemRegister() {
       console.log('등록할 데이터:', Object.fromEntries(params));
 
       const response = await axios.post(
-        'http://localhost:8080/mvc/stuff/item/register',
+        'http://192.168.0.141:8080/mvc/stuff/item/register',
         params,
         {
           headers: {

@@ -13,8 +13,12 @@ function DeletedItems() {
 
   const loadDeletedItems = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/mvc/stuff/item/deleted', {
-        withCredentials: true
+      const response = await axios.post('/stuff/item/deleted', {}, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
 
       if (response.data.success) {
@@ -35,7 +39,7 @@ function DeletedItems() {
       params.append('itemStock', 1);
 
       const response = await axios.post(
-        'http://localhost:8080/mvc/stuff/item/restore',
+        'http://192.168.0.141:8080/mvc/stuff/item/restore',
         params,
         {
           withCredentials: true,

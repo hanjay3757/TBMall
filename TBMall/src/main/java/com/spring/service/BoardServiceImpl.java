@@ -43,14 +43,14 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public void deleteOneContent(long board_no) {
-		log.info("게시글 삭제");
-
-		int result = mapper.deleteOneContent(board_no);
-		if (result != 1) {
-			throw new RuntimeException("게시물 삭제에 실패했습니다.");
+	public int deleteOneContent(Long board_no) {
+		log.info("게시글 삭제: " + board_no);
+		try {
+			return mapper.deleteOneContent(board_no);
+		} catch (Exception e) {
+			log.error("게시글 삭제 실패: " + e.getMessage());
+			throw new RuntimeException("게시글 삭제에 실패했습니다.");
 		}
-
 	}
 
 	@Override

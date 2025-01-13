@@ -23,8 +23,12 @@ function StaffEdit({ onUpdate }) {
   useEffect(() => {
     const fetchStaffData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/mvc/staff/list', {
-          withCredentials: true
+        const response = await axios.post('/staff/list', {}, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
         });
         
         if (response.data) {
@@ -57,8 +61,11 @@ function StaffEdit({ onUpdate }) {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/mvc/staff/check-login');
-        setIsAdmin(response.data.isAdmin);
+        const response = await axios.post('/staff/check-login', {}, {
+          withCredentials: true
+        });
+        console.log("관리자 상태 확인:", response.data);
+        setIsAdmin(response.data.isAdmin || response.data.delete_right_no === 1);
       } catch (error) {
         navigate('/');
       }
@@ -70,59 +77,52 @@ function StaffEdit({ onUpdate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const params = new URLSearchParams();
-      
-      const loginCheckResponse = await axios.get('http://localhost:8080/mvc/staff/check-login');
-      console.log('현재 로그인 상태:', loginCheckResponse.data);
+        const formData = {
+            member_no: parseInt(member_no),
+            member_id: staffData.member_id.trim(),
+            member_nick: staffData.member_nick,
+            member_phone: staffData.member_phone,
+            member_email: staffData.member_email,
+            member_gender: staffData.member_gender,
+            member_birth: staffData.member_birth
+        };
 
-      console.log('원래 데이터:', staffData);
-      console.log('수정할 member_id:', staffData.member_id);
+        // 로그인 상태 확인
+        const loginCheckResponse = await axios.post('/staff/check-login');
+        console.log('현재 로그인 상태:', loginCheckResponse.data);
 
-      params.append('member_no', member_no);
-      params.append('member_id', staffData.member_id.trim());
-      params.append('member_nick', staffData.member_nick);
-      params.append('member_phone', staffData.member_phone);
-      params.append('member_email', staffData.member_email);
-      params.append('currentPassword', loginCheckResponse.data.isAdmin ? '' : currentPassword);
-
-      if (staffData.member_pw) {
-        params.append('member_pw', staffData.member_pw);
-      }
-
-      const requestData = Object.fromEntries(params);
-      console.log('서버로 전송할 데이터:', requestData);
-
-      const response = await axios.post(
-        'http://localhost:8080/mvc/staff/edit',
-        params,
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          withCredentials: true
+        // 비밀번호 처리
+        if (!loginCheckResponse.data.isAdmin && loginCheckResponse.data.delete_right_no !== 1) {
+            if (!currentPassword) {
+                alert('현재 비밀번호를 입력해주세요.');
+                return;
+            }
+            formData.currentPassword = currentPassword;
         }
-      );
 
-      console.log('서버 응답:', response.data);
+        // 새 비밀번호가 있는 경우에만 추가
+        if (staffData.member_pw) {
+            formData.member_pw = staffData.member_pw;
+        }
 
-      if (response.data.success) {
-        alert(response.data.message || '직원 정보가 수정되었습니다.');
-        console.log('목록 새로고침 시작');
-        
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        await onUpdate();
-        console.log('목록 새로고침 완료');
-        navigate('/');
-      } else {
-        throw new Error(response.data.message || '수정에 실패했습니다.');
-      }
+        const response = await axios.post('/staff/edit', formData, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.data.success) {
+            alert(response.data.message || '직원 정보가 수정되었습니다.');
+            if (onUpdate) {
+                await onUpdate();
+            }
+            navigate('/');
+        } else {
+            throw new Error(response.data.message || '수정에 실패했습니다.');
+        }
     } catch (error) {
-      console.error('직원 정보 수정 실패:', error);
-      if (error.response) {
-        console.error('서버 에러 응답:', error.response.data);
-      }
-      alert(error.response?.data?.message || '직원 정보 수정에 실패했습니다.');
+        console.error('직원 정보 수정 실패:', error);
+        alert(error.response?.data?.message || error.message || '직원 정보 수정에 실패했습니다.');
     }
   };
 

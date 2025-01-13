@@ -16,7 +16,13 @@ import BoardWrite from './components/BoardWrite';
 import BoardEdit from './components/BoardEdit';
 //ㄴ 로딩되는 변수지정 폴더 위치 적어놓음
 // axios 기본 설정
+axios.defaults.baseURL = 'http://192.168.0.141:8080/mvc';
 axios.defaults.withCredentials = true;
+axios.defaults.headers.common = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Access-Control-Allow-Origin': 'http://192.168.0.141:3000'
+};
 
 // StaffTable을 별도의 컴포넌트로 분리
 const StaffTable = ({ staffList, onDelete, onEdit }) => {
@@ -83,20 +89,22 @@ function App() {
 
   // 로그인 상태 확인
   function checkLoginStatus() {
-    return axios.get('http://localhost:8080/mvc/staff/check-login')
-      .then(response => {
-        
-        //서버에서 변환된 데이터를 이용해 로그인 상태와 관리자 여부를 확인 함 
-        setIsLoggedIn(response.data.isLoggedIn); //로그인 상태 확인
-        setIsAdmin(response.data.isAdmin);//관리자가 맞는 지 확인
-        //response.data는 axios가 요청을 보내고 응답 받을때 반환된 데이터를 포함
-      })
-      .catch(error => {
-        //로그인 상태 확인 후 이를 실패 했을때의 기본 설정
-        console.error('로그인 상태 확인 실패:', error);
-        setIsLoggedIn(false); //로그인 아니네?
-        setIsAdmin(false);//관리자는 당연히 아니군 라고 지정
-      });
+    return axios.post('/staff/check-login', {}, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    })
+    .then(response => {
+      setIsLoggedIn(response.data.isLoggedIn);
+      setIsAdmin(response.data.isAdmin);
+    })
+    .catch(error => {
+      console.error('로그인 상태 확인 실패:', error);
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+    });
   }
   if(loading){
     //그냥 데이터 불러올때 그 기간동안 로딩중임을 표시
@@ -114,7 +122,7 @@ function App() {
     params.append('password', formData.password);
     /* 폼데이터를 지정하는건데 1번은 파라미터 이름, 2번은 파라미터 값을 지정
     파라미터는 같은 이름에 여러 다른 값을 지정하는게 가능 */
-    axios.post('http://localhost:8080/mvc/staff/login', params, {
+    axios.post('http://192.168.0.141:8080/mvc/staff/login', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -127,6 +135,7 @@ function App() {
           localStorage.setItem('member_no',response.data.member_no);
           console.log('stored member_no:',response.data.member_no);
           setIsAdmin(response.data.isAdmin); // isadmin 값으로 관리자여부를 설정함
+          console.log(response.data.isAdmin);
           navigate('/stuff/item/list'); // 해당 페이지로 이동하는 함수
         } else {
           alert(response.data.message || '로그인에 실패했습니다.');
@@ -140,7 +149,7 @@ function App() {
 
   // 로그아웃 처리
   function handleLogout() {
-    axios.post('http://localhost:8080/mvc/staff/logout')
+    axios.post('http://192.168.0.141:8080/mvc/staff/logout')
       .then(response => {
         if (response.data.success) {
           setIsLoggedIn(false);
@@ -156,22 +165,21 @@ function App() {
  // 직원 목록 불러오기 함수
   async function loadStaffList() {
     try {
-      //서버로부터 직원 목록을 get 방식으로 요청함
-      // 쿼리 파라미터 _t는 캐싱을 방지하기 위해서 현재시간을 추가
-      const response = await axios.get(`http://localhost:8080/mvc/staff/list?_t=${Date.now()}`);
-
-      //서버에서 받은 응답에서 meber_delete가 0인 직원만 보이게함 
-      const filteredList = response.data.filter(staff => !staff.member_delete);
-
-      //직원목록을 meber no 값을 기준으로 오름차순 정렬
-      //... = 스프레드 연산자 = 배열이나 객체를 복사하거나 확장할때 사용
-      const sortedStaffList = [...filteredList].sort((a, b) => a.member_no - b.member_no);
-      //정렬된 직원 목록을 상태로 설정
-      setStaffList(sortedStaffList);
+      const response = await axios.post('/staff/list', {}, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.data) {
+        setStaffList(response.data);
+      }
     } catch (error) {
       console.error('직원 목록 조회 실패:', error);
     }
-  };
+  }
 
   // 직원 삭제
   function confirmDelete(member_no) {
@@ -182,7 +190,7 @@ function App() {
       //자동 인코딩: URLSearchParams는 값에 특수 문자가 포함될 경우 자동으로 URL 인코딩
       params.append('member_no', member_no);
 
-      axios.post('http://localhost:8080/mvc/staff/remove', params, {
+      axios.post('http://192.168.0.141:8080/mvc/staff/remove', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },

@@ -1,85 +1,85 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import './BoardList.css'; // CSS 파일 임포트
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 
 function BoardList({ isLoggedIn, isAdmin }) {
   const [boards, setBoards] = useState([]); // 글 목록 상태
   const [loading, setLoading] = useState(true); // 로딩 상태
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    loadBoards();
-  }, []);
 
   // 서버에서 글 목록 가져오기
-  const loadBoards = async () => {
+  const loadBoards = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/mvc/board/list', {
+      const response = await axios.get('http://192.168.0.141:8080/mvc/board/list', {
         withCredentials: true,
       });
       console.log(response.data);
       console.log('isAdmin:',isAdmin);
-      setBoards(response.data); // 서버에서 가져온 데이터 설정
+      // board_delete가 0인 게시글만 필터링
+      const filteredBoards = response.data.filter(board => board.board_delete === 0);
+      setBoards(filteredBoards); // 필터링된 데이터만 설정
     } catch (error) {
       console.error('게시판 목록을 불러오는 중 오류 발생:', error);
     } finally {
       setLoading(false); // 로딩 상태 해제
     }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    loadBoards();
+  }, [loadBoards]);
+
+  //글작성 핸들러 작성중...
+  const handleWrite = () =>{
+    navigate(`/board/write`);
   };
+
 
   //서버에서 읽으려는 글 가져오기
   const readContent = (board_no) =>{
     navigate(`/board/read?board_no=${board_no}`);
-  }
+  };
 
   const handleDelete = async (board_no) => {
     try {
-      if (!isAdmin) {
-        alert('관리자 권한이 필요합니다.');
-        return;
-      }
-      if (!board_no) {
-        alert('삭제할 글이 없습니다.');
-        return;
-      }
-      
-
-      if (window.confirm('이 글을 삭제하시겠습니까?')) {
-        const params = new URLSearchParams();
-        params.append('board_no', board_no);
-        // params.append('member_no', isLoggedIn.get.member_no);
-        console.log("삭제 요청 파라미터:",board_no);
-
-        const response = await axios.post(
-          'http://localhost:8080/mvc/board/deleteOneContent',
-          params,
-          {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          }
-        );
-
-        if (
-          response.data === 'redirect:/board/list' ||
-          response.status === 200 ||
-          response.data.success
-        ) {
-          alert('해당 글이 삭제되었습니다.');
-          loadBoards();
-        } else {
-          alert(response.data.message || '글 삭제에 실패했습니다.');
+        if (!isAdmin) {
+            alert('관리자 권한이 필요합니다.');
+            return;
         }
-      }
+        if (!board_no) {
+            alert('삭제할 글이 없습니다.');
+            return;
+        }
+
+        if (window.confirm('이 글을 삭제하시겠습니까?')) {
+            const response = await axios.post(
+                'http://192.168.0.141:8080/mvc/board/deleteOneContent',
+                { board_no: board_no },
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                alert('해당 글이 삭제되었습니다.');
+                await loadBoards();
+            } else {
+                alert(response.data.message || '글 삭제에 실패했습니다.');
+            }
+        }
     } catch (error) {
-      alert('글 삭제 중 오류가 발생했습니다.');
+        console.error('글 삭제 실패:', error);
+        alert(error.response?.data?.message || '글 삭제 중 오류가 발생했습니다.');
     }
   };
 
+
+  
   if (loading) {
     return <p>게시판 목록을 불러오는 중입니다...</p>;
   }
@@ -97,6 +97,7 @@ function BoardList({ isLoggedIn, isAdmin }) {
             <th>번호</th>
             <th>제목</th>
             <th>내용</th>
+            <th>작성일</th>
             {isAdmin && <th>관리</th>}
           </tr>
         </thead>
@@ -108,10 +109,12 @@ function BoardList({ isLoggedIn, isAdmin }) {
               <td>
                 <span
                   className="board-content-link"
-                  onClick={()=>readContent(board.board_no)}>
-                     {board.board_content}
+                  onClick={() => readContent(board.board_no)}
+                >
+                  {board.board_content}
                 </span>
-                </td>
+              </td>
+              <td>{board.board_writedate}</td>
               {isAdmin && (
                 <td>
                   <button
@@ -126,6 +129,18 @@ function BoardList({ isLoggedIn, isAdmin }) {
           ))}
         </tbody>
       </table>
+
+      {/* 글 작성 버튼 - 로그인한 사용자만 표시 */}
+      {isLoggedIn && (
+        <div style={{ marginTop: '20px' }}>
+          <button
+            onClick={handleWrite}
+            className="write-button"
+          >
+            글 작성
+          </button>
+        </div>
+      )}
     </div>
   );
 }

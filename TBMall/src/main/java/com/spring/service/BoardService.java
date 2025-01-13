@@ -16,7 +16,7 @@ public interface BoardService {
 	public void writeContent(BoardDto boarddto);
 
 	// 게시판 글 삭제
-	public void deleteOneContent(long board_no);
+	public int deleteOneContent(Long board_no);
 	
 	// 게시글 정보 수정(제목,글내용 수정 가능)
 	public void editContent(BoardDto boarddto);

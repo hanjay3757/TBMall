@@ -1,0 +1,4 @@
+<Connector port="8080" protocol="HTTP/1.1"
+           address="0.0.0.0"
+           connectionTimeout="20000"
+           redirectPort="8443" /> 

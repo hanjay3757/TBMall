@@ -19,7 +19,7 @@ function RegisterItem() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8080/mvc/stuff/item/register', {
+      const response = await fetch('http://192.168.0.141:8080/mvc/stuff/item/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

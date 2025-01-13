@@ -25,8 +25,12 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const loadItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8080/mvc/stuff/item/list?_t=${Date.now()}`, {
-        withCredentials: true
+      const response = await axios.get('/stuff/item/list', {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
       
       const itemsToProcess = response.data;
@@ -36,28 +40,29 @@ function ItemList({ isLoggedIn, isAdmin }) {
       for (const item of itemsToProcess) {
         if (item.item_stock === 0 && !item.item_delete) {
           try {
-            // 장바구니에 해당 아이템이 있는지 확인
-            const cartResponse = await axios.get('http://localhost:8080/mvc/stuff/api/cart', {
-              withCredentials: true
+            // GET 메서드로 장바구니 조회
+            const cartResponse = await axios.get('/stuff/api/cart', {
+              withCredentials: true,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
             });
             
-            const isInCart = cartResponse.data.some(cartItem => cartItem.itemId === item.item_id);
-            
-            // 장바구니에 없는 경우에만 삭제 처리
-            if (!isInCart) {
-              const params = new URLSearchParams();
-              params.append('item_id', item.item_id);
+            if (cartResponse.data && Array.isArray(cartResponse.data)) {
+              const isInCart = cartResponse.data.some(cartItem => cartItem.itemId === item.item_id);
               
-              await axios.post(
-                'http://localhost:8080/mvc/stuff/item/delete',
-                params,
-                {
+              if (!isInCart) {
+                const params = new URLSearchParams();
+                params.append('item_id', item.item_id);
+                
+                await axios.post('/stuff/item/delete', params, {
                   withCredentials: true,
                   headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                   }
-                }
-              );
+                });
+              }
             }
           } catch (error) {
             console.error('아이템 처리 중 오류:', error);
@@ -110,7 +115,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
         params.append('item_id', item_id);
         
         const response = await axios.post(
-          'http://localhost:8080/mvc/stuff/item/delete', 
+          '/stuff/item/delete', 
           params,
           { 
             withCredentials: true,
@@ -164,7 +169,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
       params.append('quantity', quantity);
 
       const response = await axios.post(
-        'http://localhost:8080/mvc/stuff/api/cart/add',
+        '/stuff/api/cart/add',
         params,
         {
           withCredentials: true,

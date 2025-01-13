@@ -8,8 +8,12 @@ function RemovedStaff() {
   useEffect(() => {
     const fetchRemovedStaff = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/mvc/staff/removelist', {
-          withCredentials: true
+        const response = await axios.post('http://192.168.0.141:8080/mvc/staff/removelist', {}, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
         });
         
         if (response.data.success) {
@@ -31,7 +35,7 @@ function RemovedStaff() {
       const params = new URLSearchParams();
       params.append('member_no', member_no);
       
-      const response = await axios.post(`http://localhost:8080/mvc/staff/restore`, params, {
+      const response = await axios.post(`http://192.168.0.141:8080/mvc/staff/restore`, params, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -40,8 +44,12 @@ function RemovedStaff() {
 
       if (response.data.success) {
         // 복구 성공 시 목록 새로고침
-        const listResponse = await axios.get('http://localhost:8080/mvc/staff/removelist', {
-          withCredentials: true
+        const listResponse = await axios.post('http://192.168.0.141:8080/mvc/staff/removelist', {}, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
         });
         if (listResponse.data.success) {
           setStaffList(listResponse.data.list || []);
