@@ -18,14 +18,15 @@ create table tbmall_board(
 	board_title varchar(400) not null,
     board_content text not null,
 	board_readcount int not null default 0,
-    board_writdate date not null,
-    foreign key (member_no) references tbmall_member(member_no) on delete cascade
+    board_writedate date not null,
+    foreign key (member_no) references tbmall_member(member_no) on delete cascade,
+    board_delete TINYINT(1) DEFAULT 0 COMMENT '삭제 여부 (0: 활성, 1: 삭제됨)',
+    board_delete_at TIMESTAMP NULL DEFAULT NULL COMMENT '삭제된 일시'
     );		
 ALTER TABLE tbmall_board 
 ADD COLUMN board_delete TINYINT(1) DEFAULT 0 COMMENT '삭제 여부 (0: 활성, 1: 삭제됨)',
 ADD COLUMN board_delete_at TIMESTAMP NULL DEFAULT NULL COMMENT '삭제된 일시';
 
-DELIMITER $$
 
 CREATE TRIGGER update_board_delete_at
 BEFORE UPDATE ON tbmall_board
@@ -64,7 +65,6 @@ ALTER TABLE tbmall_member
 ADD COLUMN member_delete TINYINT(1) DEFAULT 0 COMMENT '삭제 여부 (0: 활성, 1: 삭제됨)',
 ADD COLUMN member_delete_at TIMESTAMP NULL DEFAULT NULL COMMENT '삭제된 일시';
 
-DELIMITER $$
 
 CREATE TRIGGER update_member_delete_at
 BEFORE UPDATE ON tbmall_member
@@ -89,15 +89,18 @@ create table tbmall_admin(
     foreign key (member_no) references tbmall_member(member_no) on delete cascade
 );
 
-insert into tbmall_admin (member_no,delete_right_no) values('1','1');
+insert into tbmall_admin (member_no,delete_right_no) values('14','1');
 delete tbmall_member  member_no=2;
 select * from tbmall_admin;
 drop table tbmall_admin;
 select * from tbmall_member a inner join tbmall_admin b on a.member_no = b.member_no;
 -- 관리자 권한이 있는 사용자 확인
-SELECT m.*, a.admin_no, a.delete_right_no
-FROM tbmall_member m
-INNER JOIN tbmall_admin a ON m.member_no = a.member_no
+SELECT 
+    m.*, a.admin_no, a.delete_right_no
+FROM
+    tbmall_member m
+        INNER JOIN
+    tbmall_admin a ON m.member_no = a.member_no
 WHERE a.delete_right_no = 1;
 -- 삭제 권한 가진 관리자 호출(회원번호, 아이디 )
 select tbmall_admin.admin_no,tbmall_member.member_no, tbmall_member.member_nick from tbmall_admin join tbmall_member on tbmall_admin.member_no= tbmall_member.member_no where tbmall_admin.delete_right_no =1;
