@@ -33,11 +33,12 @@
 
 	<!-- CORS 설정 추가 -->
 	<mvc:cors>
-		<mvc:mapping path="/**"
-			allowed-origins="http://localhost:3000"
-			allowed-methods="GET, POST, PUT, DELETE, PATCH"
-				allowed-headers="*"
-				allow-credentials="true"
-				max-age="3600"/>
-	</mvc:cors>
+    <mvc:mapping path="/**"
+        allowed-origins="http://192.168.0.141:3000"
+        allowed-methods="GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        allowed-headers="*"
+        allow-credentials="true"
+        max-age="3600"/>
+</mvc:cors>
+
 </beans:beans>

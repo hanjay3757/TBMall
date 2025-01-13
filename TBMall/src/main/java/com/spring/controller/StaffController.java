@@ -7,7 +7,6 @@ import java.util.Map;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,18 +29,18 @@ import lombok.extern.log4j.Log4j;
 public class StaffController {
 	private StaffService service;
 
-	@GetMapping("/list")
+	@PostMapping("/list")
 	public List<StaffDto> getList() {
 		return service.getList();
 	}
 
 	// 관리자 정보 불러오기
-	@GetMapping("/adminlist")
+	@PostMapping("/adminlist")
 	public List<StaffDto> getAdminlist() {
 		return service.getAdminList();
 	}
 
-	@GetMapping("/read")
+	@PostMapping("/read")
 	public StaffDto read(@RequestParam("member_no") Long member_no) {
 		return service.read(member_no);
 	}
@@ -113,7 +112,7 @@ public class StaffController {
 		return response;
 	}
 
-	@GetMapping("/removelist")
+	@PostMapping("/removelist")
 	public Map<String, Object> getRemoveList(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
@@ -235,7 +234,7 @@ public class StaffController {
 		return response;
 	}
 
-	@GetMapping("/check-login")
+	@PostMapping("/check-login")
 	public Map<String, Object> checkLoginStatus(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.spring.dto.CartDto;
 import com.spring.dto.StaffDto;
@@ -30,7 +31,13 @@ import com.spring.service.StuffService;
 
 @RestController
 @RequestMapping("/stuff")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", allowedHeaders = "*")
+@CrossOrigin(
+	origins = "http://192.168.0.141:3000",
+	allowedHeaders = "*",
+	methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
+			   RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
+	allowCredentials = "true"
+)
 public class StuffController {
 
 	private static final Logger log = LoggerFactory.getLogger(StuffController.class);
@@ -180,7 +187,7 @@ public class StuffController {
 		return "stuff/cart";
 	}
 
-	@GetMapping("/item/deleted")
+	@PostMapping("/item/deleted")
 	@ResponseBody
 	public Map<String, Object> getDeletedItems(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
@@ -220,7 +227,7 @@ public class StuffController {
 
 	// 물건 수정 페이지
 	@GetMapping("/item/edit")
-	public String editItemForm(@RequestParam("itemId") Long itemId, Model model, HttpSession session) {
+	public String editItemForm(Long itemId, Model model, HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			return "redirect:/staff/login";
@@ -232,13 +239,13 @@ public class StuffController {
 
 	// 물건 수정 처리
 	@PostMapping("/item/edit")
-	public String editItem(StuffDto stuff, HttpSession session) {
+	public String editItem(StuffDto stuffDto, HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			return "redirect:/staff/login";
 		}
 
-		service.updateItem(stuff);
+		service.updateItem(stuffDto);
 		return "redirect:/stuff/item/list";
 	}
 
@@ -273,7 +280,7 @@ public class StuffController {
 	public List<CartDto> getCartItems(HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 		if (loginStaff == null) {
-			throw new RuntimeException("로그인이 필요합니다.");
+			return null;
 		}
 		return service.getCartItems(loginStaff.getMember_no());
 	}
