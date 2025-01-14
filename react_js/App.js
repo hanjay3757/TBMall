@@ -5,7 +5,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import StaffEdit from './components/StaffEdit';
 import ItemList from './components/ItemList';
 import ItemRegister from './components/ItemRegister';
-import StaffRegister from './components/Register';
+import StaffRegister from './components/StaffRegister';
 import DeletedItems from './components/DeletedItems';
 import Cart from './components/Cart';
 import RemovedStaff from './components/RemovedStaff';
@@ -280,7 +280,7 @@ return (
     isAdmin && (
       <div className="admin-menu">
         <button onClick={() => navigate('/stuff/item/register')}>물건 등록</button>
-        <button onClick={() => navigate('/staff/register')}>사원 등록</button>
+        <button onClick={() => navigate('/staff/register')}>직원 등록</button>
         <button onClick={() => navigate('/stuff/item/deleted')}>삭제된 건 목록</button>
         <button onClick={() => navigate('/staff/removelist')}>삭제된 직원 목록</button>
         <button onClick={() => navigate('/staff/list')}>직원 목록</button>
