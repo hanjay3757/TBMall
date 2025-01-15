@@ -28,7 +28,7 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @RequestMapping("/staff")
 @RestController
-@CrossOrigin(origins = "http://192.168.0.141:3000", allowedHeaders = "*", methods = { RequestMethod.GET,
+@CrossOrigin(origins = "http://192.168.0.128:3000", allowedHeaders = "*", methods = { RequestMethod.GET,
 		RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH,
 		RequestMethod.OPTIONS }, allowCredentials = "true")
 @AllArgsConstructor

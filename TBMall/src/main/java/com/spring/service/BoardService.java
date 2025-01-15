@@ -7,7 +7,10 @@ import com.spring.dto.BoardDto;
 import com.spring.dto.CommentDto;
 
 public interface BoardService {
-	public ArrayList<BoardDto> getBoardlist(); // 모든 글 정보 가져오기
+	public ArrayList<BoardDto> getBoardlist(int currentPage , int pageSize); // 모든 글 정보 가져오기
+//	public ArrayList<BoardDto> getBoardlist(); // 모든 글 정보 가져오기
+	
+	public int getPostCount();
 
 	// 게시판 내 글 읽기
 	public BoardDto readContent(long board_no);
@@ -23,9 +26,10 @@ public interface BoardService {
 
 	
 	//댓글 관련
-	public List<CommentDto> getCommentList(Long board_no);//댓글 리스트 가져오기
+	public List<CommentDto> getCommentList(Long board_no , int currentComment , int cpageSize);//댓글 리스트 가져오기
 	public void writeComment(CommentDto commentDto);//댓글 쓰기
 	
+	public int getCommentCount(Long board_no);
 
 
 }

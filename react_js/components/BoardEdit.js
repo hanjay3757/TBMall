@@ -25,7 +25,7 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     useEffect(() => {
         const fetchBoardData = async () => {
             try {
-                const response = await axios.get(`http://192.168.0.141:8080/mvc/board/read?board_no=${boardNo}`);
+                const response = await axios.get(`http://192.168.0.128:8080/mvc/board/read?board_no=${boardNo}`);
                 const data = response.data;
 
                 setBoardData((prevData) => ({
@@ -80,7 +80,7 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
 
         
         try {
-                const response = await axios.post('http://192.168.0.141:8080/mvc/board/editContent', JSON.stringify(data), {
+                const response = await axios.post('http://192.168.0.128:8080/mvc/board/editContent', JSON.stringify(data), {
                     headers: {
                         'Content-Type': 'application/json',
                     },

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.dto.BoardDto;
 import com.spring.dto.CommentDto;
+import com.spring.dto.PagingDto;
 import com.spring.mapper.BoardMapper;
 
 import lombok.Setter;
@@ -24,9 +25,25 @@ public class BoardServiceImpl implements BoardService {
 	private BoardMapper mapper;
 
 	@Override
-	public ArrayList<BoardDto> getBoardlist() {
+	public ArrayList<BoardDto> getBoardlist(int currentPage ,int pageSize) {
 		log.info("게시판 내 모든 글 리스트 가져오기");
-		return mapper.getBoardlist();
+		
+		
+		
+		//페이징 계산
+		int offset = (currentPage-1)* pageSize;
+		
+		PagingDto pagingDto = new PagingDto(pageSize, offset);
+		
+		//mapper 호출
+		ArrayList<BoardDto> board = mapper.getBoardlist(pagingDto);
+		return board;
+	}
+	
+	@Override
+	public int getPostCount() {
+		int totalCount = mapper.getPostCount();
+		return totalCount;
 	}
 
 	@Override
@@ -69,9 +86,19 @@ public class BoardServiceImpl implements BoardService {
 	}
 	
 	@Override
-	public List<CommentDto> getCommentList(Long board_no) {
+	public List<CommentDto> getCommentList(Long board_no ,int currentComment , int cpageSize) {
 		log.info("해당 board_no 내에 모든 댓글 가져오기");
-		return mapper.getCommentList(board_no);
+		int offset = (currentComment-1) * cpageSize;
+		
+		PagingDto pagingDto = new PagingDto(cpageSize, offset);
+		
+		return mapper.getCommentList(board_no , pagingDto);
+	}
+	
+	@Override
+	public int getCommentCount(Long board_no) {
+		int totalComment = mapper.getCommentCount(board_no);
+		return totalComment;
 	}
 	
 	@Override

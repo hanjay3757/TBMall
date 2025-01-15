@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './ReadContent.css';
@@ -11,32 +11,35 @@ const ReadContent = () => {
   const navigate = useNavigate();
   const [comments, setComments] = useState([]); // 댓글 정보를 저장할 상태
   const [newComment, setNewComment] = useState(''); // 새로운 댓글 내용
+  const [currentComment, setCurrentComment] = useState(1); // 현재 댓글 페이지
+  const [totalComment, setTotalComment] = useState(0); // 전체 댓글 수
+  const [cpageSize, setCpageSize] = useState(5); // 페이지당 댓글 수
+  const [loading, setLoading] = useState(false); // 로딩 상태 관리
 
   // 댓글 작성 함수
   const handleCommentSubmit = (e) => {
     e.preventDefault();
-  
+
     if (!newComment.trim()) {
       alert('댓글 내용을 입력해 주세요.');
       return;
     }
-  
+
     axios
       .post(
-        'http://192.168.0.141:8080/mvc/board/comment',
+        'http://192.168.0.128:8080/mvc/board/comment',
         { comment_content: newComment },
         { withCredentials: true } // 세션 유지 설정
       )
       .then((response) => {
         if (response.data.success) {
           const newCommentObj = {
-            comment_content: response.data.comment_content, // 서버에서 반환된 댓글 내용
-            member_no: response.data.member_no, // 작성자 이름
-            comment_writedate: new Date(response.data.comment_writedate).toLocaleString(), // 작성 날짜 포맷팅
+            comment_content: response.data.comment_content,
+            member_no: response.data.member_no,
+            comment_writedate: new Date(response.data.comment_writedate).toLocaleString(),
           };
-  
-          // 상태 업데이트로 댓글 추가
-          setComments((prevComments) => [...prevComments, newCommentObj]);
+
+          setComments((prevComments) => [newCommentObj, ...prevComments]); // 새 댓글을 맨 위에 추가
           setNewComment(''); // 입력 필드 초기화
         } else {
           alert(response.data.message || '댓글 작성에 실패했습니다.');
@@ -47,40 +50,46 @@ const ReadContent = () => {
         alert('댓글 작성에 실패했습니다.');
       });
   };
-  
-  
+
+  // 서버에서 댓글 목록 가져오기
+  const loadComment = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://192.168.0.128:8080/mvc/board/commentlist', {
+        params: { board_no: boardNo, currentComment, cpageSize },
+        withCredentials: true,
+      });
+      const { comments = [], totalComment } = response.data;
+      console.log('Fetched comment:', comments);
+      console.log('Total Pages:', totalComment);
+      setComments(comments);
+      setTotalComment(totalComment); // 전체 페이지 수 설정
+    } catch (error) {
+      console.error('댓글 목록을 불러오는 중 오류 발생:', error);
+    } finally {
+      setLoading(false); // 로딩 상태 해제
+    }
+  }, [boardNo, currentComment, cpageSize]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalComment) {
+      setCurrentComment(newPage); // 페이지 변경
+      loadComment(); // 새 페이지 댓글 로드
+    }
+  };
 
   useEffect(() => {
-    // 게시물 정보 가져오기
     axios
-      .get('http://192.168.0.141:8080/mvc/board/read', { params: { board_no: boardNo } }) // 쿼리 파라미터 전달
+      .get('http://192.168.0.128:8080/mvc/board/read', { params: { board_no: boardNo } })
       .then((response) => {
-        setBoard(response.data); // 데이터 저장
+        setBoard(response.data);
       })
       .catch((error) => {
         console.error('게시물 데이터를 불러오는 중 오류 발생:', error);
       });
 
-    // 댓글 목록 조회 API 호출
-    axios
-      .get('http://192.168.0.141:8080/mvc/board/commentlist', { params: { board_no: boardNo } }) // 쿼리 파라미터 전달
-      .then((response) => {
-        setComments(response.data); // 댓글 목록 저장
-      })
-      .catch((error) => {
-        console.error('댓글 조회 실패:', error);
-      });
-
-      // Spring에서 세션에 currentBoard를 설정하기 위해 호출
-    axios
-      .get('http://192.168.0.141:8080/mvc/board/comment', { params: { board_no: boardNo } })
-      .then((response) => {
-      console.log('세션 설정 완료:', response.data);
-      })
-      .catch((error) => {
-      console.error('세션 설정 중 오류:', error);
-       });
-  }, [boardNo]);
+    loadComment();
+  }, [boardNo, loadComment]);
 
   if (!board) {
     return <div>게시물을 불러오는 중...</div>;
@@ -113,10 +122,11 @@ const ReadContent = () => {
         글 수정
       </a>
 
-      {/* 댓글 리스트 */}
       <div className="comment-section">
         <h3>댓글</h3>
-        {comments.length === 0 ? (
+        {loading ? (
+          <p>댓글을 불러오는 중...</p>
+        ) : comments.length === 0 ? (
           <p>댓글이 없습니다.</p>
         ) : (
           comments.map((comment, index) => (
@@ -128,7 +138,21 @@ const ReadContent = () => {
           ))
         )}
 
-        {/* 댓글 입력 폼 */}
+        <div className="pagination">
+          <button onClick={() => handlePageChange(currentComment - 1)} disabled={currentComment === 1}>
+            이전
+          </button>
+          <span>
+            {currentComment} / {totalComment}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentComment + 1)}
+            disabled={currentComment === totalComment}
+          >
+            다음
+          </button>
+        </div>
+
         <textarea
           placeholder="댓글을 입력하세요."
           value={newComment}

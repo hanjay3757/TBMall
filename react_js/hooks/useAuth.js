@@ -14,7 +14,7 @@ export const useAuth = () => {
     params.append('password', password);
 
     try {
-      const response = await axios.post('http://localhost:8080/mvc/staff/login', params, {
+      const response = await axios.post('http://192.168.0.128:8080/mvc/staff/login', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }

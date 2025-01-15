@@ -1,5 +1,6 @@
 package com.spring.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +33,7 @@ import lombok.extern.log4j.Log4j;
 @RequestMapping("/board/*")
 @RestController
 @CrossOrigin(
-	origins = "http://192.168.0.141:3000",
+	origins = "http://192.168.0.128:3000",
 	allowedHeaders = "*",
 	methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
 			   RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
@@ -41,10 +43,30 @@ import lombok.extern.log4j.Log4j;
 public class BoardController {
 	private BoardService service;
 
-	@GetMapping("/list")
-	public List<BoardDto> getBoardlist() {
-		return service.getBoardlist();
-	}
+	 @GetMapping("/list")
+	    public ResponseEntity<Map<String, Object>> getBoardList(@RequestParam(defaultValue = "1") int currentPage ,@RequestParam(defaultValue = "5") int pageSize) {
+	        // 1. 전체 게시글 수 가져오기
+	        int totalCount = service.getPostCount();
+
+//	        // 2. 페이지당 보여줄 게시글 수
+//	        int pageSize = 5;
+
+	        // 3. 총 페이지 수 계산
+	        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
+
+	        // 4. 현재 페이지에 해당하는 게시글 가져오기
+	        ArrayList<BoardDto> boards = service.getBoardlist(currentPage,pageSize);
+
+	        // 5. 클라이언트로 반환할 데이터를 Map에 담기
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("boards", boards);          // 현재 페이지 게시글 목록
+	        response.put("totalPages", totalPages);  // 전체 페이지 수
+	        response.put("currentPage", currentPage); // 요청한 현재 페이지 번호
+
+	        // 6. 응답 반환
+	        return ResponseEntity.ok(response);
+	    }
+	
 
 	// 게시판 내 글 내용 보기
 	@GetMapping("/read")
@@ -181,9 +203,23 @@ public class BoardController {
 
 	// 읽고 있는 글에 달린 댓글 모두 가져오기
 	@GetMapping("/commentlist")
-	public List<CommentDto> getCommentList(@RequestParam("board_no") Long board_no) {
-
-		return service.getCommentList(board_no);
+	public ResponseEntity<Map<String, Object>> getCommentList(@RequestParam("board_no") Long board_no , @RequestParam(defaultValue = "1") int currentComment , @RequestParam(defaultValue = "5") int cpageSize) {
+		//전체 댓글 수 가져오기
+		int totalCount = service.getCommentCount(board_no);
+		
+		//총 페이지 수 계산
+		int totalComment = (int)Math.ceil((double) totalCount/cpageSize);
+		
+		//현재 페이지에 해당하는 댓글 가져오기
+		List<CommentDto> comments = service.getCommentList(board_no, currentComment, cpageSize);
+		
+		//클라이언트로 반환할 데이터를 Map 에 담기
+		Map<String, Object> response = new HashMap<>();
+		response.put("comments", comments);
+		response.put("totalComment", totalComment);
+		response.put("currentComment", currentComment);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	// 댓글 달기

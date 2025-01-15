@@ -16,12 +16,12 @@ import BoardWrite from './components/BoardWrite';
 import BoardEdit from './components/BoardEdit';
 //ㄴ 로딩되는 변수지정 폴더 위치 적어놓음
 // axios 기본 설정
-axios.defaults.baseURL = 'http://192.168.0.141:8080/mvc';
+axios.defaults.baseURL = 'http://192.168.0.128:8080/mvc';
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common = {
   'Content-Type': 'application/json',
   'Accept': 'application/json',
-  'Access-Control-Allow-Origin': 'http://192.168.0.141:3000'
+  'Access-Control-Allow-Origin': 'http://192.168.0.128:3000'
 };
 
 // StaffTable을 별도의 컴포넌트로 분리
@@ -122,7 +122,7 @@ function App() {
     params.append('password', formData.password);
     /* 폼데이터를 지정하는건데 1번은 파라미터 이름, 2번은 파라미터 값을 지정
     파라미터는 같은 이름에 여러 다른 값을 지정하는게 가능 */
-    axios.post('http://192.168.0.141:8080/mvc/staff/login', params, {
+    axios.post('http://192.168.0.128:8080/mvc/staff/login', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -149,7 +149,7 @@ function App() {
 
   // 로그아웃 처리
   function handleLogout() {
-    axios.post('http://192.168.0.141:8080/mvc/staff/logout')
+    axios.post('http://192.168.0.128:8080/mvc/staff/logout')
       .then(response => {
         if (response.data.success) {
           setIsLoggedIn(false);
@@ -190,7 +190,7 @@ function App() {
       //자동 인코딩: URLSearchParams는 값에 특수 문자가 포함될 경우 자동으로 URL 인코딩
       params.append('member_no', member_no);
 
-      axios.post('http://192.168.0.141:8080/mvc/staff/remove', params, {
+      axios.post('http://192.168.0.128:8080/mvc/staff/remove', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
@@ -351,16 +351,16 @@ return (
       } />
     </Routes>
 
-    {/* 관리자일 경우만 StaffTable을 다시 렌더링 */}
+    {/* 관리자일 경우만 StaffTable을 다시 렌더링
     {/* key를 JSON.stringify(staffList)로 설정하여 목록이 변경될 때마다 새로고침이 되도록 함 */}
-    {isAdmin && (
+    {/* {isAdmin && (
       <StaffTable 
         staffList={staffList}
         onDelete={confirmDelete}
         onEdit={editStaff}
         key={JSON.stringify(staffList)} // 목록 변경 시 컴포넌트를 리렌더링
       />
-    )}
+    )} */}
   </div>
 );
 }

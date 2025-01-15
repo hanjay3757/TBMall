@@ -32,7 +32,7 @@ import com.spring.service.StuffService;
 @RestController
 @RequestMapping("/stuff")
 @CrossOrigin(
-	origins = "http://192.168.0.141:3000",
+	origins = "http://192.168.0.128:3000",
 	allowedHeaders = "*",
 	methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
 			   RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
