@@ -24,9 +24,7 @@ axios.defaults.headers.common = {
   'Access-Control-Allow-Origin': 'http://192.168.0.128:3000'
 };
 
-// StaffTable을 별도의 컴포넌트로 분리
-const StaffTable = ({ staffList, onDelete, onEdit }) => {
-  /* 리스트 삭제 수정 에대한 테이블 설정 */
+const StaffTable = ({ staffList, onDelete, onEdit, currentPage, totalPage, onPageChange }) => {
   return (
     <>
       <h2 className="section-title">직원 목록</h2>
@@ -41,13 +39,12 @@ const StaffTable = ({ staffList, onDelete, onEdit }) => {
           </tr>
         </thead>
         <tbody>
-          {staffList.map(staff => (
+          {staffList.map((staff) => (
             <tr key={staff.member_no + '-' + staff.member_id}>
               <td>{staff.member_no}</td>
               <td>{staff.member_id}</td>
               <td>{staff.member_nick}</td>
               <td>{staff.delete_right_no === 1 ? '관리자' : '일반 직원'}</td>
-              {/* 관리자인지 아닌지 표시하는 테이블 만약 0인경우 일반 직원 */}
               <td>
                 <button onClick={() => onDelete(staff.member_no)}>삭제</button>
                 <button onClick={() => onEdit(staff.member_no)}>수정</button>
@@ -56,10 +53,34 @@ const StaffTable = ({ staffList, onDelete, onEdit }) => {
           ))}
         </tbody>
       </table>
+
+      {/* 페이징 버튼 */}
+      <div className="pagination">
+        <button 
+          disabled={currentPage === 1} 
+          onClick={() => onPageChange(currentPage - 1)}
+        >
+          이전
+        </button>
+        {Array.from({ length: totalPage }, (_, index) => (
+          <button
+            key={index + 1}
+            className={currentPage === index + 1 ? 'active' : ''}
+            onClick={() => onPageChange(index + 1)}
+          >
+            {index + 1}
+          </button>
+        ))}
+        <button
+          disabled={currentPage === totalPage}
+          onClick={() => onPageChange(currentPage + 1)}
+        >
+          다음
+        </button>
+      </div>
     </>
   );
 };
-
 // App 컴포넌트
 function App() {
   // 상태 변수들
@@ -74,6 +95,9 @@ function App() {
   //데이터를 로드 중인지 여부를 관리
   const navigate = useNavigate();
 //페이지 네비게이션을 위한 축 지정
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
+  const [totalPage, setTotalPage] = useState(1); // 총 페이지 수
+
   useEffect(() => {
 
 
@@ -82,8 +106,8 @@ function App() {
       setLoading(false); //로딩 완료 로그인 상태를 확인
     }
     fetchData();
-    loadStaffList();
-  }, []);
+    loadStaffList(currentPage);
+  }, [currentPage]);
   //로그인 상태를 확인후 직원 목록을 불러오는것 빈배열로 하나를 만든건 한번만 실행되게끔 하기 위해서
 
 
@@ -163,23 +187,51 @@ function App() {
   }//하드코딩 로그아웃일때 
 
  // 직원 목록 불러오기 함수
-  async function loadStaffList() {
+  async function loadStaffList(page = currentPage) {
+    setLoading(true);
     try {
-      const response = await axios.post('/staff/list', {}, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+      const response = await axios.post('/staff/list', {
+        currentPage: page,
+        pageSize: 5,
+      }, {
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      if (response.data) {
-        setStaffList(response.data);
-      }
+      console.log("서버 응답: "+response.data);
+
+      const { staff, totalPage } = response.data;
+
+      setStaffList(staff);
+      setTotalPage(totalPage);
     } catch (error) {
       console.error('직원 목록 조회 실패:', error);
+    } finally {
+      setLoading(false);
     }
   }
+
+   // 페이지 변경 함수
+   const handlePageChange = (page) => {
+    console.log("페이지 변경 요청: ",page);
+    setCurrentPage(page);
+    loadStaffList(page);
+  };
+
+  //   try {
+  //     const response = await axios.post('/staff/list', {}, {
+  //       withCredentials: true,
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json'
+  //       }
+  //     });
+      
+  //     if (response.data) {
+  //       setStaffList(response.data);
+  //     }
+  //   } catch (error) {
+  //     console.error('직원 목록 조회 실패:', error);
+  //   }
+  // }
 
   // 직원 삭제
   function confirmDelete(member_no) {
@@ -199,7 +251,7 @@ function App() {
         .then  (response => {
           if (response.data === 'redirect:/staff/list' || response.status === 200) {
             alert('직원이 삭제되었습니다.');
-            loadStaffList();
+            loadStaffList(currentPage);
           } else {
             throw new Error('삭제에 실패했습니다.');
           }
@@ -345,6 +397,9 @@ return (
       <Route path="/staff/list" element={
         <StaffTable 
           staffList={staffList}
+          currentPage={currentPage}
+          totalPage={totalPage}
+          onPageChange={handlePageChange}
           onDelete={confirmDelete}
           onEdit={editStaff}
         />

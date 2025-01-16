@@ -5,11 +5,14 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.spring.dto.PagingDto;
 import com.spring.dto.StaffDto;
 
 public interface StaffMapper {
-	public ArrayList<StaffDto> getList(); // 모든 회원 정보 불러오기
-
+	public ArrayList<StaffDto> getList(PagingDto pagingDto); // 모든 회원 정보 불러오기
+	
+	public int getStaffCount(); // 회원 총 수 
+	
 	public ArrayList<StaffDto> getAdminList(); // 관리자 정보 불러오기
 
 	public StaffDto read(long member_no); // 회원 정보 보기

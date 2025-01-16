@@ -1,5 +1,6 @@
 package com.spring.controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,14 +37,39 @@ public class StaffController {
 	private StaffService service;
 
 	@PostMapping("/list")
-	public List<StaffDto> getList() {
-		return service.getList();
+	public ResponseEntity<Map<String, Object>> getList(@RequestBody Map<String, Object> params) {
+		int currentPage = (int)params.getOrDefault("currentPage", 1);
+		int pageSize = (int)params.getOrDefault("pageSize", 5);
+		
+		
+		System.out.println("currentPage :" +currentPage);
+		System.out.println("Pagesize :" +pageSize);
+		
+		//전체 회원 수 가져오기
+		int totaCount = service.getStaffCount();
+		
+		//총 페이지 수 계산
+		int totalPage = (int)Math.ceil((double)totaCount/pageSize);
+		
+		//현재 페이지에 해당하는 목록 가져오기
+		ArrayList<StaffDto> staff = service.getList(currentPage, pageSize);
+		
+		//클라이언트로 반환할 데이터 Map에 담기
+		Map<String, Object> response = new HashMap<>();
+		response.put("staff", staff);
+		response.put("totalPage", totalPage);
+		response.put("currentPage", currentPage);
+		
+		//응답 반환
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<?> getStaffList() {
+	public ResponseEntity<?> getStaffList(@RequestBody Map<String, Object> params) {
+		int currentPage = (int)params.getOrDefault("currentPage", 1);
+		int pageSize = (int)params.getOrDefault("pageSize", 5);
 		try {
-			List<StaffDto> staffList = service.getList();
+			List<StaffDto> staffList = service.getList(currentPage, pageSize);
 			return ResponseEntity.ok(staffList);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

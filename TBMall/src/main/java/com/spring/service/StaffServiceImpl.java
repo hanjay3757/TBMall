@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.spring.dto.BoardDto;
+import com.spring.dto.PagingDto;
 import com.spring.dto.StaffDto;
 import com.spring.mapper.StaffMapper;
 
@@ -22,9 +24,25 @@ public class StaffServiceImpl implements StaffService {
 	private StaffMapper mapper;
 
 	@Override
-	public ArrayList<StaffDto> getList() {
+	public ArrayList<StaffDto> getList(int currentPage , int pageSize) {
 		log.info("비지니스 계층===========");
-		return mapper.getList();
+		
+		//페이징 계산
+		int offset = (currentPage-1)*pageSize;
+		
+		PagingDto pagingDto = new PagingDto(pageSize, offset);
+		
+		//리스트에 pagingDto 정보 얹기
+		ArrayList<StaffDto> staff = mapper.getList(pagingDto); 
+		
+		return staff;
+	}
+	
+	@Override
+	public int getStaffCount() {
+		int totalCount = mapper.getStaffCount();
+		
+		return totalCount;
 	}
 
 	// 관리자 정보 가져오기

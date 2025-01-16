@@ -26,7 +26,7 @@ function StaffRegister() {
       };
 
       const response = await axios.post(
-        'http://192.168.0.141:8080/mvc/staff/register',
+        'http://192.168.0.128:8080/mvc/staff/register',
         submitData,
         {
           headers: {

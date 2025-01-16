@@ -6,7 +6,7 @@
 	<!-- resultType 에 복수형(ArrayList 등)을 적는게 아님. 
 	그냥 dto 단수의 경로를 적어야됨. -->
 	<!-- 모든 회원 정보 -->
-	<select id="getList" resultType="com.spring.dto.StaffDto">
+	<select id="getList" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.StaffDto">
 		SELECT 
 			m.*,
 			a.admin_no,
@@ -16,8 +16,17 @@
 			LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
 		WHERE 
 			m.member_delete = 0 OR m.member_delete IS NULL
-		ORDER BY 
-			m.member_no DESC
+		LIMIT #{limit} OFFSET #{offset}
+	</select>
+	
+	<select id="getStaffCount" resultType="int">
+		SELECT 
+			count(*)
+		FROM 
+			tbmall_member m
+			LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
+		WHERE 
+			m.member_delete = 0 OR m.member_delete IS NULL
 	</select>
 	
 	<!-- 관리자 정보만 불러오기 -->

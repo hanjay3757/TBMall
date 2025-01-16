@@ -20,7 +20,7 @@ function Cart() {
   const loadCartItems = async () => {
     try {
       // API 호출로 장바구니 데이터 요청
-      const response = await axios.get('http://192.168.0.141:8080/mvc/stuff/api/cart', {
+      const response = await axios.get('http://192.168.0.128:8080/mvc/stuff/api/cart', {
         withCredentials: true // 쿠키 인증을 포함한 요청
       });
       console.log('장바구니 데이터:', response.data);
@@ -49,7 +49,7 @@ function Cart() {
     try {
       // DELETE 요청을 보내 아이템 삭제
       const response = await axios.delete(
-        `http://192.168.0.141:8080/mvc/stuff/api/cart/${cartId}`,
+        `http://192.168.0.128:8080/mvc/stuff/api/cart/${cartId}`,
         { withCredentials: true }
       );
 
@@ -68,7 +68,7 @@ function Cart() {
     try {
       // PATCH 요청으로 수량 업데이트
       const response = await axios.patch(
-        `http://192.168.0.141:8080/mvc/stuff/api/cart/${cart_id}`,
+        `http://192.168.0.128:8080/mvc/stuff/api/cart/${cart_id}`,
         { quantity: newQuantity },
         { withCredentials: true }
       );
@@ -95,7 +95,7 @@ function Cart() {
 
       // POST 요청으로 주문 처리
       const response = await axios.post(
-        'http://192.168.0.141:8080/mvc/stuff/api/cart/checkout',
+        'http://192.168.0.128:8080/mvc/stuff/api/cart/checkout',
         { orders: orderData },
         { withCredentials: true }
       );

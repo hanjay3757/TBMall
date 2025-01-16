@@ -7,7 +7,7 @@
 	<select id="getBoardlist" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.BoardDto">
 		SELECT * FROM tbmall_board 
 		WHERE board_delete =0 
-		LIMIT #{limit} OFFSET #{offset};
+		LIMIT #{limit} OFFSET #{offset}
 	</select>  
 	<!-- 게시판 글 읽기 -->
 	<select id="readContent" resultType="com.spring.dto.BoardDto">
