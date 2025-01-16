@@ -10,30 +10,36 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [rotations, setRotations] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);// 현제 페이지
+  const [pageSize , setPageSize] = useState(3); // 한 페이지당 물건수
+  const [totalPage , setTotalPage] = useState(0); // 전체 페이지 수
   const cardRefs = useRef({});
 
   useEffect(() => {
-    loadItems();
-  }, [refreshKey]);
+    loadItems(currentPage);
+  }, [refreshKey , currentPage]);
 
   useEffect(() => {
     if (location.state?.refresh) {
-      loadItems();
+      loadItems(currentPage);
     }
-  }, [location]);
+  }, [location ,currentPage]);
 
-  const loadItems = async () => {
+  const loadItems = async (page) => {
     try {
       setLoading(true);
       const response = await axios.get('/stuff/item/list', {
+        params: {currentPage: page , pageSize },
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       });
-      
-      const itemsToProcess = response.data;
+
+
+
+      const {items : itemsToProcess ,totalPage} = response.data;
       console.log('서버에서 받은 아이템 데이터:', itemsToProcess);
 
       // 재고가 0인 아이템은 장바구니에 있는지 확인 후 삭제 처리
@@ -82,6 +88,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
       });
 
       setItems(activeItems);
+      setTotalPage(totalPage);//총 페이지 수 저장
       
       const initialQuantities = {};
       activeItems.forEach(item => {
@@ -94,6 +101,12 @@ function ItemList({ isLoggedIn, isAdmin }) {
       setLoading(false);
     }
   };
+
+  const handlePageChange = (page) =>{
+    if (page < 1 || page > totalPage) return;
+    setCurrentPage(page);
+  };
+
 
   const refreshList = () => {
     setRefreshKey(prevKey => prevKey + 1);
@@ -308,8 +321,28 @@ function ItemList({ isLoggedIn, isAdmin }) {
                  
               )}
             </div>
+            
           </div>
+          
         ))}
+      </div>
+       {/* 페이지네이션 */}
+       <div className="pagination">
+        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+          이전
+        </button>
+        {Array.from({ length: totalPage }, (_, index) => (
+          <button
+            key={index + 1}
+            onClick={() => handlePageChange(index + 1)}
+            className={currentPage === index + 1 ? 'active' : ''}
+          >
+            {index + 1}
+          </button>
+        ))}
+        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPage}>
+          다음
+        </button>
       </div>
     </div>
   );

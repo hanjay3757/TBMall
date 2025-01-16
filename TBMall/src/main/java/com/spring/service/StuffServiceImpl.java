@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.dto.CartDto;
+import com.spring.dto.PagingDto;
 import com.spring.dto.StuffDto;
 import com.spring.mapper.StuffMapper;
 
@@ -20,9 +21,23 @@ public class StuffServiceImpl implements StuffService {
 	private StuffMapper mapper;
 
 	@Override
-	public List<StuffDto> getItemList() {
+	public List<StuffDto> getItemList(int currentPage , int pageSize) {
 		log.info("물건 목록 조회...");
-		return mapper.getItemList();
+		
+		//페이징 계산
+		int offset = (currentPage-1)*pageSize;
+		
+		PagingDto pagingDto  = new PagingDto(pageSize, offset);
+		
+		List<StuffDto> stuff = mapper.getItemList(pagingDto);
+		
+		return stuff;
+	}
+	
+	@Override
+	public int getCountItemList() {
+		int totalCount = mapper.getCountItemList();
+		return totalCount;
 	}
 
 	@Override

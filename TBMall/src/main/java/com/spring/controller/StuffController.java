@@ -1,5 +1,6 @@
 package com.spring.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -94,8 +96,23 @@ public class StuffController {
 	// 물건 목록 조회
 	@GetMapping("/item/list")
 	@ResponseBody
-	public List<StuffDto> getList() {
-		return service.getItemList();
+	public ResponseEntity<Map<String, Object>> getList(@RequestParam(defaultValue = "1") int currentPage ,@RequestParam(defaultValue = "3") int pageSize) {
+		//전체 등록된 물건 수 가져오기
+		int totalCount = service.getCountItemList();
+		
+		//총 페이지 수 계산
+		int totalPage = (int)Math.ceil((double)totalCount/pageSize);
+		
+		//현재 페이지에 해당하는 물건 목록 가져오기
+		List<StuffDto> stuffs = service.getItemList(currentPage, pageSize);
+		
+		//클라이언트에 반환할 데이터를 Map 에 담기
+		Map<String, Object> response = new HashMap<>();
+		response.put("items", stuffs);
+		response.put("totalPage", totalPage);
+		response.put("currentPage", currentPage);
+		
+		return ResponseEntity.ok(response);
 	}
 
 	// 물건 등록 페이지
