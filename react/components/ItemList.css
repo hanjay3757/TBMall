@@ -74,6 +74,9 @@
   transition: transform 0.2s ease;
   transform-style: preserve-3d;
   will-change: transform;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
 .item-card:hover {
@@ -111,11 +114,73 @@
 
 .items-container {
   perspective: 1000px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.item-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .item-content {
-  transform: translateZ(10px);
-  pointer-events: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.item-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+}
+
+.item-content p {
+  margin: 5px 0;
+  line-height: 1.4;
+}
+
+.cart-controls {
+  margin-top: auto;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.admin-controls {
+  padding-top: 10px;
+  margin-top: auto;
+  border-top: 1px solid #eee;
+}
+
+/* 반응형 디자인을 위한 미디어 쿼리 */
+@media (max-width: 1200px) {
+  .items-container {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .items-container {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  .item-card {
+    height: 450px;
+  }
 }
 
 .cart-controls, .admin-controls {

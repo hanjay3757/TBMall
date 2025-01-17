@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function BoardEdit({ isLoggedIn, isAdmin }) {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     useEffect(() => {
         const fetchBoardData = async () => {
             try {
-                const response = await axios.get(`http://192.168.0.141:8080/mvc/board/read?board_no=${boardNo}`);
+                const response = await axios.get(`/board/read?board_no=${boardNo}`);
                 const data = response.data;
 
                 setBoardData((prevData) => ({
@@ -66,25 +67,23 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // const params = new URLSearchParams();
-        // params.append('board_no', boardNo);
-        // params.append('member_no', memberNo);
-        // params.append('board_title', boardData.board_title);
-        // params.append('board_content', boardData.board_content);
-        const data ={
-            board_no : boardNo,
-            member_no : memberNo,
-            board_title : boardData.board_title,
-            board_content : boardData.board_content,
+        const data = {
+            board_no: boardNo,
+            member_no: memberNo,
+            board_title: boardData.board_title,
+            board_content: boardData.board_content,
         }
 
-        
         try {
-                const response = await axios.post('http://192.168.0.141:8080/mvc/board/editContent', JSON.stringify(data), {
+            const response = await axios.post(
+                '/board/editContent',
+                JSON.stringify(data),
+                {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                });
+                }
+            );
 
             if (response.data.success) {
                 alert('글 수정 완료');

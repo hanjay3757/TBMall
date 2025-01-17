@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function Register() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function Register() {
       });
 
       const response = await axios.post(
-        'http://192.168.0.141:8080/mvc/staff/register',
+        '/staff/register',
         requestData,
         {
           headers: {
@@ -42,19 +43,14 @@ function Register() {
       );
 
       if (response.data.success) {
-        alert('직원 등록이 완료되었습니다.');
-        navigate('/');
+        alert('등록이 완료되었습니다.');
+        navigate('/staff/list');
       } else {
         alert(response.data.message || '등록에 실패했습니다.');
       }
     } catch (error) {
       console.error('등록 실패:', error);
-      if (error.response) {
-        console.error('에러 응답:', error.response.data);
-        alert(error.response.data.message || '등록 중 오류가 발생했습니다.');
-      } else {
-        alert('서버와의 통신 중 오류가 발생했습니다.');
-      }
+      alert('등록 중 오류가 발생했습니다.');
     }
   };
 

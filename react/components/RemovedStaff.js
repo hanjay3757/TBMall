@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function RemovedStaff() {
   const [staffList, setStaffList] = useState([]);
@@ -8,7 +10,7 @@ function RemovedStaff() {
   useEffect(() => {
     const fetchRemovedStaff = async () => {
       try {
-        const response = await axios.post('http://192.168.0.141:8080/mvc/staff/removelist', {}, {
+        const response = await axios.post('/staff/removelist', {}, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
@@ -35,7 +37,7 @@ function RemovedStaff() {
       const params = new URLSearchParams();
       params.append('member_no', member_no);
       
-      const response = await axios.post(`http://192.168.0.141:8080/mvc/staff/restore`, params, {
+      const response = await axios.post('/staff/restore', params, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -44,7 +46,7 @@ function RemovedStaff() {
 
       if (response.data.success) {
         // 복구 성공 시 목록 새로고침
-        const listResponse = await axios.post('http://192.168.0.141:8080/mvc/staff/removelist', {}, {
+        const listResponse = await axios.post('/staff/removelist', {}, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',

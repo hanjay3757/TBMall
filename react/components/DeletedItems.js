@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function DeletedItems() {
   const [deletedItems, setDeletedItems] = useState([]);
@@ -39,7 +40,7 @@ function DeletedItems() {
       params.append('itemStock', 1);
 
       const response = await axios.post(
-        'http://192.168.0.141:8080/mvc/stuff/item/restore',
+        '/stuff/item/restore',
         params,
         {
           withCredentials: true,

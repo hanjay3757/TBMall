@@ -1,25 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function BoardWrite({ isLoggedIn }) {
     const navigate = useNavigate();
-    // useEffect(() => {
-    //     const loginStaff = JSON.parse(localStorage.getItem('loginStaff'));
-    //     if (loginStaff) {
-    //         setBoardData((prevData) => ({ ...prevData, member_no: loginStaff.member_no }));
-    //     }
-    // }, []);
-    
-
-    // 로그인 상태에서 계정 번호를 가져옴
     const memberNo = isLoggedIn?.member_no || localStorage.getItem('member_no') || '';
 
     const [boardData, setBoardData] = useState({
         member_no: memberNo,
         board_title: '',
         board_content: ''
-       
     });
 
     console.log("전송할 데이터:" ,boardData);
@@ -46,7 +37,7 @@ function BoardWrite({ isLoggedIn }) {
             console.log('등록할 데이터:', Object.fromEntries(params));
 
             const response = await axios.post(
-                'http://192.168.0.141:8080/mvc/board/write',
+                '/board/write',
                 params,
                 {
                     headers: {

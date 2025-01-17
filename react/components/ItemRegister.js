@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './ItemRegister.css';
+import { API_BASE_URL } from '../config';
 
 function ItemRegister() {
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ function ItemRegister() {
       console.log('등록할 데이터:', Object.fromEntries(params));
 
       const response = await axios.post(
-        'http://192.168.0.141:8080/mvc/stuff/item/register',
+        '/stuff/item/register',
         params,
         {
           headers: {
@@ -46,17 +48,17 @@ function ItemRegister() {
   };
 
   return (
-    <div className="item-register">
+    <div className="item-register-container">
       <h2>물건 등록</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="item-register-form">
         <div className="form-group">
-          <label>이미지 URL</label>
+          <label htmlFor="imageUrl">이미지 URL</label>
           <input
             type="text"
-            name="image_url"
+            id="imageUrl"
+            placeholder="이미지 URL을 입력하세요"
             value={itemData.image_url}
             onChange={(e) => setItemData({...itemData, image_url: e.target.value})}
-            placeholder="이미지 URL을 입력하세요"
           />
           {itemData.image_url && (
             <div className="image-preview">
@@ -71,51 +73,51 @@ function ItemRegister() {
           )}
         </div>
         <div className="form-group">
-          <label>물건 이름</label>
+          <label htmlFor="itemName">물건 이름</label>
           <input
             type="text"
-            name="item_name"
+            id="itemName"
+            placeholder="물건 이름을 입력하세요"
             value={itemData.item_name}
             onChange={(e) => setItemData({...itemData, item_name: e.target.value})}
             required
           />
         </div>
         <div className="form-group">
-          <label>가격</label>
+          <label htmlFor="price">가격</label>
           <input
             type="number"
-            name="item_price"
+            id="price"
+            placeholder="가격을 입력하세요"
             value={itemData.item_price}
             onChange={(e) => setItemData({...itemData, item_price: e.target.value})}
             required
-            min="0"
           />
         </div>
         <div className="form-group">
-          <label>재고</label>
+          <label htmlFor="stock">재고</label>
           <input
             type="number"
-            name="item_stock"
+            id="stock"
+            placeholder="재고를 입력하세요"
             value={itemData.item_stock}
             onChange={(e) => setItemData({...itemData, item_stock: e.target.value})}
             required
-            min="0"
           />
         </div>
         <div className="form-group">
-          <label>설명</label>
+          <label htmlFor="description">설명</label>
           <textarea
-            name="item_description"
+            id="description"
+            placeholder="물건 설명을 입력하세요"
             value={itemData.item_description}
             onChange={(e) => setItemData({...itemData, item_description: e.target.value})}
             required
           />
         </div>
         <div className="button-group">
-          <button type="submit">등록</button>
-          <button type="button" onClick={() => navigate('/stuff/item/list')}>
-            취소
-          </button>
+          <button type="submit" className="submit-button">등록</button>
+          <button type="button" onClick={() => navigate(-1)} className="cancel-button">취소</button>
         </div>
       </form>
     </div>

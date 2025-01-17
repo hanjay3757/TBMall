@@ -18,7 +18,7 @@ import com.spring.service.StaffService;
 @RestController
 @RequestMapping("/staff")
 @CrossOrigin(
-    origins = "http://192.168.0.141:3000",
+    origins = "http://192.168.0.128:3000",
     allowCredentials = "true",
     allowedHeaders = "*",
     exposedHeaders = "*",
@@ -49,12 +49,12 @@ public class StaffController {
             }
             
             return ResponseEntity.ok()
-                               .header("Access-Control-Allow-Origin", "http://192.168.0.141:3000")
+                               .header("Access-Control-Allow-Origin", "http://192.168.0.128:3000")
                                .header("Access-Control-Allow-Credentials", "true")
                                .body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                               .header("Access-Control-Allow-Origin", "http://192.168.0.141:3000")
+                               .header("Access-Control-Allow-Origin", "http://192.168.0.128:3000")
                                .header("Access-Control-Allow-Credentials", "true")
                                .body(Collections.singletonMap("error", e.getMessage()));
         }
@@ -74,7 +74,7 @@ public class StaffController {
 
     @PostMapping("/edit")
     @CrossOrigin(
-        origins = "http://192.168.0.141:3000",
+        origins = "http://192.168.0.128:3000",
         allowCredentials = "true",
         exposedHeaders = {"Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"}
     )
@@ -98,7 +98,7 @@ public class StaffController {
                 response.put("success", false);
                 response.put("message", "로그인이 필요합니다.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                   .header("Access-Control-Allow-Origin", "http://192.168.0.141:3000")
+                                   .header("Access-Control-Allow-Origin", "http://192.168.0.128:3000")
                                    .header("Access-Control-Allow-Credentials", "true")
                                    .body(response);
             }
@@ -109,7 +109,7 @@ public class StaffController {
                     response.put("success", false);
                     response.put("message", "현재 비밀번호가 올바르지 않습니다.");
                     return ResponseEntity.badRequest()
-                                       .header("Access-Control-Allow-Origin", "http://192.168.0.141:3000")
+                                       .header("Access-Control-Allow-Origin", "http://192.168.0.128:3000")
                                        .header("Access-Control-Allow-Credentials", "true")
                                        .body(response);
                 }
@@ -134,14 +134,14 @@ public class StaffController {
                 response.put("success", true);
                 response.put("message", "직원 정보가 수정되었습니다.");
                 return ResponseEntity.ok()
-                                   .header("Access-Control-Allow-Origin", "http://192.168.0.141:3000")
+                                   .header("Access-Control-Allow-Origin", "http://192.168.0.128:3000")
                                    .header("Access-Control-Allow-Credentials", "true")
                                    .body(response);
             } else {
                 response.put("success", false);
                 response.put("message", "직원 정보 수정에 실패했습니다.");
                 return ResponseEntity.badRequest()
-                                   .header("Access-Control-Allow-Origin", "http://192.168.0.141:3000")
+                                   .header("Access-Control-Allow-Origin", "http://192.168.0.128:3000")
                                    .header("Access-Control-Allow-Credentials", "true")
                                    .body(response);
             }
@@ -150,7 +150,7 @@ public class StaffController {
             response.put("success", false);
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest()
-                               .header("Access-Control-Allow-Origin", "http://192.168.0.141:3000")
+                               .header("Access-Control-Allow-Origin", "http://192.168.0.128:3000")
                                .header("Access-Control-Allow-Credentials", "true")
                                .body(response);
         }
