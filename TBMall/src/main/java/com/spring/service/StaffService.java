@@ -3,6 +3,7 @@ package com.spring.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.spring.dto.PointDto;
 import com.spring.dto.StaffDto;
 
 public interface StaffService {
@@ -32,5 +33,8 @@ public interface StaffService {
 	public void register(StaffDto staffDto);
 
 	public void adminAppoint(Long member_no); // 추가
+	
+//	//포인트 및 직위 관련
+//	public PointDto getPointPosition(Long member_no);
 
 }

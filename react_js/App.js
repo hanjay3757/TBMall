@@ -14,14 +14,15 @@ import BoardList from './components/BoardList';
 import ReadContent from './components/ReadContent';
 import BoardWrite from './components/BoardWrite';
 import BoardEdit from './components/BoardEdit';
+import { API_BASE_URL, CLIENT_URL } from './config';
 //ㄴ 로딩되는 변수지정 폴더 위치 적어놓음
 // axios 기본 설정
-axios.defaults.baseURL = 'http://192.168.0.128:8080/mvc';
+axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common = {
   'Content-Type': 'application/json',
   'Accept': 'application/json',
-  'Access-Control-Allow-Origin': 'http://192.168.0.128:3000'
+  'Access-Control-Allow-Origin':CLIENT_URL
 };
 
 const StaffTable = ({ staffList, onDelete, onEdit, currentPage, totalPage, onPageChange }) => {
@@ -88,7 +89,7 @@ function App() {
   //사용자가 관리자일때 상태를 관리하는 변수
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // 사용자가 로그인 상태인지 확인함 
-  // const [userInfo, setUserInfo] = useState(null); //사용자 정보를 저장
+  const [userInfo, setUserInfo] = useState(null); //사용자 정보를 저장
   const [staffList, setStaffList] = useState([]);
   //직원 목록을 저장배열
   const [loading , setLoading] = useState(true);
@@ -97,6 +98,8 @@ function App() {
 //페이지 네비게이션을 위한 축 지정
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const [totalPage, setTotalPage] = useState(1); // 총 페이지 수
+
+ 
 
   useEffect(() => {
 
@@ -121,6 +124,7 @@ function App() {
       }
     })
     .then(response => {
+      console.log('로그인 상태 확인 응답:',response.data);
       setIsLoggedIn(response.data.isLoggedIn);
       setIsAdmin(response.data.isAdmin);
     })
@@ -149,16 +153,23 @@ function App() {
     axios.post('http://192.168.0.128:8080/mvc/staff/login', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
-      }
+      },
+      withCredentials: true,
     })
       .then(response => {
         /* 서버가 응답한 데이터가 성공적인 로그인인지 확인함 */
         if (response.data.success) {
           setIsLoggedIn(true); //로그인 상태를 true로 설정
-          //로그인 성공시 member_no 만 로컬 스토리지에 저장
-          localStorage.setItem('member_no',response.data.member_no);
-          console.log('stored member_no:',response.data.member_no);
           setIsAdmin(response.data.isAdmin); // isadmin 값으로 관리자여부를 설정함
+          
+          setUserInfo({
+            name: response.data.name || '',
+            points: response.data.points || 0,
+          });
+
+          //로그인 성공시 member_no 만 로컬 스토리지에 저장
+          localStorage.setItem('member_no',response.data.member_no || '');
+          console.log('stored member_no:',response.data.member_no);
           console.log(response.data.isAdmin);
           navigate('/stuff/item/list'); // 해당 페이지로 이동하는 함수
         } else {
@@ -320,7 +331,15 @@ return (
               <button type="submit">로그인</button>
             </form>
           ) : (
+            <>
+            {/* 사용자 정보 표시 */}
+            {userInfo && (
+              <span>
+                {userInfo.name}님 안녕하세요. 잔여 포인트: {userInfo.points}
+              </span>
+            )}
             <button onClick={handleLogout}>로그아웃</button>
+          </>
           )}
         </div>
       </div>

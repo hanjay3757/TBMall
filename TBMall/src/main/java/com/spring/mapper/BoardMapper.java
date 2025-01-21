@@ -26,4 +26,6 @@ public interface BoardMapper {
 	public void writeComment(CommentDto commentDto);//댓글 쓰기
 
 	public int getCommentCount(@Param("board_no") Long board_no);
+	
+	
 }

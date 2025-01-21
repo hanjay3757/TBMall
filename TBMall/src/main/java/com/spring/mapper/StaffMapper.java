@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.spring.dto.PagingDto;
+import com.spring.dto.PointDto;
 import com.spring.dto.StaffDto;
 
 public interface StaffMapper {
@@ -41,4 +42,10 @@ public interface StaffMapper {
 
 	// 직원 등록
 	public void register(StaffDto staffDto);
+	
+	
+//	
+//	//직위 및 포인트 관련
+//	public PointDto getPointPosition (long member_no); //직위와 잔여 포인트 가져오기
+	
 }

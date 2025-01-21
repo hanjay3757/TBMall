@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.spring.dto.PointDto;
 import com.spring.dto.StaffDto;
+import com.spring.service.PointService;
 import com.spring.service.StaffService;
 
 import lombok.AllArgsConstructor;
@@ -35,39 +37,39 @@ import lombok.extern.log4j.Log4j;
 @AllArgsConstructor
 public class StaffController {
 	private StaffService service;
+	private PointService pointservice;
 
 	@PostMapping("/list")
 	public ResponseEntity<Map<String, Object>> getList(@RequestBody Map<String, Object> params) {
-		int currentPage = (int)params.getOrDefault("currentPage", 1);
-		int pageSize = (int)params.getOrDefault("pageSize", 5);
-		
-		
-		System.out.println("currentPage :" +currentPage);
-		System.out.println("Pagesize :" +pageSize);
-		
-		//전체 회원 수 가져오기
+		int currentPage = (int) params.getOrDefault("currentPage", 1);
+		int pageSize = (int) params.getOrDefault("pageSize", 5);
+
+		System.out.println("currentPage :" + currentPage);
+		System.out.println("Pagesize :" + pageSize);
+
+		// 전체 회원 수 가져오기
 		int totaCount = service.getStaffCount();
-		
-		//총 페이지 수 계산
-		int totalPage = (int)Math.ceil((double)totaCount/pageSize);
-		
-		//현재 페이지에 해당하는 목록 가져오기
+
+		// 총 페이지 수 계산
+		int totalPage = (int) Math.ceil((double) totaCount / pageSize);
+
+		// 현재 페이지에 해당하는 목록 가져오기
 		ArrayList<StaffDto> staff = service.getList(currentPage, pageSize);
-		
-		//클라이언트로 반환할 데이터 Map에 담기
+
+		// 클라이언트로 반환할 데이터 Map에 담기
 		Map<String, Object> response = new HashMap<>();
 		response.put("staff", staff);
 		response.put("totalPage", totalPage);
 		response.put("currentPage", currentPage);
-		
-		//응답 반환
+
+		// 응답 반환
 		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/list")
 	public ResponseEntity<?> getStaffList(@RequestBody Map<String, Object> params) {
-		int currentPage = (int)params.getOrDefault("currentPage", 1);
-		int pageSize = (int)params.getOrDefault("pageSize", 5);
+		int currentPage = (int) params.getOrDefault("currentPage", 1);
+		int pageSize = (int) params.getOrDefault("pageSize", 5);
 		try {
 			List<StaffDto> staffList = service.getList(currentPage, pageSize);
 			return ResponseEntity.ok(staffList);
@@ -175,22 +177,38 @@ public class StaffController {
 	public Map<String, Object> login(@RequestParam("staffId") String staffId, @RequestParam("password") String password,
 			HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		StaffDto staff = service.login(staffId, password);
 
-		if (staff != null) {
-			if (staff.getMember_delete() == 1) {
+		try {
+			StaffDto staff = service.login(staffId, password);
+			if (staff != null) {
+				if (staff.getMember_delete() == 1) {
+					response.put("success", false);
+					response.put("message", "삭제된 계정입니다. 관리자에게 문의하세요.");
+					return response;
+				}
+				PointDto pointDto = pointservice.getPointPosition(staff.getMember_no());
+
+				session.setAttribute("loginStaff", staff);
+				session.setAttribute("pointPosition", pointDto);
+
+				response.put("success", true);
+				response.put("member_no", staff.getMember_no());
+				response.put("isAdmin", staff.getAdmins() == 1);
+//				response.put("staff", staff);
+				response.put("name",staff.getMember_nick());
+				response.put("points", pointDto != null ? pointDto.getPoint_amount() : 0);
+
+			} else {
 				response.put("success", false);
-				response.put("message", "삭제된 계정입니다. 관리자에게 문의하세요.");
-				return response;
+				response.put("message", "아이디 또는 비밀번호가 올바르지 않습니다.");
 			}
-			session.setAttribute("loginStaff", staff);
-			response.put("success", true);
-			response.put("member_no", staff.getMember_no());
-			response.put("isAdmin", staff.getAdmins() == 1);
-		} else {
+
+		} catch (Exception e) {
 			response.put("success", false);
-			response.put("message", "아이디 또는 비밀번호가 올바르지 않습니다.");
+			response.put("message", "로그인 처리 중 오류가 발생했습니다.");
+			e.printStackTrace();
 		}
+
 		return response;
 	}
 
@@ -202,12 +220,12 @@ public class StaffController {
 		return response;
 	}
 
-	@RequestMapping(value = "/edit", method = {RequestMethod.GET, RequestMethod.POST})
+	@RequestMapping(value = "/edit", method = { RequestMethod.GET, RequestMethod.POST })
 	public ResponseEntity<?> editStaff(@RequestBody(required = false) StaffDto staffDto, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		try {
 			StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-			
+
 			// GET 요청 처리
 			if (staffDto == null) {
 				if (loginStaff == null) {
@@ -216,7 +234,7 @@ public class StaffController {
 				}
 				return ResponseEntity.ok(service.read(loginStaff.getMember_no()));
 			}
-			
+
 			// POST 요청 처리
 			if (loginStaff == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -236,8 +254,7 @@ public class StaffController {
 		} catch (Exception e) {
 			response.put("success", false);
 			response.put("message", e.getMessage());
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body(response);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 	}
 
@@ -269,17 +286,29 @@ public class StaffController {
 	@PostMapping("/check-login")
 	public Map<String, Object> checkLoginStatus(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-
-		if (loginStaff != null) {
-			response.put("isLoggedIn", true);
-			// getAdmins()가 1이면 관리자
-			response.put("isAdmin", loginStaff.getAdmins() == 1);
-			response.put("admin_no", loginStaff.getAdmin_no());
-			response.put("delete_right_no", loginStaff.getDelete_right_no());
-		} else {
+		
+		try {
+			StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+			PointDto loginStaffPoint = (PointDto) session.getAttribute("pointPosition");
+			if (loginStaff != null) {
+				// getAdmins()가 1이면 관리자
+				response.put("isAdmin", loginStaff.getAdmins() == 1);
+				response.put("admin_no", loginStaff.getAdmin_no());
+				response.put("name", loginStaff.getMember_nick());
+				response.put("delete_right_no", loginStaff.getDelete_right_no());
+				response.put("name",loginStaff.getMember_nick());
+				
+				response.put("points", loginStaffPoint != null ? loginStaffPoint.getPoint_amount() : 0);
+				response.put("isLoggedIn", true);
+			} else {
+				response.put("isLoggedIn", false);
+				response.put("isAdmin", false);
+			}
+			
+		}catch(Exception e){
 			response.put("isLoggedIn", false);
 			response.put("isAdmin", false);
+			  e.printStackTrace();
 		}
 
 		return response;
@@ -384,5 +413,24 @@ public class StaffController {
 
 		return response;
 	}
+
+//	//포인트 및 직위 가져오기
+//	
+//	@GetMapping("/point-position")
+//	public ResponseEntity<?> getPointPosition(@RequestParam("member_no") Long member_no) {
+//	    try {
+//	        PointDto pointDto = service.getPointPosition(member_no);
+//	        if (pointDto != null) {
+//	            return ResponseEntity.ok(pointDto);
+//	        } else {
+//	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//	                                 .body(Collections.singletonMap("message", "회원 정보를 찾을 수 없습니다."));
+//	        }
+//	    } catch (Exception e) {
+//	        log.error("포인트 및 직위 조회 실패: " + e.getMessage());
+//	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//	                             .body(Collections.singletonMap("message", "오류가 발생했습니다."));
+//	    }
+//	}
 
 }

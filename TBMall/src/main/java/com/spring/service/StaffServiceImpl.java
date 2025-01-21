@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.spring.dto.BoardDto;
 import com.spring.dto.PagingDto;
+import com.spring.dto.PointDto;
 import com.spring.dto.StaffDto;
 import com.spring.mapper.StaffMapper;
 
@@ -141,4 +142,9 @@ public class StaffServiceImpl implements StaffService {
 	public void adminAppoint(Long member_no) {
 		mapper.adminAppoint(member_no);
 	}
+	
+//	@Override
+//	public PointDto getPointPosition(Long member_no) {
+//		return mapper.getPointPosition(member_no);
+//	}
 }
