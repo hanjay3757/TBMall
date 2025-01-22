@@ -293,3 +293,68 @@ select
     tbmall_position j on m.position_no = j.position_no
     where
 	m.member_no =1;
+    
+    
+-- 리뷰 테이블 생성
+CREATE TABLE tbmall_reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    item_id BIGINT NOT NULL,
+    member_no INT NOT NULL,
+    rating DECIMAL(2,1) NOT NULL CHECK (rating >= 0 AND rating <= 5),
+    review_content TEXT,
+    review_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (item_id) REFERENCES tbmall_stuff(item_id) ON DELETE CASCADE,
+    FOREIGN KEY (member_no) REFERENCES tbmall_member(member_no) ON DELETE CASCADE
+);
+
+-- 리뷰 이미지 테이블 생성 
+CREATE TABLE tbmall_review_images (
+    image_id INT AUTO_INCREMENT PRIMARY KEY,
+    review_id INT NOT NULL,
+    image_path VARCHAR(500) NOT NULL,
+    upload_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (review_id) REFERENCES tbmall_reviews(review_id) ON DELETE CASCADE
+);
+
+-- 상품의 리뷰 목록 조회 (이미지 포함)
+SELECT 
+    r.review_id,
+    r.member_no,
+    m.member_nick,
+    r.rating,
+    r.review_content,
+    DATE_FORMAT(r.review_date, '%Y-%m-%d %H:%i') as review_date,
+    GROUP_CONCAT(ri.image_path ORDER BY ri.image_id) as review_images
+FROM 
+    tbmall_reviews r
+    LEFT JOIN tbmall_review_images ri ON r.review_id = ri.review_id
+    LEFT JOIN tbmall_member m ON r.member_no = m.member_no
+WHERE 
+    r.item_id = 1
+GROUP BY 
+    r.review_id, r.member_no, m.member_nick, r.rating, r.review_content, r.review_date
+ORDER BY 
+    r.review_date DESC;
+
+-- 상품의 평균 평점 조회
+SELECT 
+    COUNT(*) as review_count,
+    ROUND(AVG(rating), 1) as avg_rating
+FROM 
+    tbmall_reviews
+WHERE 
+    item_id = 1;
+
+-- 리뷰 등록
+INSERT INTO tbmall_reviews (
+    item_id, member_no, rating, review_content
+) VALUES (
+    1, 1, 4.5, '상품이 매우 좋습니다!'
+);
+
+-- 리뷰 이미지 등록
+INSERT INTO tbmall_review_images (
+    review_id, image_path
+) VALUES (
+    LAST_INSERT_ID(), '/images/reviews/example.jpg'
+);

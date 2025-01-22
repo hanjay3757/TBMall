@@ -1,0 +1,225 @@
+/* 공통 스타일 */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    border-color: #4CAF50;
+}
+
+.button-group {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.button-group button, .button-group a {
+    padding: 0.5rem 1.25rem;
+    margin: 0 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.button-group button {
+    background-color: #4CAF50;
+    color: #fff;
+}
+
+.button-group button:hover {
+    background-color: #45a049;
+}
+
+.button-group a {
+    background-color: #f44336;
+    color: #fff;
+    display: inline-block;
+}
+
+.button-group a:hover {
+    background-color: #e53935;
+}
+
+/* 로그인 페이지 스타일 */
+.login-container {
+    width: 320px;
+    margin: 100px auto;
+    padding: 1.25rem;
+    border: 1px solid #ddd;
+    border-radius: 0.3125rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 0.625rem;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: #45a049;
+}
+
+/* 에러 메시지 스타일 */
+.error-message {
+    color: #e74c3c;
+    margin-bottom: 0.625rem;
+    font-weight: bold;
+}
+
+/* 폼 컨테이너 스타일 */
+.edit-form, .password-form, .register-form {
+    width: 420px;
+    margin: 50px auto;
+    padding: 1.25rem;
+    border: 1px solid #ddd;
+    border-radius: 0.3125rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 물건 목록 스타일 */
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    padding: 1.25rem;
+}
+
+.item-card {
+    border: 1px solid #ddd;
+    padding: 0.9375rem;
+    text-align: center;
+    border-radius: 0.3125rem;
+    transition: box-shadow 0.3s ease;
+}
+
+.item-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 헤더 스타일 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.auth-buttons {
+    text-align: right;
+}
+
+.auth-buttons a {
+    padding: 0.3125rem 0.625rem;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4CAF50;
+    border-radius: 0.25rem;
+    margin-left: 0.625rem;
+    transition: background-color 0.3s ease;
+}
+
+.auth-buttons a:hover {
+    background-color: #45a049;
+}
+
+/* 테이블 스타일 */
+.staff-grid, .staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.25rem;
+}
+
+.staff-grid th, .staff-grid td,
+.staff-table th, .staff-table td {
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.staff-grid th, .staff-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* 관리자 메뉴 스타일 */
+.admin-menu {
+    margin: 1.25rem;
+    padding: 0.625rem;
+    background-color: #f8f9fa;
+    border-radius: 0.3125rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-menu a {
+    margin-right: 0.625rem;
+    padding: 0.3125rem 0.625rem;
+    text-decoration: none;
+    color: #fff;
+    background-color: #4CAF50;
+    border-radius: 0.25rem;
+    transition: background-color 0.3s ease;
+}
+
+.admin-menu a:hover {
+    background-color: #45a049;
+}
+
+/* 섹션 제목 스타일 */
+.section-title {
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.625rem;
+    border-bottom: 2px solid #4CAF50;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 상단 메뉴 스타일 */
+.top-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem 1.25rem;
+    background-color: #f8f9fa;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 장바구니 링크 스타일 */
+.cart-link {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.cart-link:hover {
+    background-color: #0056b3;
+} 
