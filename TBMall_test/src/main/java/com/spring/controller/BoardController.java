@@ -1,14 +1,20 @@
 package com.spring.controller;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.dto.BoardDto;
+import com.spring.dto.CommentDto;
 import com.spring.dto.StaffDto;
 import com.spring.service.BoardService;
 
@@ -25,21 +32,49 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @RequestMapping("/board/*")
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-		RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS }, allowCredentials = "true")
+@CrossOrigin(
+	origins = "http://192.168.0.128:3000",
+	allowedHeaders = "*",
+	methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
+			   RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
+	allowCredentials = "true"
+)
 @AllArgsConstructor
 public class BoardController {
 	private BoardService service;
 
-	@GetMapping("/list")
-	public List<BoardDto> getBoardlist() {
-		return service.getBoardlist();
-	}
+	 @GetMapping("/list")
+	    public ResponseEntity<Map<String, Object>> getBoardList(@RequestParam(defaultValue = "1") int currentPage ,@RequestParam(defaultValue = "5") int pageSize) {
+	        // 1. 전체 게시글 수 가져오기
+	        int totalCount = service.getPostCount();
+
+//	        // 2. 페이지당 보여줄 게시글 수
+//	        int pageSize = 5;
+
+	        // 3. 총 페이지 수 계산
+	        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
+
+	        // 4. 현재 페이지에 해당하는 게시글 가져오기
+	        ArrayList<BoardDto> boards = service.getBoardlist(currentPage,pageSize);
+
+	        // 5. 클라이언트로 반환할 데이터를 Map에 담기
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("boards", boards);          // 현재 페이지 게시글 목록
+	        response.put("totalPages", totalPages);  // 전체 페이지 수
+	        response.put("currentPage", currentPage); // 요청한 현재 페이지 번호
+
+	        // 6. 응답 반환
+	        return ResponseEntity.ok(response);
+	    }
+	
 
 	// 게시판 내 글 내용 보기
 	@GetMapping("/read")
-	public BoardDto readContent(@RequestParam("board_no") Long board_no) {
-		return service.readContent(board_no);
+	public BoardDto readContent(@RequestParam("board_no") Long board_no, HttpSession session) {
+		BoardDto board = service.readContent(board_no);
+		session.setAttribute("currentBoard", board);
+		return board;
+
 	}
 
 	// 게시판 글 작성 페이지(Getmapping)
@@ -52,12 +87,13 @@ public class BoardController {
 	// 게시판 글 작성 처리(Postmapping)
 	@PostMapping("/write")
 	@ResponseBody
-	public Map<String, Object> writeProcess(BoardDto dto, HttpSession session) {
+	public Map<String, Object> writeProcess(@ModelAttribute BoardDto dto, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
 		try {
 			dto.setMember_no(loginStaff.getMember_no());
+			System.out.println("받아온 boardDto:" + dto);// 디버깅용
 			service.writeContent(dto);
 			response.put("success", true);
 			response.put("message", "글이 작성되었습니다.");
@@ -70,326 +106,174 @@ public class BoardController {
 		return response;
 	}
 
-//	// 관리자 정보 불러오기
-//	@GetMapping("/adminlist")
-//	public List<StaffDto> getAdminlist() {
-//		return service.getAdminList();
-//	}
-//
-//	@GetMapping("/read")
-//	public StaffDto read(@RequestParam("member_no") Long member_no) {
-//		return service.read(member_no);
-//	}
-//	// 작동중
-//
 	// 게시글 삭제 Get ->Post 변경 필요
-	@PostMapping("/deleteOneContent")
-	public Map<String, Object> deleteOneContent(@RequestParam("board_no") Long board_no,
-//			@RequestParam("member_no") Long member_no, 
-			HttpSession session) {
+	@RequestMapping(value = "/deleteOneContent", method = {RequestMethod.GET, RequestMethod.POST})
+	public Map<String, Object> deleteOneContent(@RequestBody Map<String, Long> params, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+		try {
+			StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+			Long board_no = params.get("board_no");
+			
+			if (board_no == null) {
+				response.put("success", false);
+				response.put("message", "게시글 번호가 필요합니다.");
+				return response;
+			}
+			
+			if (loginStaff == null) {
+				response.put("success", false);
+				response.put("message", "로그인이 필요합니다.");
+				return response;
+			}
 
-		if (loginStaff == null) {
+			if (loginStaff.getAdmins() != 1) {
+				response.put("success", false);
+				response.put("message", "관리자 권한이 필요합니다.");
+				return response;
+			}
+
+			// 게시글 삭제 처리
+			int result = service.deleteOneContent(board_no);
+			if (result > 0) {
+				response.put("success", true);
+				response.put("message", "게시글이 성공적으로 삭제되었습니다.");
+			} else {
+				response.put("success", false);
+				response.put("message", "게시글 삭제에 실패했습니다.");
+			}
+		} catch (Exception e) {
+			log.error("게시글 삭제 실패: " + e.getMessage());
 			response.put("success", false);
-			response.put("message", "로그인이 필요합니다.");
-			return response;
+			response.put("message", "게시글 삭제 중 오류가 발생했습니다.");
 		}
-//
-//		if (loginStaff.getMember_no() != member_no) {
-//			response.put("success", false);
-//			response.put("message", "해당글 삭제에 관한 권한이 없습니다.");
-//			return response;
-//		}
-//
-//		try {
-//			if (loginStaff.getMember_no().equals(member_no)) {
-//				response.put("success", false);
-//				response.put("message", "자신의 계정은 삭제할 수 없습니다.");
-//				return response;
-//			}
-
-		service.deleteOneContent(board_no);
-		response.put("success", true);
-		response.put("message", "게시글이 성공적으로 삭제되었습니다.");
-//		} catch (RuntimeException e) {
-//			response.put("success", false);
-//			response.put("message", e.getMessage());
-//		}
-
 		return response;
 	}
 
-//
-////c
-//	@PostMapping("/restore")
-//	public Map<String, Object> restore(@RequestParam("member_no") Long member_no, HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
-//		if (loginStaff == null) {
-//			response.put("success", false);
-//			response.put("message", "로그인이 필요합니다.");
-//			return response;
-//		}
-//
-//		if (loginStaff.getAdmins() != 1 || loginStaff.getDelete_right_no() != 1) {
-//			response.put("success", false);
-//			response.put("message", "삭제 권한이 있는 관리자만 복구할 수 있습니다.");
-//			return response;
-//		}
-//
-//		try {
-//			service.restore(member_no);
-//			response.put("success", true);
-//			response.put("message", "직원이 성공적으로 복구되었습니다.");
-//		} catch (RuntimeException e) {
-//			response.put("success", false);
-//			response.put("message", e.getMessage());
-//		}
-//
-//		return response;
-//	}
-//
-//	@GetMapping("/removelist")
-//	public Map<String, Object> getRemoveList(HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
-//		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-//			response.put("success", false);
-//			response.put("message", "관리자 권한이 필요합니다.");
-//			return response;
-//		}
-//
-//		response.put("success", true);
-//		response.put("list", service.getDeletedList());
-//		return response;
-//	}
-//
-//	@PostMapping("/login")
-//	public Map<String, Object> login(@RequestParam("staffId") String staffId, @RequestParam("password") String password,
-//			HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto staff = service.login(staffId, password);
-//
-//		if (staff != null) {
-//			if (staff.getMember_delete() == 1) {
-//				response.put("success", false);
-//				response.put("message", "삭제된 계정입니다. 관리자에게 문의하세요.");
-//				return response;
-//			}
-//			session.setAttribute("loginStaff", staff);
-//			response.put("success", true);
-//			response.put("isAdmin", staff.getAdmins() == 1);
-//		} else {
-//			response.put("success", false);
-//			response.put("message", "아이디 또는 비밀번호가 올바르지 않습니다.");
-//		}
-//		return response;
-//	}
-//
-//	@PostMapping("/logout")
-//	public Map<String, Object> logout(HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		session.invalidate();
-//		response.put("success", true);
-//		return response;
-//	}
-//
+	// 글 수정
 	@GetMapping("/editContent")
-	public Map<String, Object> editContent(@RequestParam("board_no") Long board_no,
-			@RequestParam("board_title") String board_title, @RequestParam("member_no") Long member_no,
-			@RequestParam("board_content") String board_content,
-//			@RequestParam(value = "member_pw", required = false) String member_pw,
-//			@RequestParam("currentPassword") String currentPassword,
-			HttpSession session) {
+	public String editContentForm(@RequestParam("boardNo") Long board_no, Model model, HttpSession session) {
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+		if (loginStaff == null) {
+			// 로그인 페이지로 리다이렉트
+			return "redirect:/staff/login";
+		}
 
+		// 수정하려는 게시글 데이터 가져오기
+		BoardDto board = service.readContent(board_no);
+		if (board == null) {
+			model.addAttribute("error", "게시글이 존재하지 않습니다.");
+			return "error";
+		}
+
+		// 권한 확인: 작성자이거나 관리자인 경우에 접근 가능
+		if (!board.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1) {
+			model.addAttribute("error", "권한이 없습니다.");
+			return "error";
+		}
+
+		// 수정 폼에 데이터 전달
+		model.addAttribute("board", board);
+		return "board/edit";
+	}
+
+	@PostMapping("board/editContent")
+	public Map<String, Object> editContent(@RequestBody BoardDto boardDto, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-		if (loginStaff == null) {
-			response.put("success", false);
-			response.put("message", "로그인이 필요합니다.");
-			return response;
-		}
-
-//		StaffDto currentStaff = service.read(member_no);
-//		if (!currentStaff.getMember_pw().equals(currentPassword)) {
-//			response.put("success", false);
-//			response.put("message", "현재 비밀번호가 올바르지 않습니다.");
-//			return response;
-//		}
-
-		if (loginStaff.getMember_no() != member_no) {
+		if (loginStaff == null
+				|| (!boardDto.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
 			response.put("success", false);
 			response.put("message", "권한이 없습니다.");
 			return response;
 		}
 
 		try {
-			BoardDto boardDto = new BoardDto();
-
-			boardDto.setBoard_title(board_title);
-			boardDto.setBoard_content(board_content);
-//			boardDto.setMember_email(member_email);
-//			if (member_pw != null && !member_pw.isEmpty()) {
-//				staffDto.setMember_pw(member_pw);
-//			}
-
-			service.editContent(boardDto);
+			service.editContent(boardDto); // 수정 로직
 			response.put("success", true);
 			response.put("message", "정보가 수정되었습니다.");
 		} catch (Exception e) {
+			e.printStackTrace();
 			response.put("success", false);
 			response.put("message", "수정 중 오류가 발생했습니다.");
 		}
 
 		return response;
 	}
-//
-//	@PostMapping("/changePassword")
-//	public Map<String, Object> changePassword(@RequestParam("currentPassword") String currentPassword,
-//			@RequestBody StaffDto staffDto, HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
-//		if (loginStaff == null || !loginStaff.getMember_no().equals(staffDto.getMember_no())) {
-//			response.put("success", false);
-//			response.put("message", "권한이 없습니다.");
-//			return response;
-//		}
-//
-//		StaffDto originalStaff = service.read(staffDto.getMember_no());
-//		if (!originalStaff.getMember_pw().equals(currentPassword)) {
-//			response.put("success", false);
-//			response.put("message", "현재 비밀번호가 일치하지 않습니다.");
-//			return response;
-//		}
-//
-//		originalStaff.setMember_pw(staffDto.getMember_pw());
-//		service.update(originalStaff);
-//		response.put("success", true);
-//		return response;
-//	}
-//
-//	@GetMapping("/check-login")
-//	public Map<String, Object> checkLoginStatus(HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
-//		if (loginStaff != null) {
-//			response.put("isLoggedIn", true);
-//			// getAdmins()가 1이면 관리자
-//			response.put("isAdmin", loginStaff.getAdmins() == 1);
-//			response.put("admin_no", loginStaff.getAdmin_no());
-//			response.put("delete_right_no", loginStaff.getDelete_right_no());
-//		} else {
-//			response.put("isLoggedIn", false);
-//			response.put("isAdmin", false);
-//		}
-//
-//		return response;
-//	}
 
-//	@PostMapping("/register")
-//	public Map<String, Object> register(
-//			@RequestParam("member_id") String member_id,
-//			@RequestParam("member_pw") String member_pw,
-//			@RequestParam("member_nick") String member_nick,
-//			@RequestParam("member_gender") String member_gender,
-//			@RequestParam("member_birth") String member_birth,
-//			@RequestParam("member_phone") String member_phone,
-//			@RequestParam("member_email") String member_email,
-//			@RequestParam(value = "admins", defaultValue = "0") int admins,
-//			HttpSession session) {
-//		
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
-//		// 관리자만 직원 등록 가능
-//		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-//			response.put("success", false);
-//			response.put("message", "관리자 권한이 필요합니다.");
-//			return response;
-//		}
-//
-//		try {
-//			// 아이디 중복 체크
-//			if (service.checkIdDuplicate(member_id)) {
-//				response.put("success", false);
-//				response.put("message", "이미 사용중인 아이디입니다.");
-//				return response;
-//			}
-//
-//			// StaffDto 객체 생성
-//			StaffDto newStaff = new StaffDto();
-//			newStaff.setMember_id(member_id);
-//			newStaff.setMember_pw(member_pw);
-//			newStaff.setMember_nick(member_nick);
-//			newStaff.setMember_gender(member_gender);
-//			newStaff.setMember_birth(member_birth);
-//			newStaff.setMember_phone(member_phone);
-//			newStaff.setMember_email(member_email);
-//
-//			// 직원 등록
-//			service.register(newStaff);
-//
-//			// 관리자로 등록하는 경우
-//			if (admins == 1) {
-//				service.adminAppoint(newStaff.getMember_no());
-//			}
-//
-//			response.put("success", true);
-//			response.put("message", "직원이 등록되었습니다.");
-//		} catch (Exception e) {
-//			log.error("직원 등록 실패: " + e.getMessage());
-//			response.put("success", false);
-//			response.put("message", "직원 등록에 실패했습니다.");
-//		}
-//
-//		return response;
-//	}
+	// 읽고 있는 글에 달린 댓글 모두 가져오기
+	@GetMapping("/commentlist")
+	public ResponseEntity<Map<String, Object>> getCommentList(@RequestParam("board_no") Long board_no , @RequestParam(defaultValue = "1") int currentComment , @RequestParam(defaultValue = "5") int cpageSize) {
+		//전체 댓글 수 가져오기
+		int totalCount = service.getCommentCount(board_no);
+		
+		//총 페이지 수 계산
+		int totalComment = (int)Math.ceil((double) totalCount/cpageSize);
+		
+		//현재 페이지에 해당하는 댓글 가져오기
+		List<CommentDto> comments = service.getCommentList(board_no, currentComment, cpageSize);
+		
+		//클라이언트로 반환할 데이터를 Map 에 담기
+		Map<String, Object> response = new HashMap<>();
+		response.put("comments", comments);
+		response.put("totalComment", totalComment);
+		response.put("currentComment", currentComment);
+		
+		return ResponseEntity.ok(response);
+	}
 
-//	@PostMapping("/register")
-//	public Map<String, Object> register(@RequestBody StaffDto newStaff,
-//			@RequestParam(value = "admins", defaultValue = "0") int admins, HttpSession session) {
-//
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
-//		// 관리자만 직원 등록 가능
-//		if (loginStaff == null || loginStaff.getAdmins() != 1) {
-//			response.put("success", false);
-//			response.put("message", "관리자 권한이 필요합니다.");
-//			return response;
-//		}
-//
-//		try {
-//			// 아이디 중복 체크
-//			if (service.checkIdDuplicate(newStaff.getMember_id())) {
-//				response.put("success", false);
-//				response.put("message", "이미 사용중인 아이디입니다.");
-//				return response;
-//			}
-//
-//			// 직원 등록
-//			service.register(newStaff);
-//
-//			// 관리자로 등록하는 경우
-//			if (admins == 1) {
-//				service.adminAppoint(newStaff.getMember_no());
-//			}
-//
-//			response.put("success", true);
-//			response.put("message", "직원이 등록되었습니다.");
-//		} catch (Exception e) {
-//			log.error("직원 등록 실패: " + e.getMessage());
-//			response.put("success", false);
-//			response.put("message", "직원 등록에 실패했습니다.");
-//		}
-//
-//		return response;
-//	}
+	// 댓글 달기
+	@GetMapping("/comment")
+	public String writeComment(@RequestParam("board_no") Long board_no, Model model, HttpSession session) {
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+		if (loginStaff == null) {
+			// 로그인 페이지로 리다이렉트
+			return "redirect:/staff/login";
+		}
+
+		// 댓글 쓰려는 게시글 데이터 가져오기
+		BoardDto board = service.readContent(board_no);
+
+		model.addAttribute("board", board);
+
+		// 세션에 댓글 쓰려는 게시글 데이터 저장
+		session.setAttribute("currentboard", board);
+
+		return "board/comment";
+	}
+
+	@PostMapping("/board/comment")
+	public Map<String, Object> commentProcess(@RequestBody CommentDto dto, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+		BoardDto currentBoard = (BoardDto) session.getAttribute("currentBoard");
+
+		log.info("loginStaff: " + session.getAttribute("loginStaff"));
+		log.info("currentBoard: " + session.getAttribute("currentBoard"));
+
+		if (loginStaff == null || currentBoard == null) {
+			response.put("success", false);
+			response.put("message", "세션이 초기화되었거나 데이터가 누락되었습니다. 다시 시도해주세요.");
+			return response;
+		}
+
+		try {
+			dto.setBoard_no(currentBoard.getBoard_no());
+			dto.setMember_no(loginStaff.getMember_no());
+			service.writeComment(dto);
+			response.put("success", true);
+			response.put("message", "댓글이 작성되었습니다.");
+			response.put("member_no", loginStaff.getMember_no());
+			response.put("comment_content", dto.getComment_content()); // 댓글 내용
+			response.put("comment_writedate", new Date()); // 작성 날짜
+
+		} catch (Exception e) {
+			log.error("댓글 등록 실패:" + e.getMessage());
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+
+		return response;
+	}
 
 }

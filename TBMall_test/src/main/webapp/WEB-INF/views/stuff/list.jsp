@@ -68,8 +68,9 @@
                     <td>${staff.btext}</td>
                     <td>${staff.admins == 1 ? '관리자' : '일반 직원'}</td>
                     <td>
-                        <button onclick="confirmDelete('${staff.bno}')">삭제</button>
-                        <button onclick="editStaff('${staff.bno}')">수정</button>
+                        <button onclick="confirmDelete(${staff.bno})">삭제</button>
+                        <button onclick="editStaff(${staff.bno})">수정</button>
+                       
                     </td>
                 </tr>
             </c:forEach>
