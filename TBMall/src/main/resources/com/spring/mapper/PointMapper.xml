@@ -3,24 +3,45 @@
 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.spring.mapper.PointMapper">
-	
-	
-	
+
+
+
 	<!-- 회원 번호에 따른 직위와 포인트 잔여 보기 -->
-	
-	<select id="getPointPosition" parameterType="long" resultType="com.spring.dto.PointDto">
-	SELECT 
-	m.member_no as member_no,
-    m.member_id as member_id,
-    m.member_nick as member_nick,
-    p.point_amount as point_amount,
-    j.staff_position as staff_position
-    FROM tbmall_member m
-    LEFT JOIN
-    tbmall_point p on m.position_no = p.position_no
-    LEFT JOIN
-    tbmall_position j on m.position_no = j.position_no
-    WHERE
-	m.member_no =#{member_no}
-	</select> 
+
+	<select id="getPointPosition" parameterType="long"
+		resultType="com.spring.dto.PointDto">
+		SELECT
+		m.member_no as member_no,
+		m.member_id as member_id,
+		m.member_nick as member_nick,
+		p.point_amount as point_amount,
+		j.staff_position as staff_position
+		FROM tbmall_member m
+		LEFT JOIN
+		tbmall_point p on m.position_no = p.position_no
+		LEFT JOIN
+		tbmall_position j on m.position_no = j.position_no
+		WHERE
+		m.member_no =#{member_no}
+	</select>
+
+	<!-- 출석체크 시 포인트 받기 -->
+	<update id="pointAdd" parameterType="long">
+		UPDATE tbmall_point p
+		SET p.point_amount = p.point_amount + (
+				SELECT case
+					WHEN m.position_no =2 then 100
+					WHEN m.position_no =3 then 50
+					ELSE 30
+				END
+			from tbmall_member m
+			where m.member_no = #{member_no}
+				and p.position_no = m.position_no
+		)
+		where p.position_no =(
+			select m.position_no
+			from tbmall_member m
+			where m.member_no =#{member_no}
+		);
+	</update>
 </mapper>

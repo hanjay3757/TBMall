@@ -36,5 +36,7 @@ public interface PointService {
 	
 //	//포인트 및 직위 관련
 	public PointDto getPointPosition(Long member_no);
+	
+	public Long pointAdd(Long member_no);
 
 }

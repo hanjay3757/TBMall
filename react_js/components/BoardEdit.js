@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+
 function BoardEdit({ isLoggedIn, isAdmin }) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();

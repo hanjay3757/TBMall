@@ -148,4 +148,9 @@ public class PointServiceImpl implements PointService {
 	public PointDto getPointPosition(Long member_no) {
 		return mapper.getPointPosition(member_no);
 	}
+	
+	@Override
+	public Long pointAdd(Long member_no) {
+		return mapper.pointAdd(member_no);
+	}
 }

@@ -196,6 +196,7 @@ public class StaffController {
 				response.put("isAdmin", staff.getAdmins() == 1);
 //				response.put("staff", staff);
 				response.put("name",staff.getMember_nick());
+				response.put("position_no", staff.getPosition_no());
 				response.put("points", pointDto != null ? pointDto.getPoint_amount() : 0);
 
 			} else {
@@ -313,6 +314,8 @@ public class StaffController {
 
 		return response;
 	}
+	
+	
 
 //	@PostMapping("/register")
 //	public Map<String, Object> register(
@@ -409,6 +412,31 @@ public class StaffController {
 			log.error("직원 등록 실패: " + e.getMessage());
 			response.put("success", false);
 			response.put("message", "직원 등록에 실패했습니다.");
+		}
+
+		return response;
+	}
+	
+	
+	@PostMapping("/pointAdd")
+	public Map<String, Object> pointAdd(@RequestParam("member_no") Long member_no, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+
+		if (loginStaff == null) {
+			response.put("success", false);
+			response.put("message", "로그인이 필요합니다.");
+			return response;
+		}
+		
+		try {
+			Long pointAdd =pointservice.pointAdd(member_no);
+			response.put("success", true);
+			response.put("message", "출석체크 완료.");
+			response.put("pointAdd", pointAdd);
+		} catch (RuntimeException e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
 		}
 
 		return response;

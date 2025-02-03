@@ -89,7 +89,7 @@ function App() {
   //사용자가 관리자일때 상태를 관리하는 변수
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // 사용자가 로그인 상태인지 확인함 
-  const [userInfo, setUserInfo] = useState(null); //사용자 정보를 저장
+  const [userInfo, setUserInfo] = useState({name:'', points: 0 , position_no: 0}); //사용자 정보를 저장
   const [staffList, setStaffList] = useState([]);
   //직원 목록을 저장배열
   const [loading , setLoading] = useState(true);
@@ -98,19 +98,28 @@ function App() {
 //페이지 네비게이션을 위한 축 지정
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const [totalPage, setTotalPage] = useState(1); // 총 페이지 수
+  const [isAttendanceChecked, setIsaAttendanceChecked] = useState(false);
 
  
 
   useEffect(() => {
 
+  // const lastAttendanceDate = localStorage.getItem('lastAttendanceDate');
+  //   const today = new Date().toISOString().split('T')[0];
+
+    if(!userInfo || userInfo.points == null ) return;
 
     async function fetchData() {
       await checkLoginStatus();
+      const storedUserInfo = localStorage.getItem('userInfo');
+        if (storedUserInfo) {
+          setUserInfo(storedUserInfo ? JSON.parse(storedUserInfo) : { name: '', points: 0 ,position_no: 0});  // userInfo 상태 업데이트
+    }
       setLoading(false); //로딩 완료 로그인 상태를 확인
     }
     fetchData();
     loadStaffList(currentPage);
-  }, [currentPage]);
+  }, [currentPage,userInfo?.points ]);
   //로그인 상태를 확인후 직원 목록을 불러오는것 빈배열로 하나를 만든건 한번만 실행되게끔 하기 위해서
 
 
@@ -162,11 +171,28 @@ function App() {
           setIsLoggedIn(true); //로그인 상태를 true로 설정
           setIsAdmin(response.data.isAdmin); // isadmin 값으로 관리자여부를 설정함
           
-          setUserInfo({
+          // setUserInfo(userInfo);
+          // const userInfo ={
+          //   name: response.data.name || '',
+          //   points: response.data.points || 0,
+          // }
+
+           // ✅ `position_no`가 제대로 들어오는지 확인
+        const positionNo = response.data.position_no;
+        console.log("포지션 번호 확인:", positionNo);
+
+          setUserInfo( ({
             name: response.data.name || '',
             points: response.data.points || 0,
-          });
-
+            position_no:  positionNo || 0,
+          }));
+         
+          // localStorage.setItem('userInfo', JSON.stringify(userInfo));
+          localStorage.setItem('userInfo', JSON.stringify({
+            name: response.data.name || '',
+            points: response.data.points || 0,
+            position_no: positionNo || 0,
+          }));
           //로그인 성공시 member_no 만 로컬 스토리지에 저장
           localStorage.setItem('member_no',response.data.member_no || '');
           console.log('stored member_no:',response.data.member_no);
@@ -226,6 +252,112 @@ function App() {
     setCurrentPage(page);
     loadStaffList(page);
   };
+
+  //출석 체크 버튼 클릭 핸들러
+  const handleAttendanceCheck = async () =>{
+    if(!isLoggedIn){
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    const member_no = localStorage.getItem('member_no');
+    if (!member_no) {
+      alert("회원 정보가 없습니다.");
+      return;
+    }
+
+    console.log("현재 로그인된 유저의 position_no:", userInfo.position_no);
+
+    //금일 출석 체크 했는지 확인
+    const lastAttendanceDate= localStorage.getItem('lastAttendanceDate');
+    const today = new Date().toISOString().split('T')[0];
+
+    if(lastAttendanceDate == today){
+      alert("금일 출석체크 성공. 내일 다시 해주세요~");
+      return;
+    }
+
+    let rewardPoints = 30; // 기본값
+      if (userInfo.position_no === 2) {
+        rewardPoints = 100;
+      } else if (userInfo.position_no === 3) {
+        rewardPoints = 50;
+      }
+
+    try{
+      const response = await axios.post(
+        `http://192.168.0.128:8080/mvc/staff/pointAdd?member_no=${member_no}&points=${rewardPoints}`,
+        {member_no: userInfo.member_no},
+        { withCredentials: true }
+      );
+      
+       
+      // alert(response.data.message);  // 출석 체크 완료 메시지
+
+      // 2. 포인트 업데이트 후 getUserInfo 호출해서 최신 정보 불러오기
+      if (response.data.success) {
+        alert(response.data.message);
+        
+        // const userInfoResponse = await axios.post(
+        //   "http://192.168.0.128:8080/mvc/staff/check-login",
+        //   {},
+        //   { withCredentials: true }
+        // );
+
+        // ✅ 최신 포인트만 업데이트하여 `useEffect` 무한 호출 방지
+        
+        // console.log("서버에서 받아온 최신 userInfo:", userInfoResponse.data);
+
+        //출석 체크 성공시, 오늘 날짜 저장
+        localStorage.setItem('lastAttendanceDate',today);
+
+        // ✅ 최신 포인트를 반영하여 화면 업데이트
+        setUserInfo(prevUserInfo => ({
+          ...prevUserInfo,
+          points: userInfo.points + rewardPoints, 
+        }));
+
+        // ✅ 로컬 스토리지 업데이트
+        localStorage.setItem('userInfo', JSON.stringify({
+          ...userInfo,
+          points:  userInfo.points + rewardPoints,
+        }));
+
+        
+      
+      } else {
+        alert(response.data.message);
+      
+    }
+  } catch(error){
+    console.error("출석 체크 요청 중 오류 발생:", error);
+    alert("출석 체크 중 문제가 발생했습니다.");
+  }
+    //   const userInfoResponse = await axios.post("http://192.168.0.128:8080/mvc/staff/check-login", {}, {
+    //     withCredentials: true,
+    //   });
+
+    //   if (userInfoResponse.data.isLoggedIn) {
+    //     // 3. 최신 userInfo로 상태 업데이트
+    //     setUserInfo(prevUserInfo => ({
+    //       ...prevUserInfo,
+    //       points: userInfoResponse.data.points || 0,
+    //     }));
+
+    //     // 로컬 스토리지에도 업데이트된 userInfo 저장
+    //     localStorage.setItem('userInfo', JSON.stringify({
+    //       ...userInfoResponse.data,
+    //       points: userInfoResponse.data.points || 0,
+    //     }));
+
+    //     checkLoginStatus();  
+    //   } else {
+    //     alert("정보 조회에 실패했습니다.");
+    //   }
+    // } else {
+    //   alert(response.data.message);  // 실패 메시지
+    // }
+   
+  }
 
   //   try {
   //     const response = await axios.post('/staff/list', {}, {
@@ -339,6 +471,20 @@ return (
               </span>
             )}
             <button onClick={handleLogout}>로그아웃</button>
+            {/* 출석 체크 버튼 추가 */}
+          <button
+            onClick={handleAttendanceCheck}
+            style={{
+              marginLeft: "10px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              padding: "10px 15px",
+              cursor: "pointer",
+            }}
+          >
+            출석 체크
+          </button>
           </>
           )}
         </div>
