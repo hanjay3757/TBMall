@@ -500,7 +500,6 @@ return (
         <button onClick={() => navigate('/staff/register')}>직원 등록</button>
         <button onClick={() => navigate('/stuff/item/deleted')}>삭제된 건 목록</button>
         <button onClick={() => navigate('/staff/removelist')}>삭제된 직원 목록</button>
-        <button onClick={() => navigate('/staff/list')}>직원 목록</button>
       </div>
     )
   );
