@@ -32,27 +32,25 @@ function Header({
         withCredentials: true,
       });
 
+      console.log('로그인 응답:', response.data); // 응답 데이터 확인
+
       if (response.data.success) {
-        // 서버 응답에서 필요한 데이터 추출
-        const { member_nick, points, position_no, isAdmin, member_no } = response.data;
-        
-        // userInfo 객체 생성
         const userInfo = {
-          member_nick,
-          points: points || 0,
-          position_no: position_no || 0,
-          isAdmin
+          member_nick: response.data.name || response.data.member_nick || response.data.memberNick, // 서버 응답의 다양한 필드명 체크
+          points: response.data.points || 0,
+          position_no: response.data.position_no || 0,
+          isAdmin: response.data.isAdmin
         };
 
-        // 상태 업데이트
+        console.log('저장할 userInfo:', userInfo); // userInfo 데이터 확인
+
         setUserInfo(userInfo);
         setIsLoggedIn(true);
-        setIsAdmin(isAdmin);
+        setIsAdmin(response.data.isAdmin);
 
-        // 로컬 스토리지에 저장
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        localStorage.setItem('member_no', member_no);
-
+        localStorage.setItem('member_no', response.data.member_no || '');
+        
         window.location.reload();
       } else {
         alert('로그인에 실패했습니다.');
@@ -131,7 +129,7 @@ function Header({
                   <>
                     <div className="user-info">
                       <span className="user-name">
-                        <strong>{userInfo.member_nick || '사용자'}</strong>님
+                        <strong>{userInfo.member_nick}</strong>님
                       </span>
                       <span className="points-display">
                         보유 포인트: <strong>{userInfo.points || 0}P</strong>
