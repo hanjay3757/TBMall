@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.spring.config.GlobalConfig;
 import com.spring.dto.PointDto;
 import com.spring.dto.StaffDto;
 import com.spring.service.PointService;
@@ -31,9 +31,13 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @RequestMapping("/staff")
 @RestController
-@CrossOrigin(origins = "http://192.168.0.128:3000", allowedHeaders = "*", methods = { RequestMethod.GET,
-		RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH,
-		RequestMethod.OPTIONS }, allowCredentials = "true")
+@CrossOrigin(
+	origins = GlobalConfig.ALLOWED_ORIGIN,
+	allowedHeaders = "*",
+	methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
+			   RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
+	allowCredentials = "true"
+)
 @AllArgsConstructor
 public class StaffController {
 	private StaffService service;
@@ -195,8 +199,7 @@ public class StaffController {
 				response.put("member_no", staff.getMember_no());
 				response.put("isAdmin", staff.getAdmins() == 1);
 //				response.put("staff", staff);
-				response.put("name",staff.getMember_nick());
-				response.put("position_no", staff.getPosition_no());
+				response.put("name", staff.getMember_nick());
 				response.put("points", pointDto != null ? pointDto.getPoint_amount() : 0);
 
 			} else {
@@ -287,7 +290,7 @@ public class StaffController {
 	@PostMapping("/check-login")
 	public Map<String, Object> checkLoginStatus(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		
+
 		try {
 			StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 			PointDto loginStaffPoint = (PointDto) session.getAttribute("pointPosition");
@@ -297,25 +300,23 @@ public class StaffController {
 				response.put("admin_no", loginStaff.getAdmin_no());
 				response.put("name", loginStaff.getMember_nick());
 				response.put("delete_right_no", loginStaff.getDelete_right_no());
-				response.put("name",loginStaff.getMember_nick());
-				
+				response.put("name", loginStaff.getMember_nick());
+
 				response.put("points", loginStaffPoint != null ? loginStaffPoint.getPoint_amount() : 0);
 				response.put("isLoggedIn", true);
 			} else {
 				response.put("isLoggedIn", false);
 				response.put("isAdmin", false);
 			}
-			
-		}catch(Exception e){
+
+		} catch (Exception e) {
 			response.put("isLoggedIn", false);
 			response.put("isAdmin", false);
-			  e.printStackTrace();
+			e.printStackTrace();
 		}
 
 		return response;
 	}
-	
-	
 
 //	@PostMapping("/register")
 //	public Map<String, Object> register(
@@ -412,31 +413,6 @@ public class StaffController {
 			log.error("직원 등록 실패: " + e.getMessage());
 			response.put("success", false);
 			response.put("message", "직원 등록에 실패했습니다.");
-		}
-
-		return response;
-	}
-	
-	
-	@PostMapping("/pointAdd")
-	public Map<String, Object> pointAdd(@RequestParam("member_no") Long member_no, HttpSession session) {
-		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-
-		if (loginStaff == null) {
-			response.put("success", false);
-			response.put("message", "로그인이 필요합니다.");
-			return response;
-		}
-		
-		try {
-			Long pointAdd =pointservice.pointAdd(member_no);
-			response.put("success", true);
-			response.put("message", "출석체크 완료.");
-			response.put("pointAdd", pointAdd);
-		} catch (RuntimeException e) {
-			response.put("success", false);
-			response.put("message", e.getMessage());
 		}
 
 		return response;

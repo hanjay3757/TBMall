@@ -25,6 +25,7 @@ import com.spring.dto.BoardDto;
 import com.spring.dto.CommentDto;
 import com.spring.dto.StaffDto;
 import com.spring.service.BoardService;
+import com.spring.config.GlobalConfig;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -33,7 +34,7 @@ import lombok.extern.log4j.Log4j;
 @RequestMapping("/board/*")
 @RestController
 @CrossOrigin(
-	origins = "http://192.168.0.128:3000",
+	origins = GlobalConfig.ALLOWED_ORIGIN,
 	allowedHeaders = "*",
 	methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
 			   RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},

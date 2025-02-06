@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-
 function BoardEdit({ isLoggedIn, isAdmin }) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -26,7 +25,7 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     useEffect(() => {
         const fetchBoardData = async () => {
             try {
-                const response = await axios.get(`http://192.168.0.128:8080/mvc/board/read?board_no=${boardNo}`);
+                const response = await axios.get(`/board/read?board_no=${boardNo}`);
                 const data = response.data;
 
                 setBoardData((prevData) => ({
@@ -81,8 +80,8 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
 
         
         try {
-                const response = await axios.post('http://192.168.0.128:8080/mvc/board/editContent', JSON.stringify(data), {
-                    headers: {
+            const response = await axios.post('/board/editContent', JSON.stringify(data), {
+                headers: {
                         'Content-Type': 'application/json',
                     },
                 });

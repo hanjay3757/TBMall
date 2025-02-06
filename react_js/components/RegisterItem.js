@@ -16,8 +16,10 @@ function RegisterItem() {
   useEffect(() => {
     const fetchAdminInfo = async () => {
       try {
-        const response = await axios.get('http://192.168.0.128:8080/mvc/staff/check-login', {
+        const response = await axios.get('/staff/check-login', {
+
           withCredentials: true
+
         });
         
         if (!response.data.isLoggedIn || !response.data.isAdmin) {
@@ -63,8 +65,10 @@ function RegisterItem() {
       });
 
       const response = await axios.post(
-        'http://http://192.168.0.128:8080/mvc/stuff/item/register',
+        '/stuff/item/register',
+
         params,
+
         {
           withCredentials: true,
           headers: {

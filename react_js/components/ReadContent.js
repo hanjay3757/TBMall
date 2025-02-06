@@ -27,7 +27,7 @@ const ReadContent = () => {
 
     axios
       .post(
-        'http://192.168.0.128:8080/mvc/board/comment',
+        '/board/comment',
         { comment_content: newComment },
         { withCredentials: true } // 세션 유지 설정
       )
@@ -55,7 +55,7 @@ const ReadContent = () => {
   const loadComment = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://192.168.0.128:8080/mvc/board/commentlist', {
+      const response = await axios.get('/board/commentlist', {
         params: { board_no: boardNo, currentComment, cpageSize },
         withCredentials: true,
       });
@@ -80,7 +80,7 @@ const ReadContent = () => {
 
   useEffect(() => {
     axios
-      .get('http://192.168.0.128:8080/mvc/board/read', { params: { board_no: boardNo } })
+      .get('/board/read', { params: { board_no: boardNo } })
       .then((response) => {
         setBoard(response.data);
       })

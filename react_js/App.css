@@ -19,6 +19,9 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text-color);
   background-color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 상단 메뉴 */
@@ -379,4 +382,10 @@ button[onClick*="cart"]:hover {
   font-weight: 600;
   color: var(--primary-color);
   margin-top: 10px;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem 0;
+  background-color: #f8f9fa;
 }

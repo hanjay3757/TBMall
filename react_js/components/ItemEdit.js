@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function ItemEdit() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ function ItemEdit() {
   useEffect(() => {
     const loadItem = async () => {
       try {
-        const response = await axios.get(`http://192.168.0.128:8080/mvc/stuff/item/list`, {
+        const response = await axios.get(`${API_BASE_URL}/stuff/item/list`, {
           withCredentials: true
         });
         
@@ -70,7 +71,7 @@ function ItemEdit() {
         formData.append('image', imageFile);
 
         const imageResponse = await axios.post(
-          'http://192.168.0.128:8080/mvc/stuff/upload-image',
+          '/stuff/upload-image',
           formData,
           {
             headers: {
@@ -81,9 +82,12 @@ function ItemEdit() {
         item.image_url = imageResponse.data.imageUrl;
       }
 
-      const loginResponse = await axios.post('http://192.168.0.128:8080/mvc/staff/check-login', {
-        withCredentials: true
-      });
+      const loginResponse = await axios.post(
+        '/staff/check-login',
+        {
+          withCredentials: true
+        }
+      );
 
       const params = new URLSearchParams();
       params.append('item_id', itemId);
@@ -95,7 +99,7 @@ function ItemEdit() {
       params.append('admin_no', loginResponse.data.admin_no);
 
       const response = await axios.post(
-        'http://192.168.0.128:8080/mvc/stuff/item/edit',
+        '/stuff/item/edit',
         params,
         {
           withCredentials: true,

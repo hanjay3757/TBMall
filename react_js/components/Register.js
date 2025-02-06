@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { SERVER_URL } from '../config';
 
 function Register() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ function Register() {
       });
 
       const response = await axios.post(
-        'http://192.168.0.128:8080/mvc/staff/register',
+        `${SERVER_URL}/mvc/staff/register`,
         requestData,
         {
           headers: {

@@ -73,9 +73,11 @@
             s.item_price,
             s.item_stock,
             s.item_description,
-            s.image_url as imageUrl,
+            s.image_url,
             s.reg_date,
             s.admin_no,
+            s.item_delete,
+            s.delete_date,
             m.member_delete
         FROM 
             tbmall_stuff s
@@ -83,7 +85,6 @@
             JOIN tbmall_member m ON a.member_no = m.member_no
         WHERE 
             s.item_id = #{item_id}
-            AND (m.member_delete = 0 OR m.member_delete IS NULL)
     </select>
     
     <!-- 물건 수정 -->

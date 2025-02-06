@@ -92,7 +92,7 @@ public class StuffServiceImpl implements StuffService {
 
 	@Override
 	@Transactional
-	public void processCheckout(Long userId , Long itemId, int quantity) {
+	public void processCheckout(Long userId) {
 		try {
 			List<CartDto> cartItems = mapper.getCartItems(userId);
 			if (cartItems.isEmpty()) {

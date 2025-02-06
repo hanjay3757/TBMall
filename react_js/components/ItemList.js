@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import './ItemDetail.css';
 
 function ItemList({ isLoggedIn, isAdmin }) {
   const navigate = useNavigate();
@@ -10,26 +11,35 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [rotations, setRotations] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);// 현제 페이지
-  const [pageSize , setPageSize] = useState(3); // 한 페이지당 물건수
-  const [totalPage , setTotalPage] = useState(0); // 전체 페이지 수
+  // 현재 페이지 번호를 관리하는 state
+  const [currentPage, setCurrentPage] = useState(1);
+  // 한 페이지당 보여줄 아이템 개수
+  const [pageSize] = useState(8);
+  // 전체 페이지 수를 관리하는 state
+  const [totalPage, setTotalPage] = useState(0);
   const cardRefs = useRef({});
 
+  // 페이지나 새로고침 키가 변경될 때마다 아이템 목록을 다시 불러옴
   useEffect(() => {
     loadItems(currentPage);
-  }, [refreshKey , currentPage]);
+  }, [refreshKey, currentPage]);
 
+  // location state에 refresh가 있으면 현재 페이지의 아이템을 다시 불러옴
   useEffect(() => {
     if (location.state?.refresh) {
       loadItems(currentPage);
     }
-  }, [location ,currentPage]);
+  }, [location, currentPage]);
 
   const loadItems = async (page) => {
     try {
       setLoading(true);
+      // 서버에 현재 페이지와 페이지 크기를 파라미터로 전달하여 해당 페이지의 아이템만 요청
       const response = await axios.get('/stuff/item/list', {
-        params: {currentPage: page , pageSize },
+        params: {
+          currentPage: page,
+          pageSize
+        },
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
@@ -37,9 +47,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
         }
       });
 
-
-
-      const {items : itemsToProcess ,totalPage} = response.data;
+      // 서버로부터 받은 아이템 데이터와 전체 페이지 수를 추출
+      const {items: itemsToProcess, totalPage} = response.data;
       console.log('서버에서 받은 아이템 데이터:', itemsToProcess);
 
       // 재고가 0인 아이템은 장바구니에 있는지 확인 후 삭제 처리
@@ -87,8 +96,9 @@ function ItemList({ isLoggedIn, isAdmin }) {
         return !item.item_delete && item.item_stock > 0;
       });
 
+      // 필터링된 아이템 목록과 전체 페이지 수를 state에 저장
       setItems(activeItems);
-      setTotalPage(totalPage);//총 페이지 수 저장
+      setTotalPage(totalPage);
       
       const initialQuantities = {};
       activeItems.forEach(item => {
@@ -102,11 +112,15 @@ function ItemList({ isLoggedIn, isAdmin }) {
     }
   };
 
-  const handlePageChange = (page) =>{
+  // 페이지 변경 처리 함수
+  const handlePageChange = (page) => {
+    // 유효한 페이지 범위인지 확인
     if (page < 1 || page > totalPage) return;
+    // 현재 페이지 업데이트
     setCurrentPage(page);
+    // 새로운 페이지의 아이템 목록 로드
+    loadItems(page);
   };
-
 
   const refreshList = () => {
     setRefreshKey(prevKey => prevKey + 1);
@@ -244,21 +258,17 @@ function ItemList({ isLoggedIn, isAdmin }) {
 
   return (
     <div className="item-list">
-      {isAdmin && (
-        <button onClick={refreshList} className="refresh-button">
-          목록 새로고침
-        </button>
-      )}
-      <h2>물건 목록</h2>
       <div className="items-container">
         {items.map(item => (
           <div
             key={item.item_id}
             ref={el => cardRefs.current[item.item_id] = el}
             className="item-card"
+            onClick={() => navigate(`/stuff/item/${item.item_id}`)}
             onMouseMove={(e) => handleMouseMove(item.item_id, e)}
             onMouseLeave={() => handleMouseLeave(item.item_id)}
             style={{
+              cursor: 'pointer',
               transform: `
                 perspective(1000px)
                 rotateX(${rotations[item.item_id]?.x || 0}deg)
@@ -326,20 +336,23 @@ function ItemList({ isLoggedIn, isAdmin }) {
           
         ))}
       </div>
-       {/* 페이지네이션 */}
-       <div className="pagination">
+      {/* 페이지네이션 UI */}
+      <div className="pagination">
+        {/* 이전 페이지 버튼 - 현재 페이지가 1이면 비활성화 */}
         <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
           이전
         </button>
+        {/* 페이지 번호 버튼들 - 전체 페이지 수만큼 생성 */}
         {Array.from({ length: totalPage }, (_, index) => (
           <button
             key={index + 1}
             onClick={() => handlePageChange(index + 1)}
-            className={currentPage === index + 1 ? 'active' : ''}
+            className={currentPage === index + 1 ? 'active' : ''} // 현재 페이지 강조
           >
             {index + 1}
           </button>
         ))}
+        {/* 다음 페이지 버튼 - 현재 페이지가 마지막 페이지면 비활성화 */}
         <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPage}>
           다음
         </button>
