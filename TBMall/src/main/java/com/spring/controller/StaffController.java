@@ -417,6 +417,32 @@ public class StaffController {
 
 		return response;
 	}
+	
+	
+
+	@PostMapping("/pointAdd")
+	public Map<String, Object> pointAdd(@RequestParam("member_no") Long member_no, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+
+		if (loginStaff == null) {
+			response.put("success", false);
+			response.put("message", "로그인이 필요합니다.");
+			return response;
+		}
+		
+		try {
+			Long pointAdd =pointservice.pointAdd(member_no);
+			response.put("success", true);
+			response.put("message", "출석체크 완료.");
+			response.put("pointAdd", pointAdd);
+		} catch (RuntimeException e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+
+		return response;
+	}
 
 //	//포인트 및 직위 가져오기
 //	
