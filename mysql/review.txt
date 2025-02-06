@@ -1,0 +1,4 @@
+-- 리뷰랑 물품 일치화
+UPDATE tbmall_reviews r
+INNER JOIN tbmall_stuff s ON r.item_id = s.item_id
+SET r.image_url = s.image_url;
