@@ -31,7 +31,7 @@ public interface StuffService {
 
 	public void removeFromCart(Long cartId);
 
-	void processCheckout(Long userId);
+	void processCheckout(Long userId ,Long itemId , int quantity);
 
 	void updateCartItemQuantity(Long cartId, int quantity);
 }

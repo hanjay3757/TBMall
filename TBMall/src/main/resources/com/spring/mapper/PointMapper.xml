@@ -44,4 +44,40 @@
 			where m.member_no =#{member_no}
 		);
 	</update>
+	
+	
+	<!--포인트 차감 (결제)  -->
+	<!-- <update id="pointUse" parameterType="map">
+    UPDATE tbmall_point p
+    SET p.point_amount = COALESCE(p.point_amount, 0) - COALESCE((
+        SELECT SUM(s.item_price * #{quantity})
+        FROM tbmall_stuff s
+        JOIN tbmall_orders c ON s.item_id = c.item_id
+        WHERE c.member_no = #{member_no}
+        AND c.item_id = #{itemId}
+    ), 0)
+    WHERE p.position_no = (
+         	SELECT pos.position_no
+    		FROM tbmall_member m
+    		JOIN tbmall_position pos ON m.position_no = pos.position_no  
+    		WHERE m.member_no = #{member_no}
+    )
+	</update> -->
+	 
+	 <update id="pointUse" parameterType="map">
+    UPDATE tbmall_point p
+    SET p.point_amount = COALESCE(p.point_amount, 0) - COALESCE((
+        SELECT SUM(s.item_price * #{quantity})
+        FROM tbmall_stuff s
+        WHERE s.item_id = #{itemId}
+    ), 0)
+    WHERE p.position_no = (
+        SELECT pos.position_no
+        FROM tbmall_member m
+        JOIN tbmall_position pos ON m.position_no = pos.position_no  -- tbmall_position 연결
+        WHERE m.member_no = #{member_no}
+    )
+    </update>
+	
+			
 </mapper>

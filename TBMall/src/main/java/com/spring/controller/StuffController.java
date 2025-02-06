@@ -10,6 +10,7 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.spring.dto.CartDto;
 import com.spring.dto.StaffDto;
 import com.spring.dto.StuffDto;
+import com.spring.service.PointService;
 import com.spring.service.StaffService;
 import com.spring.service.StuffService;
 
@@ -46,9 +48,12 @@ public class StuffController {
 
 	@Autowired
 	private StuffService service;
-
+	
 	@Autowired
 	private StaffService staffService;
+	
+	@Autowired
+	private PointService pointservice;
 
 	private static final String LOGIN_STAFF = "loginStaff";
 
@@ -57,31 +62,73 @@ public class StuffController {
 		return loginStaff != null && loginStaff.getAdmins() == 1;
 	}
 
+//	// 장바구니 체크아웃 API
+//	@PostMapping("/api/cart/checkout")
+//	@ResponseBody
+//	public Map<String, String> checkout(@RequestBody Map<String, List<CartDto>> request, HttpSession session) {
+//		System.out.println("받는 데이터 : "+ request);
+//		
+//		Map<String, String> response = new HashMap<>();
+//		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+//		
+//		if (loginStaff == null) {
+//			response.put("status", "error");
+//			response.put("message", "로그인이 필요합니다.");
+//			return response;
+//		}
+//
+//		try {
+//			List<CartDto> items = request.get("cartItems");
+//			
+//			for(CartDto item : items) {
+//				Long itemId = item.getItemId();
+//				int orderQuantity = item.getQuantity();
+//				
+//				
+//				//장바구니에 있는 물건 정보 가져오기
+//				service.processCheckout(loginStaff.getMember_no(),itemId,orderQuantity);
+//				pointservice.pointUse(itemId, loginStaff.getMember_no(),orderQuantity);
+//			}
+//			
+//			
+//			response.put("status", "success");
+//			response.put("message", "주문이 완료되었습니다.");
+//		} catch (Exception e) {
+//			log.error("결제 실패: " + e.getMessage());
+//			response.put("status", "error");
+//			response.put("message", e.getMessage());
+//		}
+//		return response;
+//	}
 	// 장바구니 체크아웃 API
 	@PostMapping("/api/cart/checkout")
-	@ResponseBody
-	public Map<String, String> checkout(HttpSession session) {
-		Map<String, String> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+	public ResponseEntity<?> checkout(@RequestBody Map<String, Object> requestData) {
+	    List<Map<String, Object>> itemList = (List<Map<String, Object>>) requestData.get("itemIds");
+	    Long memberNo = Long.valueOf(requestData.get("member_no").toString());
 
-		if (loginStaff == null) {
-			response.put("status", "error");
-			response.put("message", "로그인이 필요합니다.");
-			return response;
-		}
+	    if (memberNo == null || itemList == null || itemList.isEmpty()) {
+	        return ResponseEntity.badRequest().body("잘못된 요청입니다.");
+	    }
 
-		try {
-			service.processCheckout(loginStaff.getMember_no());
-			response.put("status", "success");
-			response.put("message", "주문이 완료되었습니다.");
-		} catch (Exception e) {
-			log.error("결제 실패: " + e.getMessage());
-			response.put("status", "error");
-			response.put("message", e.getMessage());
-		}
-		return response;
+	    System.out.println("📦 주문 아이템: " + itemList);
+	    System.out.println("👤 주문한 사용자: " + memberNo);
+	    
+	    try {
+	        for (Map<String, Object> item : itemList) {
+	            Long itemId = Long.valueOf(item.get("itemId").toString());  // itemId 추출
+	            Integer quantity = Integer.valueOf(item.get("quantity").toString());  // quantity 추출
+	            
+	            // PointService의 메서드를 호출하여 포인트 계산 또는 적립
+	            pointservice.pointUse( itemId,memberNo,quantity);  // PointService 메서드 예시
+	        }
+
+	        return ResponseEntity.ok().body(Map.of("status", "success", "message", "주문 완료"));
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
+	    }
+	    
+
 	}
-
 	@PostMapping("/cart/remove")
 	public String removeFromCart(@RequestParam("cartId") Long cartId, HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);

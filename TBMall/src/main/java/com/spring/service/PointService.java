@@ -38,5 +38,7 @@ public interface PointService {
 	public PointDto getPointPosition(Long member_no);
 	
 	public Long pointAdd(Long member_no);
+	
+	public void pointUse(Long itemId , Long member_no ,int quantity );
 
 }
