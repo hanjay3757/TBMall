@@ -293,7 +293,7 @@ select
     tbmall_position j on m.position_no = j.position_no
     where
 	m.member_no =1;
-    
+    select * from tbmall_reviews;
     DROP TABLE tbmall_reviews;
 -- 리뷰 테이블 생성
 CREATE TABLE tbmall_reviews (
@@ -314,8 +314,30 @@ INSERT INTO tbmall_reviews (
 ) VALUES (
     1, 1, 4.5, '상품이 매우 좋습니다!', '/images/reviews/example.jpg'
 );
--- 상품의 리뷰 목록 조회
 
+SELECT r.*, s.image_url as item_image_url
+FROM tbmall_reviews r
+JOIN tbmall_stuff s ON r.item_id = s.item_id
+WHERE r.item_id = 18
+ORDER BY r.review_date DESC;
+-- 상품의 리뷰 목록 조회
+SELECT 
+    r.*,
+    s.item_name,
+    s.item_price,
+    s.item_stock,
+    s.item_description,
+    s.reg_date,
+    s.admin_no,
+    s.item_delete,
+    s.delete_date,
+    s.image_url
+FROM tbmall_reviews r
+JOIN tbmall_stuff s ON r.item_id = s.item_id
+
+WHERE r.item_id = 22
+ORDER BY r.review_date DESC;
+select * from tbmall_stuff;
 SELECT 
     r.review_id,
     r.member_no,
@@ -328,10 +350,13 @@ FROM
     tbmall_reviews r
     LEFT JOIN tbmall_member m ON r.member_no = m.member_no
 WHERE 
-    r.item_id = 1
+    r.item_id = 21
 ORDER BY 
     r.review_date DESC;
 
+UPDATE tbmall_reviews r
+INNER JOIN tbmall_stuff s ON r.item_id = s.item_id
+SET r.image_url = s.image_url;
 -- 상품의 평균 평점 조회
 SELECT 
     COUNT(*) as review_count,
