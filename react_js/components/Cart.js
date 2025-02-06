@@ -88,16 +88,23 @@ function Cart() {
   // 결제 버튼을 클릭했을 때 주문을 처리하는 함수
   const handleCheckout = async () => {
     try {
+
+      const memberNo = localStorage.getItem('member_no');
+
       // 주문 데이터를 장바구니 아이템에서 생성
       const orderData = cartItems.map(item => ({
-        item_id: item.itemId,
-        order_quantity: item.quantity,
+        itemId: item.itemId,
+        quantity: item.quantity,
       }));
+      // 주문 데이터를 itemId 리스트로 변환
+      const itemIds = cartItems.map(item => item.itemId);
+
+      console.log("요청 orderData:",orderData);
 
       // POST 요청으로 주문 처리
       const response = await axios.post(
         `/stuff/api/cart/checkout`,
-        { orders: orderData },
+        { itemIds: orderData , member_no: memberNo},
         { withCredentials: true }
       );
 
@@ -105,6 +112,7 @@ function Cart() {
       if (response.data.status === 'success') {
         alert('주문이 완료되었습니다.');
         setCartItems([]);  // 장바구니 아이템 비우기
+        window.location.href= '/stuff/item/list';
       }
     } catch (error) {
       // 주문 처리 실패 시 에러 처리

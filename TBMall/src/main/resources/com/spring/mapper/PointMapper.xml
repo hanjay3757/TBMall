@@ -3,24 +3,81 @@
 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.spring.mapper.PointMapper">
-	
-	
-	
+
+
+
 	<!-- 회원 번호에 따른 직위와 포인트 잔여 보기 -->
+
+	<select id="getPointPosition" parameterType="long"
+		resultType="com.spring.dto.PointDto">
+		SELECT
+		m.member_no as member_no,
+		m.member_id as member_id,
+		m.member_nick as member_nick,
+		p.point_amount as point_amount,
+		j.staff_position as staff_position
+		FROM tbmall_member m
+		LEFT JOIN
+		tbmall_point p on m.position_no = p.position_no
+		LEFT JOIN
+		tbmall_position j on m.position_no = j.position_no
+		WHERE
+		m.member_no =#{member_no}
+	</select>
+
+	<!-- 출석체크 시 포인트 받기 -->
+	<update id="pointAdd" parameterType="long">
+		UPDATE tbmall_point p
+		SET p.point_amount = p.point_amount + (
+				SELECT case
+					WHEN m.position_no =2 then 100
+					WHEN m.position_no =3 then 50
+					ELSE 30
+				END
+			from tbmall_member m
+			where m.member_no = #{member_no}
+				and p.position_no = m.position_no
+		)
+		where p.position_no =(
+			select m.position_no
+			from tbmall_member m
+			where m.member_no =#{member_no}
+		);
+	</update>
 	
-	<select id="getPointPosition" parameterType="long" resultType="com.spring.dto.PointDto">
-	SELECT 
-	m.member_no as member_no,
-    m.member_id as member_id,
-    m.member_nick as member_nick,
-    p.point_amount as point_amount,
-    j.staff_position as staff_position
-    FROM tbmall_member m
-    LEFT JOIN
-    tbmall_point p on m.position_no = p.position_no
-    LEFT JOIN
-    tbmall_position j on m.position_no = j.position_no
-    WHERE
-	m.member_no =#{member_no}
-	</select> 
+	
+	<!--포인트 차감 (결제)  -->
+	<!-- <update id="pointUse" parameterType="map">
+    UPDATE tbmall_point p
+    SET p.point_amount = COALESCE(p.point_amount, 0) - COALESCE((
+        SELECT SUM(s.item_price * #{quantity})
+        FROM tbmall_stuff s
+        JOIN tbmall_orders c ON s.item_id = c.item_id
+        WHERE c.member_no = #{member_no}
+        AND c.item_id = #{itemId}
+    ), 0)
+    WHERE p.position_no = (
+         	SELECT pos.position_no
+    		FROM tbmall_member m
+    		JOIN tbmall_position pos ON m.position_no = pos.position_no  
+    		WHERE m.member_no = #{member_no}
+    )
+	</update> -->
+	 
+	 <update id="pointUse" parameterType="map">
+    UPDATE tbmall_point p
+    SET p.point_amount = COALESCE(p.point_amount, 0) - COALESCE((
+        SELECT SUM(s.item_price * #{quantity})
+        FROM tbmall_stuff s
+        WHERE s.item_id = #{itemId}
+    ), 0)
+    WHERE p.position_no = (
+        SELECT pos.position_no
+        FROM tbmall_member m
+        JOIN tbmall_position pos ON m.position_no = pos.position_no  -- tbmall_position 연결
+        WHERE m.member_no = #{member_no}
+    )
+    </update>
+	
+			
 </mapper>
