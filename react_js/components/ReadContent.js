@@ -16,67 +16,67 @@ const ReadContent = () => {
   const [cpageSize, setCpageSize] = useState(5); // 페이지당 댓글 수
   const [loading, setLoading] = useState(false); // 로딩 상태 관리
 
-  // // 댓글 작성 함수
-  // const handleCommentSubmit = (e) => {
-  //   e.preventDefault();
+  // 댓글 작성 함수
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
 
-  //   if (!newComment.trim()) {
-  //     alert('댓글 내용을 입력해 주세요.');
-  //     return;
-  //   }
+    if (!newComment.trim()) {
+      alert('댓글 내용을 입력해 주세요.');
+      return;
+    }
 
-  //   axios
-  //     .post(
-  //       '/board/comment',
-  //       { comment_content: newComment },
-  //       { withCredentials: true } // 세션 유지 설정
-  //     )
-  //     .then((response) => {
-  //       if (response.data.success) {
-  //         const newCommentObj = {
-  //           comment_content: response.data.comment_content,
-  //           member_no: response.data.member_no,
-  //           comment_writedate: new Date(response.data.comment_writedate).toLocaleString(),
-  //         };
+    axios
+      .post(
+        '/board/comment',
+        { comment_content: newComment },
+        { withCredentials: true } // 세션 유지 설정
+      )
+      .then((response) => {
+        if (response.data.success) {
+          const newCommentObj = {
+            comment_content: response.data.comment_content,
+            member_no: response.data.member_no,
+            comment_writedate: new Date(response.data.comment_writedate).toLocaleString(),
+          };
 
-  //         setComments((prevComments) => [newCommentObj, ...prevComments]); // 새 댓글을 맨 위에 추가
-  //         setNewComment(''); // 입력 필드 초기화
-  //       } else {
-  //         alert(response.data.message || '댓글 작성에 실패했습니다.');
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error('댓글 작성 중 오류 발생:', error);
-  //       alert('댓글 작성에 실패했습니다.');
-  //     });
-  // };
+          setComments((prevComments) => [newCommentObj, ...prevComments]); // 새 댓글을 맨 위에 추가
+          setNewComment(''); // 입력 필드 초기화
+        } else {
+          alert(response.data.message || '댓글 작성에 실패했습니다.');
+        }
+      })
+      .catch((error) => {
+        console.error('댓글 작성 중 오류 발생:', error);
+        alert('댓글 작성에 실패했습니다.');
+      });
+  };
 
-  // // 서버에서 댓글 목록 가져오기
-  // const loadComment = useCallback(async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await axios.get('/board/commentlist', {
-  //       params: { board_no: boardNo, currentComment, cpageSize },
-  //       withCredentials: true,
-  //     });
-  //     const { comments = [], totalComment } = response.data;
-  //     console.log('Fetched comment:', comments);
-  //     console.log('Total Pages:', totalComment);
-  //     setComments(comments);
-  //     setTotalComment(totalComment); // 전체 페이지 수 설정
-  //   } catch (error) {
-  //     console.error('댓글 목록을 불러오는 중 오류 발생:', error);
-  //   } finally {
-  //     setLoading(false); // 로딩 상태 해제
-  //   }
-  // }, [boardNo, currentComment, cpageSize]);
+  // 서버에서 댓글 목록 가져오기
+  const loadComment = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('/board/commentlist', {
+        params: { board_no: boardNo, currentComment, cpageSize },
+        withCredentials: true,
+      });
+      const { comments = [], totalComment } = response.data;
+      console.log('Fetched comment:', comments);
+      console.log('Total Pages:', totalComment);
+      setComments(comments);
+      setTotalComment(totalComment); // 전체 페이지 수 설정
+    } catch (error) {
+      console.error('댓글 목록을 불러오는 중 오류 발생:', error);
+    } finally {
+      setLoading(false); // 로딩 상태 해제
+    }
+  }, [boardNo, currentComment, cpageSize]);
 
-  // const handlePageChange = (newPage) => {
-  //   if (newPage > 0 && newPage <= totalComment) {
-  //     setCurrentComment(newPage); // 페이지 변경
-  //     loadComment(); // 새 페이지 댓글 로드
-  //   }
-  // };
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalComment) {
+      setCurrentComment(newPage); // 페이지 변경
+      loadComment(); // 새 페이지 댓글 로드
+    }
+  };
 
   useEffect(() => {
     axios
@@ -88,8 +88,8 @@ const ReadContent = () => {
         console.error('게시물 데이터를 불러오는 중 오류 발생:', error);
       });
 
-    // loadComment();
-  }, [boardNo]);
+    loadComment();
+  }, [boardNo, loadComment]);
 
   if (!board) {
     return <div>게시물을 불러오는 중...</div>;
@@ -122,7 +122,7 @@ const ReadContent = () => {
         글 수정
       </a>
 
-      {/* <div className="comment-section">
+      <div className="comment-section">
         <h3>댓글</h3>
         {loading ? (
           <p>댓글을 불러오는 중...</p>
@@ -159,7 +159,7 @@ const ReadContent = () => {
           onChange={(e) => setNewComment(e.target.value)}
         />
         <button onClick={handleCommentSubmit}>댓글 작성</button>
-      </div> */}
+      </div>
     </div>
   );
 };

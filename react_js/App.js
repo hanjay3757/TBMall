@@ -153,7 +153,7 @@ function App() {
     params.append('staffId', formData.username);
     params.append('password', formData.password);
 
-    axios.post('/staff/login', params, {
+    axios.post(`${API_BASE_URL}/staff/login`, params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -170,7 +170,6 @@ function App() {
             points: response.data.points || 0,
             position_no: response.data.position_no || 0,
             isAdmin: response.data.isAdmin
-           
           };
 
           setUserInfo(userInfo);
@@ -348,7 +347,7 @@ function App() {
 
     console.log("현재 로그인된 유저의 position_no:", userInfo.position_no);
 
-    const lastAttendanceDate = localStorage.getItem(`lastAttendanceDate_${member_no}`);
+    const lastAttendanceDate = localStorage.getItem('lastAttendanceDate');
     const today = new Date().toISOString().split('T')[0];
 
     if(lastAttendanceDate === today) {
@@ -373,7 +372,7 @@ function App() {
       if (response.data.success) {
         alert(response.data.message);
         
-        localStorage.setItem(`lastAttendanceDate_${member_no}`, today);
+        localStorage.setItem('lastAttendanceDate', today);
 
         setUserInfo(prevUserInfo => ({
           ...prevUserInfo,
