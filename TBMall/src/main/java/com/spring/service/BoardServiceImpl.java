@@ -25,21 +25,19 @@ public class BoardServiceImpl implements BoardService {
 	private BoardMapper mapper;
 
 	@Override
-	public ArrayList<BoardDto> getBoardlist(int currentPage ,int pageSize) {
+	public ArrayList<BoardDto> getBoardlist(int currentPage, int pageSize) {
 		log.info("게시판 내 모든 글 리스트 가져오기");
-		
-		
-		
-		//페이징 계산
-		int offset = (currentPage-1)* pageSize;
-		
+
+		// 페이징 계산
+		int offset = (currentPage - 1) * pageSize;
+
 		PagingDto pagingDto = new PagingDto(pageSize, offset);
-		
-		//mapper 호출
+
+		// mapper 호출
 		ArrayList<BoardDto> board = mapper.getBoardlist(pagingDto);
 		return board;
 	}
-	
+
 	@Override
 	public int getPostCount() {
 		int totalCount = mapper.getPostCount();
@@ -84,30 +82,40 @@ public class BoardServiceImpl implements BoardService {
 		}
 
 	}
-	
-//	@Override
-//	public List<CommentDto> getCommentList(Long board_no ,int currentComment , int cpageSize) {
-//		log.info("해당 board_no 내에 모든 댓글 가져오기");
-//		int offset = (currentComment-1) * cpageSize;
-//		
-//		PagingDto pagingDto = new PagingDto(cpageSize, offset);
-//		
-//		return mapper.getCommentList(board_no , pagingDto);
-//	}
-//	
-//	@Override
-//	public int getCommentCount(Long board_no) {
-//		int totalComment = mapper.getCommentCount(board_no);
-//		return totalComment;
-//	}
-//	
-//	@Override
-//	public void writeComment(CommentDto commentDto) {
-//		if (commentDto.getBoard_no() == null || commentDto.getMember_no() == null || commentDto.getComment_content() == null) {
-//	        throw new IllegalArgumentException("댓글 정보가 올바르지 않습니다.");
-//	    }
-//		mapper.writeComment(commentDto);
-//	}
 
+	@Override
+	public List<CommentDto> getCommentList(Long item_id, int currentComment, int cpageSize) {
+		log.info("해당 board_no 내에 모든 댓글 가져오기");
+		int offset = (currentComment - 1) * cpageSize;
+
+		PagingDto pagingDto = new PagingDto(cpageSize, offset);
+
+		return mapper.getCommentList(item_id, pagingDto);
+	}
+
+	@Override
+	public int getCommentCount(Long item_id) {
+		int totalComment = mapper.getCommentCount(item_id);
+		return totalComment;
+	}
+
+	@Override
+	public void writeComment(CommentDto commentDto) {
+		if (commentDto.getItem_id() == null || commentDto.getMember_no() == null
+				|| commentDto.getComment_content() == null) {
+			throw new IllegalArgumentException("댓글 정보가 올바르지 않습니다.");
+		}
+		mapper.writeComment(commentDto);
+	}
+
+	@Override
+	public void deleteComment(Long comment_no) {
+		mapper.deleteComment(comment_no);
+	}
+
+	@Override
+	public void deleteCommentByItemAndMember(Long item_id, Long member_no) {
+		mapper.deleteCommentByItemAndMember(item_id, member_no);
+	}
 
 }

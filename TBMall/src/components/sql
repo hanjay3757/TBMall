@@ -1,0 +1,11 @@
+
+create table tbmall_comment(
+	comment_no int auto_increment primary key,
+    board_no int not null,
+    member_no int not null,
+    comment_content varchar(200) not null,
+    comment_writedate date not null,
+    foreign key (board_no) references tbmall_board(board_no) on delete cascade,
+    foreign key (member_no) references tbmall_member(member_no) on delete cascade,
+     rating INTEGER
+);

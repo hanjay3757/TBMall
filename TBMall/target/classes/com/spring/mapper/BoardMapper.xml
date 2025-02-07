@@ -44,43 +44,55 @@
 	
 	
 	<!-- 모든 댓글 리스트 가져오기 (보고 있는 글 번호)-->
-	<!-- <select id="getCommentList" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.CommentDto">
+	 <select id="getCommentList" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.CommentDto">
 		SELECT 
-			c.board_no,
+			c.item_id,
 			c.member_no,
 			c.comment_content,
 			c.comment_writedate
 		FROM tbmall_comment c
-		INNER JOIN tbmall_board b 
-		ON c.board_no = b.board_no
-		WHERE c.board_no = #{board_no}	
+		INNER JOIN tbmall_stuff b 
+		ON c.item_id = b.item_id
+		WHERE c.item_id = #{item_id}	
 		LIMIT #{pagingDto.limit} OFFSET #{pagingDto.offset};
-	</select> -->
+	</select> 
 	<!--댓글 작성  -->
-	<!-- <insert id="writeComment" parameterType="com.spring.dto.CommentDto">
+	 <insert id="writeComment" parameterType="com.spring.dto.CommentDto">
 		INSERT INTO tbmall_comment
-			(board_no,
+			(item_id,
 			member_no,
 			comment_content,
 			comment_writedate)
 			VALUES
-			(#{board_no},
+			(#{item_id},
 			#{member_no},
 			#{comment_content},
 			CURRENT_TIMESTAMP
 			)
-	</insert> -->
+	</insert> 
 	<!-- (관리자 기능) 다른 유저 글 로그 보기 -->
 	
 	
 	<!-- 페이징 관련 총 댓글 게시물 구하는 쿼리 -->
-	<!-- <select id="getCommentCount" parameterType="long" resultType="int">	
+	 <select id="getCommentCount" parameterType="long" resultType="int">	
 		SELECT 
 			count(*)
 		FROM tbmall_comment c
-		INNER JOIN tbmall_board b 
-		ON c.board_no = b.board_no
-		WHERE c.board_no = #{board_no}
-	</select> -->
+		INNER JOIN tbmall_stuff b 
+		ON c.item_id = b.item_id
+		WHERE c.item_id = #{item_id}
+	</select> 
+
+	<!-- 댓글 삭제 -->
+	<delete id="deleteComment" parameterType="long">
+		DELETE FROM tbmall_comment 
+		WHERE comment_no = #{comment_no}
+	</delete>
+
+	<!-- 댓글 삭제 (item_id와 member_no로) -->
+	<delete id="deleteCommentByItemAndMember">
+		DELETE FROM tbmall_comment 
+		WHERE item_id = #{item_id} AND member_no = #{member_no}
+	</delete>
 
 </mapper>
