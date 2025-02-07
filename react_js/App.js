@@ -257,7 +257,7 @@ function App() {
   }
 
   function editStaff(member_no) {
-    navigate(`/staff/edit?member_no=${member_no}`);
+    navigate(`/staff/edit/${member_no}`);
   }
 
   const TopMenu = () => {
@@ -432,6 +432,7 @@ function App() {
             path="/stuff/item/:itemId" 
             element={<ItemDetail isLoggedIn={isLoggedIn} />} 
           />
+          <Route path="/staff/edit/:member_no" element={<StaffEdit />} />
         </Routes>
       </main>
       <Footer />

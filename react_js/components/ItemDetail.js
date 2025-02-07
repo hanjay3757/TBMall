@@ -476,6 +476,25 @@ function ItemDetail() {
     );
   };
 
+  // 수정 버튼 핸들러 추가
+  const handleEdit = async (item_id) => {
+    try {
+      console.log('=== 상품 수정 시작 ===');
+      console.log('수정할 상품 ID:', item_id);
+      
+      // 관리자 권한 체크
+      if (!isAdmin) {
+        alert('관리자만 수정할 수 있습니다.');
+        return;
+      }
+
+      navigate(`/stuff/item/edit?itemId=${item_id}`);
+    } catch (error) {
+      console.error('상품 수정 페이지 이동 중 오류:', error);
+      alert('상품 수정 페이지로 이동할 수 없습니다.');
+    }
+  };
+
   if (loading) {
     return <div>로딩 중...</div>;
   }
@@ -487,6 +506,16 @@ function ItemDetail() {
   return (
     <div className="item-detail-container">
       <div className="item-detail">
+        {isAdmin && (
+          <div className="admin-controls">
+            <button 
+              onClick={() => handleEdit(item?.item_id)}
+              className="edit-button"
+            >
+              수정
+            </button>
+          </div>
+        )}
         <div className="item-image">
           {item?.image_url ? (
             <img 

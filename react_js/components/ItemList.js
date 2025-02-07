@@ -297,7 +297,10 @@ function ItemList({ isLoggedIn, isAdmin }) {
               {isAdmin && (
                 <div className="admin-controls">
                   <button 
-                    onClick={() => navigate(`/stuff/item/edit?itemId=${item.item_id}`)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // 이벤트 버블링 방지
+                      navigate(`/stuff/item/edit?itemId=${item.item_id}`);
+                    }}
                     className="edit-button"
                   >
                     수정
