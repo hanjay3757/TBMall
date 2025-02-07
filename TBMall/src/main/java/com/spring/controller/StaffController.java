@@ -200,6 +200,7 @@ public class StaffController {
 				response.put("isAdmin", staff.getAdmins() == 1);
 //				response.put("staff", staff);
 				response.put("name", staff.getMember_nick());
+				response.put("position_no", staff.getPosition_no());
 				response.put("points", pointDto != null ? pointDto.getPoint_amount() : 0);
 
 			} else {

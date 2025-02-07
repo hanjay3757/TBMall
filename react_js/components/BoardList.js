@@ -190,7 +190,7 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
     <div>
 
-      <h1>TBmall 고객 게시판</h1>
+      <h1>TBmall 사내 공지</h1>
 
       <table className="board-table">
 
@@ -201,8 +201,6 @@ function BoardList({ isLoggedIn, isAdmin }) {
             <th>번호</th>
 
             <th>제목</th>
-
-            <th>내용</th>
 
             <th>작성일</th>
 
@@ -220,11 +218,24 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
               <td>{(currentPage - 1) * pageSize + index + 1}</td>
 
-              <td>{board.board_title}</td>
-
               <td>
-
                 <span
+
+                  className="board-content-link"
+
+                  onClick={() => readContent(board.board_no)}
+
+                >
+
+                {board.board_title}
+
+                </span>
+                
+                </td>
+
+              
+
+                {/* <span
 
                   className="board-content-link"
 
@@ -234,9 +245,9 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
                   {board.board_content}
 
-                </span>
+                </span> */}
 
-              </td>
+             
 
               <td>{board.board_writedate}</td>
 

@@ -21,11 +21,11 @@ public interface BoardMapper {
 	public int getPostCount();// 게시판 페이징 관련 게시글 총 개수
 	
 	
-	// 댓글 관련
-	public List<CommentDto> getCommentList(@Param("board_no") Long board_no, @Param("pagingDto") PagingDto pagingDto); //댓글 목록 가져오기
-	public void writeComment(CommentDto commentDto);//댓글 쓰기
-
-	public int getCommentCount(@Param("board_no") Long board_no);
+//	// 댓글 관련
+//	public List<CommentDto> getCommentList(@Param("board_no") Long board_no, @Param("pagingDto") PagingDto pagingDto); //댓글 목록 가져오기
+//	public void writeComment(CommentDto commentDto);//댓글 쓰기
+//
+//	public int getCommentCount(@Param("board_no") Long board_no);
 	
 	
 }

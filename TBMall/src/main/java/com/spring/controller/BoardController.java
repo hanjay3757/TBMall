@@ -202,79 +202,79 @@ public class BoardController {
 		return response;
 	}
 
-	// 읽고 있는 글에 달린 댓글 모두 가져오기
-	@GetMapping("/commentlist")
-	public ResponseEntity<Map<String, Object>> getCommentList(@RequestParam("board_no") Long board_no , @RequestParam(defaultValue = "1") int currentComment , @RequestParam(defaultValue = "5") int cpageSize) {
-		//전체 댓글 수 가져오기
-		int totalCount = service.getCommentCount(board_no);
-		
-		//총 페이지 수 계산
-		int totalComment = (int)Math.ceil((double) totalCount/cpageSize);
-		
-		//현재 페이지에 해당하는 댓글 가져오기
-		List<CommentDto> comments = service.getCommentList(board_no, currentComment, cpageSize);
-		
-		//클라이언트로 반환할 데이터를 Map 에 담기
-		Map<String, Object> response = new HashMap<>();
-		response.put("comments", comments);
-		response.put("totalComment", totalComment);
-		response.put("currentComment", currentComment);
-		
-		return ResponseEntity.ok(response);
-	}
-
-	// 댓글 달기
-	@GetMapping("/comment")
-	public String writeComment(@RequestParam("board_no") Long board_no, Model model, HttpSession session) {
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-		if (loginStaff == null) {
-			// 로그인 페이지로 리다이렉트
-			return "redirect:/staff/login";
-		}
-
-		// 댓글 쓰려는 게시글 데이터 가져오기
-		BoardDto board = service.readContent(board_no);
-
-		model.addAttribute("board", board);
-
-		// 세션에 댓글 쓰려는 게시글 데이터 저장
-		session.setAttribute("currentboard", board);
-
-		return "board/comment";
-	}
-
-	@PostMapping("/board/comment")
-	public Map<String, Object> commentProcess(@RequestBody CommentDto dto, HttpSession session) {
-		Map<String, Object> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-		BoardDto currentBoard = (BoardDto) session.getAttribute("currentBoard");
-
-		log.info("loginStaff: " + session.getAttribute("loginStaff"));
-		log.info("currentBoard: " + session.getAttribute("currentBoard"));
-
-		if (loginStaff == null || currentBoard == null) {
-			response.put("success", false);
-			response.put("message", "세션이 초기화되었거나 데이터가 누락되었습니다. 다시 시도해주세요.");
-			return response;
-		}
-
-		try {
-			dto.setBoard_no(currentBoard.getBoard_no());
-			dto.setMember_no(loginStaff.getMember_no());
-			service.writeComment(dto);
-			response.put("success", true);
-			response.put("message", "댓글이 작성되었습니다.");
-			response.put("member_no", loginStaff.getMember_no());
-			response.put("comment_content", dto.getComment_content()); // 댓글 내용
-			response.put("comment_writedate", new Date()); // 작성 날짜
-
-		} catch (Exception e) {
-			log.error("댓글 등록 실패:" + e.getMessage());
-			response.put("success", false);
-			response.put("message", e.getMessage());
-		}
-
-		return response;
-	}
+//	// 읽고 있는 글에 달린 댓글 모두 가져오기
+//	@GetMapping("/commentlist")
+//	public ResponseEntity<Map<String, Object>> getCommentList(@RequestParam("board_no") Long board_no , @RequestParam(defaultValue = "1") int currentComment , @RequestParam(defaultValue = "5") int cpageSize) {
+//		//전체 댓글 수 가져오기
+//		int totalCount = service.getCommentCount(board_no);
+//		
+//		//총 페이지 수 계산
+//		int totalComment = (int)Math.ceil((double) totalCount/cpageSize);
+//		
+//		//현재 페이지에 해당하는 댓글 가져오기
+//		List<CommentDto> comments = service.getCommentList(board_no, currentComment, cpageSize);
+//		
+//		//클라이언트로 반환할 데이터를 Map 에 담기
+//		Map<String, Object> response = new HashMap<>();
+//		response.put("comments", comments);
+//		response.put("totalComment", totalComment);
+//		response.put("currentComment", currentComment);
+//		
+//		return ResponseEntity.ok(response);
+//	}
+//
+//	// 댓글 달기
+//	@GetMapping("/comment")
+//	public String writeComment(@RequestParam("board_no") Long board_no, Model model, HttpSession session) {
+//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+//		if (loginStaff == null) {
+//			// 로그인 페이지로 리다이렉트
+//			return "redirect:/staff/login";
+//		}
+//
+//		// 댓글 쓰려는 게시글 데이터 가져오기
+//		BoardDto board = service.readContent(board_no);
+//
+//		model.addAttribute("board", board);
+//
+//		// 세션에 댓글 쓰려는 게시글 데이터 저장
+//		session.setAttribute("currentboard", board);
+//
+//		return "board/comment";
+//	}
+//
+//	@PostMapping("/board/comment")
+//	public Map<String, Object> commentProcess(@RequestBody CommentDto dto, HttpSession session) {
+//		Map<String, Object> response = new HashMap<>();
+//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
+//		BoardDto currentBoard = (BoardDto) session.getAttribute("currentBoard");
+//
+//		log.info("loginStaff: " + session.getAttribute("loginStaff"));
+//		log.info("currentBoard: " + session.getAttribute("currentBoard"));
+//
+//		if (loginStaff == null || currentBoard == null) {
+//			response.put("success", false);
+//			response.put("message", "세션이 초기화되었거나 데이터가 누락되었습니다. 다시 시도해주세요.");
+//			return response;
+//		}
+//
+//		try {
+//			dto.setBoard_no(currentBoard.getBoard_no());
+//			dto.setMember_no(loginStaff.getMember_no());
+//			service.writeComment(dto);
+//			response.put("success", true);
+//			response.put("message", "댓글이 작성되었습니다.");
+//			response.put("member_no", loginStaff.getMember_no());
+//			response.put("comment_content", dto.getComment_content()); // 댓글 내용
+//			response.put("comment_writedate", new Date()); // 작성 날짜
+//
+//		} catch (Exception e) {
+//			log.error("댓글 등록 실패:" + e.getMessage());
+//			response.put("success", false);
+//			response.put("message", e.getMessage());
+//		}
+//
+//		return response;
+//	}
 
 }

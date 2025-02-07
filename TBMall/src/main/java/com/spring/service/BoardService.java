@@ -25,11 +25,11 @@ public interface BoardService {
 	public void editContent(BoardDto boarddto);
 
 	
-	//댓글 관련
-	public List<CommentDto> getCommentList(Long board_no , int currentComment , int cpageSize);//댓글 리스트 가져오기
-	public void writeComment(CommentDto commentDto);//댓글 쓰기
-	
-	public int getCommentCount(Long board_no);
+//	//댓글 관련
+//	public List<CommentDto> getCommentList(Long board_no , int currentComment , int cpageSize);//댓글 리스트 가져오기
+//	public void writeComment(CommentDto commentDto);//댓글 쓰기
+//	
+//	public int getCommentCount(Long board_no);
 
 
 }
