@@ -540,15 +540,16 @@ function ItemDetail() {
 
       <div className="comments-sections">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3>상품 후기</h3>
+          <h3></h3>
           {isAdmin && (
             <button 
               onClick={() => handleEdit(item?.item_id)}
               className="edit-buttonss"
-              style={{ padding: '15px 15px', fontSize: '0.8rem' }}
+              style={{ padding: '15px 15px', fontSize: '0.8rem' , marginBottom: '10px'}}
             >
               수정
             </button>
+
           )}
         </div>
         {isLoggedIn ? <CommentForm /> : (

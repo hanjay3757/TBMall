@@ -16,13 +16,18 @@
 
 .item-imagess {
   width: 100%;
-  height: auto;
+  height: 100%;
+  overflow: hidden;
 }
 
 .item-imagess img {
   width: 100%;
-  height: auto;
+  height: 100%;
   border-radius: 8px;
+  object-fit: cover;
+  image-rendering: -webkit-optimize-contrast; /* 웹킷 브라우저 해상도 개선 */
+  transform: translateZ(0); /* 픽셀 렌더링 개선 */
+  backface-visibility: hidden; /* 이미지 렌더링 최적화 */
 }
 .item-infos {
   /* display 속성 값들:
@@ -138,26 +143,28 @@
   font-family: inherit;
   font-size: clamp(0.9rem, 2vw, 1rem);
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 50px;
-  padding: 10px;
+  height: 120px;
+  padding: 0;
+  line-height: 120px;
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+/* placeholder 스타일링 */
+.comment-textareas::placeholder {
+  line-height: 120px;
   vertical-align: middle;
-  margin: 0 auto; /* 좌우 마진을 auto로 설정하여 중앙 정렬 */
-  max-width: 800px; /* 최대 너비 설정 */
+  color: #999;
+  opacity: 1;
 }
 
-
-
-
-
-.comment-textareas:focus {
-  outline: none;
-  border-color: #4a90e2;
-  box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+/* 실제 입력 시에는 일반적인 텍스트 스타일로 변경 */
+.comment-textareas:focus,
+.comment-textareas:not(:placeholder-shown) {
+  line-height: 1.5;
+  padding: 1rem;
+  text-align: left;
 }
-
 
 .submit-buttons {
   width: 120px;
