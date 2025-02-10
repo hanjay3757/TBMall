@@ -415,7 +415,7 @@ function App() {
           <Route path="/stuff/cart" element={<Cart />} />
           <Route path="/staff/removelist" element={<RemovedStaff />} />
           <Route path="/board/list" element={<BoardList isLoggedIn={isLoggedIn} isAdmin={isAdmin}/> } />
-          <Route path="/board/read" element={<ReadContent />} />
+          <Route path="/board/read" element={<ReadContent isLoggedIn={isLoggedIn} isAdmin={isAdmin} />} />
           <Route path="/board/write" element={<BoardWrite /> } />
           <Route path="/board/editContent" element={<BoardEdit isLoggedIn={isLoggedIn} isAdmin ={isAdmin}/> } />
           <Route path="/staff/list" element={

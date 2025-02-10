@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './ItemDetail.css';
 import { SERVER_URL } from '../config';
 
 function ItemDetail() {
   const { itemId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [item, setItem] = useState(null);
   const [boards, setBoards] = useState([]);
   const [newBoard, setNewBoard] = useState({
@@ -93,6 +94,13 @@ function ItemDetail() {
 
   // 상품 정보와 댓글 목록 로드
   useEffect(() => {
+    // 장바구니 관련 리다이렉트 처리
+    const params = new URLSearchParams(location.search);
+    const redirectFrom = params.get('from');
+    if (redirectFrom === 'cart') {
+      return; // 장바구니에서 온 경우 상세 페이지 로드 중단
+    }
+
     const loadItemDetail = async () => {
       try {
         const response = await axios.get(`${SERVER_URL}/mvc/stuff/item/detail/${itemId}`, {
@@ -149,7 +157,7 @@ function ItemDetail() {
     return () => {
       window.removeEventListener('storage', checkLoginStatus);
     };
-  }, [itemId, currentComment]);
+  }, [itemId, currentComment, location.search]);
 
   // 댓글 작성 함수 수정
   const handleCommentSubmit = async (e) => {
@@ -516,7 +524,7 @@ function ItemDetail() {
             </button>
           </div>
         )}
-        <div className="item-image">
+        <div className="item-images">
           {item?.image_url ? (
             <img 
               src={item.image_url}

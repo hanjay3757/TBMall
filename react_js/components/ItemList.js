@@ -126,7 +126,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
     setRefreshKey(prevKey => prevKey + 1);
   };
 
-  const handleDelete = async (item_id) => {
+  const handleDelete = async (e, item_id) => {
+    e.stopPropagation(); // 이벤트 전파 중단
     try {
       if (!isAdmin) {
         alert('관리자 권한이 필요합니다.');
@@ -177,7 +178,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
     }));
   };
 
-  const handleAddToCart = async (itemId, quantity) => {
+  const handleAddToCart = async (e, itemId) => {
+    e.stopPropagation(); // 이벤트 전파 중단
     try {
       if (!isLoggedIn) {
         alert('로그인이 필요합니다.');
@@ -193,7 +195,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
 
       const params = new URLSearchParams();
       params.append('itemId', itemId);
-      params.append('quantity', quantity);
+      params.append('quantity', quantities[itemId] || 1);
 
       const response = await axios.post(
         '/stuff/api/cart/add',
@@ -295,19 +297,19 @@ function ItemList({ isLoggedIn, isAdmin }) {
               <p>{item.item_description}</p>
               
               {isAdmin && (
-                <div className="admin-controls">
+                <div className="admin-controls" onClick={e => e.stopPropagation()}>
                   <button 
+                    className="edit-button"
                     onClick={(e) => {
-                      e.stopPropagation(); // 이벤트 버블링 방지
+                      e.stopPropagation(); // 이벤트 전파 중단
                       navigate(`/stuff/item/edit?itemId=${item.item_id}`);
                     }}
-                    className="edit-button"
                   >
                     수정
                   </button>
                   <button 
-                    onClick={() => handleDelete(item.item_id)}
                     className="delete-button"
+                    onClick={(e) => handleDelete(e, item.item_id)}
                   >
                     삭제
                   </button>
@@ -315,7 +317,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
               )}
 
               {isLoggedIn && item.item_stock > 0 && (
-                <div className="cart-controls">
+                <div className="cart-controls" onClick={e => e.stopPropagation()}>
                   <input
                     type="number"
                     min="1"
@@ -325,8 +327,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
                     className="quantity-input"
                   />
                   <button 
-                    onClick={() => handleAddToCart(item.item_id, quantities[item.item_id] || 1)}
                     className="add-to-cart-button"
+                    onClick={(e) => handleAddToCart(e, item.item_id)}
                   >
                     장바구니에 추가
                   </button>

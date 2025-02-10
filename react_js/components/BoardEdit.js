@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import './BoardWrite.css';
 
 function BoardEdit({ isLoggedIn, isAdmin }) {
     const navigate = useNavigate();
@@ -107,27 +108,40 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     }
 
     return (
-        <div>
+        <div className="board-write-container">
             <h2>글 수정</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>글 제목:</label>
+            <form onSubmit={handleSubmit} className="board-write-form">
+                <div className="form-group">
+                    <label htmlFor="board_title">제목</label>
                     <input
                         type="text"
+                        id="board_title"
                         name="board_title"
                         value={boardData.board_title}
                         onChange={handleChange}
+                        required
                     />
                 </div>
-                <div>
-                    <label>글 내용:</label>
+                <div className="form-group">
+                    <label htmlFor="board_content">내용</label>
                     <textarea
+                        id="board_content"
                         name="board_content"
                         value={boardData.board_content}
                         onChange={handleChange}
+                        required
                     />
                 </div>
-                <button type="submit">수정</button>
+                <div className="button-group">
+                    <button type="submit" className="submit-button">수정</button>
+                    <button 
+                        type="button" 
+                        className="cancel-button"
+                        onClick={() => navigate('/board/list')}
+                    >
+                        취소
+                    </button>
+                </div>
             </form>
         </div>
     );
