@@ -300,7 +300,7 @@ function ItemDetail() {
     });
 
     return (
-      <div className="comments-container">
+      <div className="comments-containers">
         {comments.map((comment, index) => {
           console.log('댓글 데이터:', {
             item_id: comment.item_id,
@@ -314,14 +314,14 @@ function ItemDetail() {
           const uniqueKey = `${comment.item_id}-${comment.member_no}-${index}`;
 
           return (
-            <div key={uniqueKey} className="comment-item">
-              <div className="comment-header">
-                <span className="comment-author">{comment.member_nick || '익명'}</span>
-                <span className="comment-date">
+            <div key={uniqueKey} className="comment-items">
+              <div className="comment-headers">
+                <span className="comment-authors">{comment.member_nick || '익명'}</span>
+                <span className="comment-dates">
                   {new Date(comment.comment_writedate).toLocaleDateString()}
                 </span>
               </div>
-              <p className="comment-content">{comment.comment_content}</p>
+              <p className="comment-contents">{comment.comment_content}</p>
               {isAdminUser && (
                 <button
                   onClick={() => {
@@ -333,7 +333,7 @@ function ItemDetail() {
                     // item_id와 member_no를 사용하여 댓글 식별
                     handleDelete(comment.item_id, comment.member_no);
                   }}
-                  className="delete-btn"
+                  className="delete-btns"
                 >
                   삭제
                 </button>
@@ -467,7 +467,7 @@ function ItemDetail() {
     };
 
     return (
-      <form onSubmit={handleSubmit} className="comment-form">
+      <form onSubmit={handleSubmit} className="comment-forms">
         <textarea
           value={localComment}
           onChange={(e) => setLocalComment(e.target.value)}
@@ -475,9 +475,9 @@ function ItemDetail() {
           required
           disabled={isSubmitting}
           rows={4}
-          className="comment-textarea"
+          className="comment-textareas"
         />
-        <button type="submit" disabled={isSubmitting}>
+        <button type="submits" disabled={isSubmitting}>
           {isSubmitting ? '등록 중...' : '댓글 작성'}
         </button>
       </form>
@@ -512,19 +512,9 @@ function ItemDetail() {
   }
 
   return (
-    <div className="item-detail-container">
-      <div className="item-detail">
-        {isAdmin && (
-          <div className="admin-controls">
-            <button 
-              onClick={() => handleEdit(item?.item_id)}
-              className="edit-button"
-            >
-              수정
-            </button>
-          </div>
-        )}
-        <div className="item-images">
+    <div className="item-detail-containers">
+      <div className="item-details">
+        <div className="item-imagess">
           {item?.image_url ? (
             <img 
               src={item.image_url}
@@ -540,18 +530,29 @@ function ItemDetail() {
             />
           )}
         </div>
-        <div className="item-info">
+        <div className="item-infos">
           <h2>{item?.item_name}</h2>
-          <p className="price">가격: {(item?.item_price || 0).toLocaleString()}원</p>
-          <p className="stock">재고: {(item?.item_stock || 0).toLocaleString()}개</p>
-          <p className="description">{item?.item_description}</p>
+          <p className="prices">가격: {(item?.item_price || 0).toLocaleString()}원</p>
+          <p className="stocks">재고: {(item?.item_stock || 0).toLocaleString()}개</p>
+          <p className="descriptions">{item?.item_description}</p>
         </div>
       </div>
 
-      <div className="comments-section">
-        <h3>상품 후기</h3>
+      <div className="comments-sections">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>상품 후기</h3>
+          {isAdmin && (
+            <button 
+              onClick={() => handleEdit(item?.item_id)}
+              className="edit-buttonss"
+              style={{ padding: '15px 15px', fontSize: '0.8rem' }}
+            >
+              수정
+            </button>
+          )}
+        </div>
         {isLoggedIn ? <CommentForm /> : (
-          <p className="login-required">
+          <p className="login-requireds">
             댓글을 작성하려면 로그인이 필요합니다.
           </p>
         )}

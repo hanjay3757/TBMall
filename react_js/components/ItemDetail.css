@@ -1,305 +1,266 @@
-/* ItemList.css와 중복되는 스타일들 주석 처리 */
- .item-images {
-  flex: 0 0 500px;
-  height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-  overflow: hidden;
-} 
-
-/* .item-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-} */
-
-/* .item-content {
-  padding: 20px;
-} */
-
 /* ItemDetail에만 필요한 고유한 스타일들 */
-.item-detail-container {
+.item-detail-containers {
   max-width: 1000px;
   margin: 2rem auto;
   padding: 1.5rem;
   overflow: hidden;
+  font-size: clamp(14px, 2vw, 18px);
 }
 
-.item-detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.item-detail-main {
+.item-details {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   max-width: 100%;
 }
 
-.item-detail-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  min-width: 0;
-}
-
-.item-detail-price {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #333;
-}
-
-.item-detail-description {
-  line-height: 1.8;
-  color: #666;
-  word-wrap: break-word;
-}
-
-.item-detail-actions {
-  margin-top: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-/* 리뷰 섹션 스타일 */
-.reviews-section {
-  margin-top: 3rem;
+.item-imagess {
   width: 100%;
+  height: auto;
 }
 
-.review-form {
-  margin-bottom: 2rem;
+.item-imagess img {
   width: 100%;
-}
-
-.review-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  width: 100%;
-}
-
-.review-item {
-  padding: 1.2rem;
-  border: 1px solid #ddd;
+  height: auto;
   border-radius: 8px;
-  width: 100%;
-  box-sizing: border-box;
+}
+.item-infos {
+  /* display 속성 값들:
+     - block: 블록 레벨 요소
+     - inline: 인라인 요소  
+     - inline-block: 인라인-블록 요소
+     - grid: 그리드 레이아웃
+     - none: 요소 숨김
+     - table: 테이블 형식
+     - contents: 컨테이너 제거
+     - list-item: 목록 아이템
+     - flow-root: 새로운 블록 서식 맥락
+  */
+  /* flex 속성 값들:
+     - flex: 플렉스 컨테이너로 설정
+     - inline-flex: 인라인 플렉스 컨테이너로 설정
+     
+     flex 관련 속성들:
+     - flex-direction: row | column | row-reverse | column-reverse
+     - flex-wrap: nowrap | wrap | wrap-reverse  
+     - flex-flow: flex-direction과 flex-wrap의 단축 속성
+     - justify-content: flex-start | flex-end | center | space-between | space-around
+     - align-items: stretch | flex-start | flex-end | center | baseline
+     - align-content: flex-start | flex-end | center | space-between | space-around | stretch
+     - gap: 아이템 간의 간격 설정
+     - flex-grow: 아이템의 증가 비율
+     - flex-shrink: 아이템의 감소 비율
+     - flex-basis: 아이템의 기본 크기
+     display: flex;
+  */
+  
+  flex-direction: column;
+  min-width: 0;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.review-header {
+.prices {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: 700;
+  color: #2c3e50;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid #eee;
+  text-align: right;
+}
+
+.stocks {
+  color: #34495e;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-weight: 500;
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
-.review-content {
+.descriptions {
+  line-height: 1.8;
   color: #555;
   word-wrap: break-word;
-  line-height: 1.6;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+  background-color: #f8f9fa;
+  padding: 3rem;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+  border-right: 4px solid #3498db;
+  text-align: center;
 }
 
-.item-detail {
+/* 관리자 컨트롤 */
+.admin-controlss {
   display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  width: 100%;
+  gap: 0.1rem;
+  padding: 0.1rem;
+  border-top: 1px solid #e0e0e0;
 }
 
-/* .item-image {
-  flex: 0 0 400px;
-  max-width: 500px;
-  height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-  overflow: hidden;
-} */
-
-
-
-/* .item-info {
-  flex: 1;
-  min-width: 300px;
-  padding: 1rem;
-}
- */
-.item-info h2 {
-  margin: 0 0 1.2rem 0;
-  font-size: 2rem;
-  word-wrap: break-word;
+.edit-buttonss {
+  background: #2ecc71;
+  color: white;
+  padding: 0.1rem;
+  border: none;
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 1rem);
 }
 
-.price {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #e44d26;
-  margin: 1rem 0;
+.edit-buttonss:hover {
+  background: #27ae60;
 }
 
-.stock {
-  color: #666;
-  margin: 1rem 0;
-  font-size: 1.2rem;
-}
-
-.description {
-  line-height: 1.8;
-  color: #333;
-  word-wrap: break-word;
-  font-size: 1.1rem;
-}
-
-.review-section {
+/* 댓글 섹션 */
+.comments-sections {
   margin-top: 3rem;
   border-top: 2px solid #eee;
   padding-top: 2rem;
   width: 100%;
 }
 
-.review-form textarea {
+.comment-forms {
+  margin-bottom: 2rem;
   width: 100%;
-  height: 120px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: 2px solid #ddd;
+  display: flex;
+  gap: 10px;
+}
+
+.comment-textareas {
+  flex: 1;
+  border: 5px solid #ddd;
   border-radius: 8px;
   resize: vertical;
-  box-sizing: border-box;
-  font-size: 1rem;
+  font-family: inherit;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  padding: 10px;
+  vertical-align: middle;
+  margin: 0 auto; /* 좌우 마진을 auto로 설정하여 중앙 정렬 */
+  max-width: 800px; /* 최대 너비 설정 */
 }
 
-.review-form button {
-  padding: 0.8rem 2rem;
-  background-color: #007bff;
+
+
+
+
+.comment-textareas:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+}
+
+
+.submit-buttons {
+  width: 120px;
+  height: 120px;
+  background-color: #4a90e2;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  transition: all 0.3s ease;
 }
 
-.review-form button:hover {
-  background-color: #0056b3;
+.submit-buttons:hover {
+  background-color: #357abd;
   transform: translateY(-2px);
 }
 
-.review-date {
-  color: #666;
-  font-size: 1rem;
+.submit-buttons:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
-/* 관리자 컨트롤 */
-.admin-controls {
+.comments-containers {
   display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding: 1rem;
-  border-top: 2px solid #e0e0e0;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
-.admin-controls button {
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1.1rem;
+.comment-items {
+  position: relative;
+  padding: 1.2rem;
+  margin-bottom: 0.2rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background-color: #fff;
   transition: all 0.3s ease;
 }
 
-.edit-button {
-  background-color: #2ecc71;
-  color: white;
-  position: relative;
-  margin-right: auto;
+.comment-items:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.edit-button:hover {
-  background-color: #27ae60;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.comment-headers {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.delete-button {
+.comment-authors {
+  font-weight: bold;
+  color: #333;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+}
+
+.comment-dates {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  color: #666;
+}
+
+.comment-contents {
+  margin: 1rem 0;
+  line-height: 1.8;
+  color: #333;
+  word-break: break-word;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+}
+
+.delete-btns {
   background-color: #e74c3c;
   color: white;
-  position: relative;
-  margin-left: auto;
-}
-
-.delete-button:hover {
-  background-color: #c0392b;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.add-to-cart-button {
-  background-color: #3498db;
-  color: white;
-  padding: 1rem 2rem;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   transition: all 0.3s ease;
 }
 
-.add-to-cart-button:hover {
-  background-color: #2980b9;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.delete-btns:hover {
+  background-color: #c0392b;
 }
 
-.add-to-cart-button:disabled {
-  background-color: #bdc3c7;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.cart-controls {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.cart-controls input {
-  width: 100px;
-  padding: 0.8rem;
-  border: 2px solid #e0e0e0;
+.login-requireds {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+  background-color: #f8f9fa;
   border-radius: 8px;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
+  margin: 1rem 0;
+  font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
-.cart-controls input:focus {
-  border-color: #3498db;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
-}
+
+
 
 .loading-spinner {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 300px;
-  text-align: center;
-  font-size: 1.5rem;
-  color: #555;
 }
 
 @keyframes spin {
@@ -317,139 +278,4 @@
   border: 5px solid #f5f6fa;
   border-top: 5px solid #3498db;
   animation: spin 0.8s linear infinite;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 1.5rem 0;
-}
-
-.pagination button {
-  padding: 0.8rem 1.5rem;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  background-color: white;
-  color: #333;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-}
-
-.pagination button:hover {
-  background-color: #f0f0f0;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.pagination button.active {
-  background-color: #3498db;
-  color: white;
-  border-color: #3498db;
-}
-
-.pagination button:disabled {
-  background-color: #f5f5f5;
-  color: #999;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 2px solid #eee;
-}
-
-.comment-date {
-  font-size: 1rem;
-  color: #666;
-}
-
-.comment-form textarea {
-  width: 100%;
-  min-height: 120px;
-  padding: 1rem;
-  margin: 1rem 0;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  resize: vertical;
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.comment-form textarea:focus {
-  outline: none;
-  border-color: #4a90e2;
-  box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
-}
-
-.comment-item {
-  position: relative;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  background-color: #fff;
-  transition: all 0.3s ease;
-}
-
-.comment-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.comment-info {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.comment-author {
-  font-weight: bold;
-  color: #333;
-  font-size: 1.1rem;
-}
-
-.delete-button {
-  background: none;
-  border: none;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  color: #666;
-  font-size: 1.3rem;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-.delete-button:hover {
-  background-color: #ff4444;
-  color: white;
-  transform: translateY(-2px);
-}
-
-.comment-content {
-  margin: 1rem 0;
-  line-height: 1.8;
-  color: #333;
-  word-break: break-word;
-  font-size: 1.1rem;
-}
-
-.no-comments {
-  text-align: center;
-  color: #666;
-  padding: 2rem;
-  background-color: #f8f9fa;
-  border-radius: 12px;
-  margin: 2rem 0;
-  font-size: 1.2rem;
 }

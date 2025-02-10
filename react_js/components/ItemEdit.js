@@ -190,14 +190,14 @@ function ItemEdit() {
             placeholder="이미지 URL을 입력하세요"
           />
         </div>
-        <div className="form-group">
+     {/*    <div className="form-group">
           <label>또는 이미지 파일 선택</label>
           <input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
           />
-        </div>
+        </div> */}
         {previewUrl && (
           <div className="image-preview">
             <img 
