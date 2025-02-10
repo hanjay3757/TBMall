@@ -18,22 +18,20 @@ function BoardList({ isLoggedIn, isAdmin, userInfo }) {
         params: { 
           currentPage, 
           pageSize,
-          member_no: userInfo?.member_no  // 사용자 정보 추가
+          member_no: userInfo?.member_no
         },
         withCredentials: true,
       });
-      const { boards = [], totalPages } = response.data; // 백엔드에서 페이지 데이터 가져옴
-      // console.log('Fetched boards:', boards);
-      // console.log('Total Pages:', totalPages);
+      const { boards = [], totalPages } = response.data;
       const filteredBoards = boards.filter(board => board.board_delete === 0);
       setBoards(filteredBoards);
-      setTotalPages(totalPages); // 전체 페이지 수 설정
+      setTotalPages(totalPages);
     } catch (error) {
-      // console.error('게시판 목록을 불러오는 중 오류 발생:', error);
+      // 에러 처리
     } finally {
-      setLoading(false); // 로딩 상태 해제
+      setLoading(false);
     }
-  }, [currentPage, pageSize, isAdmin, userInfo?.member_no]);  // 의존성 배열에 userInfo 추가
+  }, [currentPage, pageSize, isAdmin, userInfo?.member_no]);
 
   useEffect(() => {
     loadBoards(); // currentPage가 변경될 때마다 호출

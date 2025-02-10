@@ -106,11 +106,8 @@ function App() {
         setUserInfo(parsedUserInfo);
         setIsLoggedIn(true);
         setIsAdmin(parsedUserInfo.isAdmin);
-        
-        // 디버깅을 위한 콘솔 로그
-        console.log('Stored userInfo:', parsedUserInfo);
       } catch (error) {
-        console.error('Error parsing userInfo:', error);
+        // 에러 처리
       }
     }
   }, []);
@@ -133,12 +130,10 @@ function App() {
       }
     })
     .then(response => {
-      console.log('로그인 상태 확인 응답:',response.data);
       setIsLoggedIn(response.data.isLoggedIn);
       setIsAdmin(response.data.isAdmin);
     })
     .catch(error => {
-      console.error('로그인 상태 확인 실패:', error);
       setIsLoggedIn(false);
       setIsAdmin(false);
     });
@@ -164,9 +159,8 @@ function App() {
           setIsLoggedIn(true);
           setIsAdmin(response.data.isAdmin);
           
-          // userInfo 객체 구조 수정
           const userInfo = {
-            member_nick: response.data.member_nick,  // member_nick으로 변경
+            member_nick: response.data.member_nick,
             points: response.data.points || 0,
             position_no: response.data.position_no || 0,
             isAdmin: response.data.isAdmin
@@ -176,14 +170,12 @@ function App() {
           localStorage.setItem('userInfo', JSON.stringify(userInfo));
           localStorage.setItem('member_no', response.data.member_no || '');
           
-          console.log('로그인 응답:', response.data);  // 디버깅용
           navigate('/stuff/item/list');
         } else {
           alert(response.data.message || '로그인에 실패했습니다.');
         }
       })
       .catch(error => {
-        console.error('로그인 요청 실패:', error);
         alert('로그인에 실패했습니다. 서버에 문제가 있습니다.');
       });
   }
@@ -198,7 +190,7 @@ function App() {
         }
       })
       .catch(error => {
-        console.error('로그아웃 실패:', error);
+        // 에러 처리
       });
   }
 
@@ -211,21 +203,19 @@ function App() {
       }, {
         headers: { 'Content-Type': 'application/json' }
       });
-      console.log("서버 응답: "+response.data);
 
       const { staff, totalPage } = response.data;
 
       setStaffList(staff);
       setTotalPage(totalPage);
     } catch (error) {
-      console.error('직원 목록 조회 실패:', error);
+      // 에러 처리
     } finally {
       setLoading(false);
     }
   }
 
   const handlePageChange = (page) => {
-    console.log("페이지 변경 요청: ",page);
     setCurrentPage(page);
     loadStaffList(page);
   };
@@ -250,7 +240,6 @@ function App() {
           }
         })
         .catch(error => {
-          console.error('직원 삭제 실패:', error);
           alert('직원 삭제에 실패했습니다.');
         });
     }
@@ -345,8 +334,6 @@ function App() {
       return;
     }
 
-    console.log("현재 로그인된 유저의 position_no:", userInfo.position_no);
-
     const lastAttendanceDate = localStorage.getItem('lastAttendanceDate');
     const today = new Date().toISOString().split('T')[0];
 
@@ -378,17 +365,9 @@ function App() {
           ...prevUserInfo,
           points: prevUserInfo.points + rewardPoints,
         }));
-
-        localStorage.setItem('userInfo', JSON.stringify({
-          ...userInfo,
-          points: userInfo.points + rewardPoints,
-        }));
-      } else {
-        alert(response.data.message);
       }
-    } catch(error) {
-      console.error("출석 체크 요청 중 오류 발생:", error);
-      alert("출석 체크 중 문제가 발생했습니다.");
+    } catch (error) {
+      alert('출석체크 처리 중 오류가 발생했습니다.');
     }
   };
 

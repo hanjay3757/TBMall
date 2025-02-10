@@ -21,37 +21,81 @@ function ItemEdit() {
   const [previewUrl, setPreviewUrl] = useState('');
 
   useEffect(() => {
-    const loadItem = async () => {
+    const loadItemData = async () => {
       try {
-        const response = await axios.get(`/stuff/item/list`, {
+        console.log('=== 상품 정보 로딩 시작 ===');
+        const searchParams = new URLSearchParams(window.location.search);
+        const itemId = searchParams.get('itemId');
+        
+        const editUrl = `${API_BASE_URL}/stuff/item/edit`;
+        
+        console.log('요청 정보:', {
+          itemId,
+          url: editUrl,
+          params: { itemId },
           withCredentials: true
         });
-        
-        const currentItem = response.data.find(item => item.item_id === parseInt(itemId));
-        
-        if (currentItem) {
+
+        const response = await axios.get(editUrl, {
+          params: { itemId },
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log('서버 응답:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+          data: response.data
+        });
+
+        if (response.data) {
+          console.log('받아온 상품 데이터:', response.data);
           setItem({
-            item_id: currentItem.item_id || '',
-            item_name: currentItem.item_name || '',
-            item_price: currentItem.item_price || '',
-            item_stock: currentItem.item_stock || '',
-            item_description: currentItem.item_description || '',
-            image_url: currentItem.image_url || ''
+            item_id: response.data.item_id || '',
+            item_name: response.data.item_name || '',
+            item_price: response.data.item_price || '',
+            item_stock: response.data.item_stock || '',
+            item_description: response.data.item_description || '',
+            image_url: response.data.image_url || ''
           });
-          if (currentItem.image_url) {
-            setPreviewUrl(currentItem.image_url);
+          if (response.data.image_url) {
+            setPreviewUrl(response.data.image_url);
           }
         } else {
-          throw new Error('아이템을 찾을 수 없습니다.');
+          console.error('상품 데이터가 없습니다:', response);
+          throw new Error('상품 데이터를 찾을 수 없습니다.');
         }
       } catch (error) {
+        console.error('=== 상품 정보 로딩 오류 상세 ===');
+        console.error('오류 타입:', error.name);
+        console.error('오류 메시지:', error.message);
+        console.error('서버 응답:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+        console.error('요청 설정:', {
+          url: error.config?.url,
+          method: error.config?.method,
+          params: error.config?.params,
+          headers: error.config?.headers,
+          baseURL: API_BASE_URL
+        });
+        console.error('전체 오류:', error);
+
         alert('상품 정보를 불러오는데 실패했습니다.');
         navigate('/stuff/item/list');
+      } finally {
+        console.log('=== 상품 정보 로딩 종료 ===');
       }
     };
 
     if (itemId) {
-      loadItem();
+      loadItemData();
     }
   }, [itemId, navigate]);
 
@@ -60,12 +104,22 @@ function ItemEdit() {
     if (file) {
       setImageFile(file);
       setPreviewUrl(URL.createObjectURL(file));
+      setItem({...item, image_url: ''});
     }
+  };
+
+  const handleImageUrlChange = (e) => {
+    const url = e.target.value;
+    setItem({...item, image_url: url});
+    setPreviewUrl(url);
+    setImageFile(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let finalImageUrl = item.image_url;
+
       if (imageFile) {
         const formData = new FormData();
         formData.append('image', imageFile);
@@ -79,12 +133,15 @@ function ItemEdit() {
             }
           }
         );
-        item.image_url = imageResponse.data.imageUrl;
+        finalImageUrl = imageResponse.data.imageUrl;
       }
 
-      const loginResponse = await axios.post('/staff/check-login', {
-        withCredentials: true
-      });
+      const loginResponse = await axios.post(
+        '/staff/check-login',
+        {
+          withCredentials: true
+        }
+      );
 
       const params = new URLSearchParams();
       params.append('item_id', itemId);
@@ -92,36 +149,30 @@ function ItemEdit() {
       params.append('item_price', item.item_price || '');
       params.append('item_stock', item.item_stock || '');
       params.append('item_description', item.item_description || '');
-      params.append('image_url', item.image_url || '');
+      params.append('image_url', finalImageUrl || '');
       params.append('admin_no', loginResponse.data.admin_no);
 
-      const response = await axios.post(
-        '/stuff/item/edit',
-        params,
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
+      console.log('수정 요청 데이터:', {
+        ...params,
+        image_url: finalImageUrl
+      });
+
+      const response = await axios.post('/stuff/item/edit', params, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
-      );
+      });
 
       if (response.data === 'redirect:/stuff/item/list' || response.status === 200) {
         alert('상품이 수정되었습니다.');
-        navigate('/stuff/item/list', { 
-          replace: true,
-          state: { refresh: true }
-        });
+        navigate(`/stuff/item/${itemId}`);
       } else {
         throw new Error('수정에 실패했습니다.');
       }
     } catch (error) {
-      if (error.response?.status === 403) {
-        alert('관리자 권한이 필요합니다.');
-        navigate('/stuff/item/list');
-      } else {
-        alert('상품 수정 중 오류가 발생했습니다.');
-      }
+      console.error('상품 수정 오류:', error);
+      alert('상품 수정에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -130,18 +181,35 @@ function ItemEdit() {
       <h2>상품 수정</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>이미지</label>
+          <label>이미지 URL</label>
+          <input
+            type="text"
+            name="image_url"
+            value={item.image_url || ''}
+            onChange={handleImageUrlChange}
+            placeholder="이미지 URL을 입력하세요"
+          />
+        </div>
+     {/*    <div className="form-group">
+          <label>또는 이미지 파일 선택</label>
           <input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
           />
-          {(previewUrl || item.image_url) && (
-            <div className="image-preview">
-              <img src={previewUrl || item.image_url} alt="미리보기" />
-            </div>
-          )}
-        </div>
+        </div> */}
+        {previewUrl && (
+          <div className="image-preview">
+            <img 
+              src={previewUrl} 
+              alt="미리보기" 
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/200x200?text=이미지+미리보기';
+                console.error('이미지 로드 실패:', previewUrl);
+              }}
+            />
+          </div>
+        )}
         <div className="form-group">
           <label>상품명</label>
           <input

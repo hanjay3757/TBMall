@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './ItemRegister.css';
-import { API_BASE_URL } from '../config';
+import { SERVER_URL } from '../config';
 
 function ItemRegister() {
   const navigate = useNavigate();
@@ -18,15 +18,26 @@ function ItemRegister() {
     e.preventDefault();
     
     try {
+      // 이미지 URL 처리
+      let finalImageUrl = itemData.image_url;
+      if (finalImageUrl && !finalImageUrl.startsWith('/upload/')) {
+        // 외부 URL인 경우 그대로 저장
+        console.log('저장할 이미지 URL:', finalImageUrl);
+      }
+
       const params = new URLSearchParams();
       Object.keys(itemData).forEach(key => {
-        params.append(key, itemData[key]);
+        if (key === 'image_url') {
+          params.append(key, finalImageUrl); // 처리된 이미지 URL 저장
+        } else {
+          params.append(key, itemData[key]);
+        }
       });
 
       console.log('등록할 데이터:', Object.fromEntries(params));
 
       const response = await axios.post(
-        '/stuff/item/register',
+        `${SERVER_URL}/mvc/stuff/item/register`,
         params,
         {
           headers: {
@@ -60,6 +71,7 @@ function ItemRegister() {
             value={itemData.image_url}
             onChange={(e) => setItemData({...itemData, image_url: e.target.value})}
           />
+          {/* 이미지 미리보기 */}
           {itemData.image_url && (
             <div className="image-preview">
               <img 

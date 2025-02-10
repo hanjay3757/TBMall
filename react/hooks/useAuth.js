@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { SERVER_URL } from '../config';
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,11 +15,15 @@ export const useAuth = () => {
     params.append('password', password);
 
     try {
-      const response = await axios.post('http://192.168.0.128:8080/mvc/staff/login', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+      const response = await axios.post(
+        `${SERVER_URL}/mvc/staff/login`, 
+        params, 
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         }
-      });
+      );
       
       if (!response.data.success) {
         throw new Error(response.data.message || '로그인에 실패했습니다.');

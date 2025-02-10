@@ -17,7 +17,6 @@ function Cart() {
       const response = await axios.get(`${API_BASE_URL}/stuff/api/cart`, {
         withCredentials: true
       });
-      console.log('장바구니 데이터:', response.data);
       
       // 같은 itemName을 가진 아이템들을 그룹화
       const groupedItems = response.data.reduce((acc, item) => {
@@ -37,7 +36,6 @@ function Cart() {
       setCartItems(Object.values(groupedItems));
       setLoading(false);
     } catch (error) {
-      console.error('장바구니 로딩 실패:', error);
       setLoading(false);
     }
   };
@@ -72,7 +70,6 @@ function Cart() {
       }
       loadCartItems();
     } catch (error) {
-      console.error('수량 업데이트 실패:', error);
       alert('재고가 부족합니다.');
     }
   };
@@ -97,7 +94,6 @@ function Cart() {
         setCartItems([]);
       }
     } catch (error) {
-      console.error('주문 처리 실패:', error);
       alert(error.response?.data?.message || '주문 처리 중 오류가 발생했습니다.');
     }
   };
@@ -164,7 +160,6 @@ function Cart() {
                         src={item.imageUrl}
                         alt={item.itemName}
                         onError={(e) => {
-                          console.log('이미지 로딩 실패:', item.imageUrl);
                           e.target.src = 'https://via.placeholder.com/400x200';
                         }}
                       />

@@ -2,13 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import './BoardList.css'; // CSS 파일 임포트
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
 
-function BoardList({ isLoggedIn, isAdmin }) {
+function BoardList({ isLoggedIn, isAdmin, userInfo }) {
   const [boards, setBoards] = useState([]); // 글 목록 상태
   const [loading, setLoading] = useState(true); // 로딩 상태
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
-  const [pageSize, setPageSize] = useState(5); // 한 페이지당 글 수
+  const [pageSize, setPageSize] = useState(10); // 한 페이지당 글 수
   const [totalPages, setTotalPages] = useState(0); // 전체 페이지 수
   const navigate = useNavigate();
 
@@ -16,21 +15,25 @@ function BoardList({ isLoggedIn, isAdmin }) {
   const loadBoards = useCallback(async () => {
     try {
       const response = await axios.get('/board/list', {
-        params: { currentPage, pageSize },
+        params: { 
+          currentPage, 
+          pageSize,
+          member_no: userInfo?.member_no  // 사용자 정보 추가
+        },
         withCredentials: true,
       });
       const { boards = [], totalPages } = response.data; // 백엔드에서 페이지 데이터 가져옴
-      console.log('Fetched boards:', boards);
-      console.log('Total Pages:', totalPages);
+      // console.log('Fetched boards:', boards);
+      // console.log('Total Pages:', totalPages);
       const filteredBoards = boards.filter(board => board.board_delete === 0);
       setBoards(filteredBoards);
       setTotalPages(totalPages); // 전체 페이지 수 설정
     } catch (error) {
-      console.error('게시판 목록을 불러오는 중 오류 발생:', error);
+      // console.error('게시판 목록을 불러오는 중 오류 발생:', error);
     } finally {
       setLoading(false); // 로딩 상태 해제
     }
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, isAdmin, userInfo?.member_no]);  // 의존성 배열에 userInfo 추가
 
   useEffect(() => {
     loadBoards(); // currentPage가 변경될 때마다 호출
@@ -47,94 +50,129 @@ function BoardList({ isLoggedIn, isAdmin }) {
   const handleDelete = async (board_no) => {
     try {
       if (!isAdmin) {
+        // console.log('관리자 권한 체크 실패');
         alert('관리자 권한이 필요합니다.');
         return;
       }
       if (!board_no) {
+        // console.log('게시글 번호 누락');
         alert('삭제할 글이 없습니다.');
         return;
       }
-
       if (window.confirm('이 글을 삭제하시겠습니까?')) {
+        // 서버 엔드포인트에 맞게 URL 수정
         const response = await axios.post(
           '/board/deleteOneContent',
-          { board_no: board_no },
+          { board_no: board_no },  // JSON 형식으로 전송
           {
             withCredentials: true,
             headers: {
-              'Content-Type': 'application/json',
-            },
+              'Content-Type': 'application/json'
+            }
           }
         );
+        // console.log('삭제 요청 응답:', response);
 
         if (response.data.success) {
-          alert('해당 글이 삭제되었습니다.');
-          await loadBoards(); // 삭제 후 목록 새로고침
+          alert(response.data.message || '게시글이 삭제되었습니다.');
+          await loadBoards();
         } else {
+          // console.error('글 삭제 실패:', response.data);
           alert(response.data.message || '글 삭제에 실패했습니다.');
         }
       }
     } catch (error) {
-      console.error('글 삭제 실패:', error);
-      alert(error.response?.data?.message || '글 삭제 중 오류가 발생했습니다.');
+      // console.error('=== 글 삭제 오류 상세 ===');
+      // console.error('오류 타입:', error.name);
+      // console.error('오류 메시지:', error.message);
+      // console.error('서버 응답:', error.response);
+      // console.error('요청 설정:', error.config);
+      
+      const errorMessage = error.response?.data?.message || '글 삭제 중 오류가 발생했습니다.';
+      alert(errorMessage);
     }
   };
 
   const handlePageChange = (page) => {
-    if (page > 0 && page <= totalPages) {
+    if (page >= 1 && page <= totalPages) {
       setCurrentPage(page); // 페이지 변경
     }
+  };
+
+  const handleRowClick = (board_no) => {
+    navigate(`/board/read?board_no=${board_no}`);
   };
 
   if (loading) {
     return <p>게시판 목록을 불러오는 중입니다...</p>;
   }
 
-  if (boards.length === 0) {
-    return <p>게시판에 등록된 글이 없습니다.</p>;
-  }
-
   return (
     <div>
-      <h1>TBmall 고객 게시판</h1>
-      <table className="board-table">
-        <thead>
-          <tr>
-            <th>번호</th>
-            <th>제목</th>
-            <th>내용</th>
-            <th>작성일</th>
-            {isAdmin && <th>관리</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {boards.map((board, index) => (
-            <tr key={board.board_no}>
-              <td>{(currentPage - 1) * pageSize + index + 1}</td>
-              <td>{board.board_title}</td>
-              <td>
-                <span
-                  className="board-content-link"
-                  onClick={() => readContent(board.board_no)}
-                >
-                  {board.board_content}
-                </span>
-              </td>
-              <td>{board.board_writedate}</td>
-              {isAdmin && (
-                <td>
-                  <button
-                    onClick={() => handleDelete(board.board_no)}
-                    className="delete-button"
-                  >
-                    삭제
-                  </button>
-                </td>
-              )}
+      <div className="board-header">
+        <h1>TBMALL 공지 게시판</h1>
+        {isLoggedIn && isAdmin && (
+          <button
+            onClick={() => navigate('/board/write')}
+            className="write-button"
+          >
+            글작성
+          </button>
+        )}
+      </div>
+
+      {boards.length === 0 ? (
+        <div className="no-content">
+          <p>등록된 글이 없습니다.</p>
+          {isLoggedIn && (
+            <button 
+              onClick={() => navigate('/board/write')} 
+              className="write-button-empty"
+            >
+              첫 게시글을 작성해보세요!
+            </button>
+          )}
+        </div>
+      ) : (
+        <table className="board-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>제목</th>
+              <th>작성자</th>
+              <th>작성일</th>
+              {isAdmin && <th>관리</th>}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {boards.map((board) => (
+              <tr 
+                key={board.board_no}
+                onClick={() => handleRowClick(board.board_no)}
+                className="board-row"
+              >
+                <td>{board.board_no}</td>
+                <td>{board.board_title}</td>
+                <td>
+                  <strong>{board.member_nick}</strong>
+                  {board.member_nick ? '님' : '관리자'}
+                </td>
+                <td>{new Date(board.board_writedate).toLocaleDateString()}</td>
+                {isAdmin && (
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <button
+                      className="delete-button"
+                      onClick={() => handleDelete(board.board_no)}
+                    >
+                      삭제
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       {/* 페이징 UI */}
       <div className="pagination">
@@ -154,14 +192,6 @@ function BoardList({ isLoggedIn, isAdmin }) {
           다음
         </button>
       </div>
-
-      {isLoggedIn && (
-        <div style={{ marginTop: '20px' }}>
-          <button onClick={handleWrite} className="write-button">
-            글 작성
-          </button>
-        </div>
-      )}
     </div>
   );
 }

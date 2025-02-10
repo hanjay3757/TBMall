@@ -1,0 +1,288 @@
+/* ItemDetail에만 필요한 고유한 스타일들 */
+.item-detail-containers {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  overflow: hidden;
+  font-size: clamp(14px, 2vw, 18px);
+}
+
+.item-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 100%;
+}
+
+.item-imagess {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.item-imagess img {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+  image-rendering: -webkit-optimize-contrast; /* 웹킷 브라우저 해상도 개선 */
+  transform: translateZ(0); /* 픽셀 렌더링 개선 */
+  backface-visibility: hidden; /* 이미지 렌더링 최적화 */
+}
+.item-infos {
+  /* display 속성 값들:
+     - block: 블록 레벨 요소
+     - inline: 인라인 요소  
+     - inline-block: 인라인-블록 요소
+     - grid: 그리드 레이아웃
+     - none: 요소 숨김
+     - table: 테이블 형식
+     - contents: 컨테이너 제거
+     - list-item: 목록 아이템
+     - flow-root: 새로운 블록 서식 맥락
+  */
+  /* flex 속성 값들:
+     - flex: 플렉스 컨테이너로 설정
+     - inline-flex: 인라인 플렉스 컨테이너로 설정
+     
+     flex 관련 속성들:
+     - flex-direction: row | column | row-reverse | column-reverse
+     - flex-wrap: nowrap | wrap | wrap-reverse  
+     - flex-flow: flex-direction과 flex-wrap의 단축 속성
+     - justify-content: flex-start | flex-end | center | space-between | space-around
+     - align-items: stretch | flex-start | flex-end | center | baseline
+     - align-content: flex-start | flex-end | center | space-between | space-around | stretch
+     - gap: 아이템 간의 간격 설정
+     - flex-grow: 아이템의 증가 비율
+     - flex-shrink: 아이템의 감소 비율
+     - flex-basis: 아이템의 기본 크기
+     display: flex;
+  */
+  
+  flex-direction: column;
+  min-width: 0;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.prices {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: 700;
+  color: #2c3e50;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid #eee;
+  text-align: right;
+}
+
+.stocks {
+  color: #34495e;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.descriptions {
+  line-height: 1.8;
+  color: #555;
+  word-wrap: break-word;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+  background-color: #f8f9fa;
+  padding: 3rem;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+  border-right: 4px solid #3498db;
+  text-align: center;
+}
+
+/* 관리자 컨트롤 */
+.admin-controlss {
+  display: flex;
+  gap: 0.1rem;
+  padding: 0.1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.edit-buttonss {
+  background: #2ecc71;
+  color: white;
+  padding: 0.1rem;
+  border: none;
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 1rem);
+}
+
+.edit-buttonss:hover {
+  background: #27ae60;
+}
+
+/* 댓글 섹션 */
+.comments-sections {
+  margin-top: 3rem;
+  border-top: 2px solid #eee;
+  padding-top: 2rem;
+  width: 100%;
+}
+
+.comment-forms {
+  margin-bottom: 2rem;
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+.comment-textareas {
+  flex: 1;
+  border: 5px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  text-align: center;
+  height: 120px;
+  padding: 0;
+  line-height: 120px;
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+/* placeholder 스타일링 */
+.comment-textareas::placeholder {
+  line-height: 120px;
+  vertical-align: middle;
+  color: #999;
+  opacity: 1;
+}
+
+/* 실제 입력 시에는 일반적인 텍스트 스타일로 변경 */
+.comment-textareas:focus,
+.comment-textareas:not(:placeholder-shown) {
+  line-height: 1.5;
+  padding: 1rem;
+  text-align: left;
+}
+
+.submit-buttons {
+  width: 120px;
+  height: 120px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  transition: all 0.3s ease;
+}
+
+.submit-buttons:hover {
+  background-color: #357abd;
+  transform: translateY(-2px);
+}
+
+.submit-buttons:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.comments-containers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.comment-items {
+  position: relative;
+  padding: 1.2rem;
+  margin-bottom: 0.2rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.comment-items:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.comment-headers {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.comment-authors {
+  font-weight: bold;
+  color: #333;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+}
+
+.comment-dates {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  color: #666;
+}
+
+.comment-contents {
+  margin: 1rem 0;
+  line-height: 1.8;
+  color: #333;
+  word-break: break-word;
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+}
+
+.delete-btns {
+  background-color: #e74c3c;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  transition: all 0.3s ease;
+}
+
+.delete-btns:hover {
+  background-color: #c0392b;
+}
+
+.login-requireds {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+
+
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 60px;
+  margin: 1rem;
+  border-radius: 50%;
+  border: 5px solid #f5f6fa;
+  border-top: 5px solid #3498db;
+  animation: spin 0.8s linear infinite;
+}

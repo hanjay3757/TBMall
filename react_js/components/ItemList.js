@@ -49,7 +49,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
 
       // 서버로부터 받은 아이템 데이터와 전체 페이지 수를 추출
       const {items: itemsToProcess, totalPage} = response.data;
-      console.log('서버에서 받은 아이템 데이터:', itemsToProcess);
 
       // 재고가 0인 아이템은 장바구니에 있는지 확인 후 삭제 처리
       for (const item of itemsToProcess) {
@@ -80,7 +79,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
               }
             }
           } catch (error) {
-            console.error('아이템 처리 중 오류:', error);
+            // 에러 처리
           }
         }
       }
@@ -106,7 +105,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
       });
       setQuantities(initialQuantities);
     } catch (error) {
-      console.error('아이템 목록 로딩 실패:', error);
+      // 에러 처리
     } finally {
       setLoading(false);
     }
@@ -216,7 +215,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
         throw new Error(response.data.message);
       }
     } catch (error) {
-      console.error('장바구니 추가 중 오류:', error);
       alert(error.response?.data?.message || '장바구니 추가에 실패했습니다.');
     }
   };
@@ -285,7 +283,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
                 src={item.image_url || 'https://via.placeholder.com/400x200'} 
                 alt={item.item_name}
                 onError={(e) => {
-                  console.log('이미지 로드 실패:', item.image_url); // 이미지 로드 실패 시 로그
                   e.target.src = 'https://via.placeholder.com/400x200';
                 }}
               />

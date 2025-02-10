@@ -13,7 +13,8 @@ function StaffRegister() {
     member_birth: '',
     member_phone: '',
     member_email: '',
-    email_domain: 'naver.com'
+    email_domain: 'naver.com',
+    position_no: ''
   });
 
   const handleSubmit = async (e) => {
@@ -27,7 +28,6 @@ function StaffRegister() {
 
       const response = await axios.post(
         '/staff/register',
-
         submitData,
         {
           headers: {
@@ -148,6 +148,21 @@ function StaffRegister() {
             <option value="naver.com">naver.com</option>
             <option value="gmail.com">gmail.com</option>
             <option value="daum.net">daum.net</option>
+          </select>
+        </div>
+
+        <div className="form-field">
+          <select
+            value={staffData.position_no}
+            onChange={(e) => setStaffData({...staffData, position_no: e.target.value})}
+            required
+          >
+            <option value="">직급을 선택하세요</option>
+            <option value="1">사원</option>
+            <option value="2">대리</option>
+            <option value="3">과장</option>
+            <option value="4">차장</option>
+            <option value="5">부장</option>
           </select>
         </div>
 

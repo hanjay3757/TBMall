@@ -1,8 +1,7 @@
 // src/components/RegisterItem.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
 
 function RegisterItem() {
   const navigate = useNavigate();
@@ -18,7 +17,9 @@ function RegisterItem() {
     const fetchAdminInfo = async () => {
       try {
         const response = await axios.get('/staff/check-login', {
+
           withCredentials: true
+
         });
         
         if (!response.data.isLoggedIn || !response.data.isAdmin) {
@@ -65,7 +66,9 @@ function RegisterItem() {
 
       const response = await axios.post(
         '/stuff/item/register',
+
         params,
+
         {
           withCredentials: true,
           headers: {

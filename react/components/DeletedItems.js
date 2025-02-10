@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import { SERVER_URL } from '../config';
 
 function DeletedItems() {
   const [deletedItems, setDeletedItems] = useState([]);
@@ -40,7 +40,7 @@ function DeletedItems() {
       params.append('itemStock', 1);
 
       const response = await axios.post(
-        '/stuff/item/restore',
+        `${SERVER_URL}/mvc/stuff/item/restore`,
         params,
         {
           withCredentials: true,

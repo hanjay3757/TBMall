@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './StaffRegister.css';
-import { API_BASE_URL } from '../config';
 
 function StaffRegister() {
   const navigate = useNavigate();
@@ -28,6 +27,7 @@ function StaffRegister() {
 
       const response = await axios.post(
         '/staff/register',
+
         submitData,
         {
           headers: {
