@@ -13,8 +13,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const [rotations, setRotations] = useState({});
   // 현재 페이지 번호를 관리하는 state
   const [currentPage, setCurrentPage] = useState(1);
-  // 한 페이지당 보여줄 아이템 개수
-  const [pageSize] = useState(8);
+  // 한 페이지당 보여줄 아이템 개수를 3개로 설정
+  const [pageSize] = useState(10);
   // 전체 페이지 수를 관리하는 state
   const [totalPage, setTotalPage] = useState(0);
   const cardRefs = useRef({});

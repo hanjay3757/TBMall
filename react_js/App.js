@@ -265,7 +265,7 @@ function App() {
         <div className="menu-buttons">
           <button onClick={() => navigate('/stuff/item/list')}>물건 목록</button>
           <button onClick={() => navigate('/')}>메인 페이지</button>
-          <button onClick={() => navigate('/board/list')}>게시판 이동</button>
+          <button onClick={() => navigate('/board/list')}>공지 사항</button>
           {isLoggedIn && (
             <button onClick={() => navigate('/stuff/cart')}>🛒 장바구니</button>
           )}
