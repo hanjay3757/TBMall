@@ -126,7 +126,22 @@ function ItemList({ isLoggedIn, isAdmin }) {
     setRefreshKey(prevKey => prevKey + 1);
   };
 
-  const handleDelete = async (item_id) => {
+  const handleEdit = async (e, item_id) => {
+    e.stopPropagation(); // 이벤트 전파 중단
+    try {
+      if (!isAdmin) {
+        alert('관리자 권한이 필요합니다.');
+        return;
+      }
+      navigate(`/item/edit/${item_id}`);
+    } catch (error) {
+      console.error('수정 페이지 이동 실패:', error);
+      alert('수정 페이지로 이동할 수 없습니다.');
+    }
+  };
+
+  const handleDelete = async (e, item_id) => {
+    e.stopPropagation(); // 이벤트 전파 중단
     try {
       if (!isAdmin) {
         alert('관리자 권한이 필요합니다.');
@@ -162,7 +177,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
         }
       }
     } catch (error) {
-      alert('물건 삭제 중 오류가 발생했습니다.');
+      console.error('상품 삭제 실패:', error);
+      alert('상품 삭제에 실패했습니다.');
     }
   };
 
@@ -177,7 +193,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
     }));
   };
 
-  const handleAddToCart = async (itemId, quantity) => {
+  const handleAddToCart = async (e, item_id) => {
+    e.stopPropagation(); // 이벤트 전파 중단
     try {
       if (!isLoggedIn) {
         alert('로그인이 필요합니다.');
@@ -185,15 +202,15 @@ function ItemList({ isLoggedIn, isAdmin }) {
       }
 
       // 현재 아이템의 재고 확인
-      const item = items.find(item => item.item_id === itemId);
+      const item = items.find(item => item.item_id === item_id);
       if (!item || item.item_stock <= 0) {
         alert('재고가 부족합니다.');
         return;
       }
 
       const params = new URLSearchParams();
-      params.append('itemId', itemId);
-      params.append('quantity', quantity);
+      params.append('itemId', item_id);
+      params.append('quantity', quantities[item_id] || 1);
 
       const response = await axios.post(
         '/stuff/api/cart/add',
@@ -214,8 +231,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
         throw new Error(response.data.message);
       }
     } catch (error) {
-      console.error('장바구니 추가 중 오류:', error);
-      alert(error.response?.data?.message || '장바구니 추가에 실패했습니다.');
+      console.error('장바구니 추가 실패:', error);
+      alert('장바구니 추가에 실패했습니다.');
     }
   };
 
@@ -264,7 +281,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
             key={item.item_id}
             ref={el => cardRefs.current[item.item_id] = el}
             className="item-card"
-            onClick={() => navigate(`/stuff/item/${item.item_id}`)}
+            onClick={() => navigate(`/item/detail/${item.item_id}`)}
             onMouseMove={(e) => handleMouseMove(item.item_id, e)}
             onMouseLeave={() => handleMouseLeave(item.item_id)}
             style={{
@@ -294,49 +311,44 @@ function ItemList({ isLoggedIn, isAdmin }) {
               <p>재고: {item.item_stock.toLocaleString()}개</p>
               <p>{item.item_description}</p>
               
-              {isAdmin && (
-                <div className="admin-controls">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation(); // 이벤트 버블링 방지
-                      navigate(`/stuff/item/edit?itemId=${item.item_id}`);
-                    }}
-                    className="edit-button"
-                  >
-                    수정
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(item.item_id)}
-                    className="delete-button"
-                  >
-                    삭제
-                  </button>
-                </div>
-              )}
-
-              {isLoggedIn && item.item_stock > 0 && (
-                <div className="cart-controls">
-                  <input
-                    type="number"
-                    min="1"
-                    max={item.item_stock}
-                    value={quantities[item.item_id] || 1}
-                    onChange={(e) => handleQuantityChange(item.item_id, parseInt(e.target.value))}
-                    className="quantity-input"
-                  />
-                  <button 
-                    onClick={() => handleAddToCart(item.item_id, quantities[item.item_id] || 1)}
-                    className="add-to-cart-button"
-                  >
-                    장바구니에 추가
-                  </button>
-                </div>
-                 
-              )}
+              <div className="item-controls">
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={(e) => handleEdit(e, item.item_id)}
+                      className="edit-button"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(e, item.item_id)}
+                      className="delete-button"
+                    >
+                      삭제
+                    </button>
+                  </>
+                )}
+                {isLoggedIn && item.item_stock > 0 && (
+                  <div className="cart-controls">
+                    <input
+                      type="number"
+                      min="1"
+                      max={item.item_stock}
+                      value={quantities[item.item_id] || 1}
+                      onChange={(e) => handleQuantityChange(item.item_id, parseInt(e.target.value))}
+                      className="quantity-input"
+                    />
+                    <button
+                      onClick={(e) => handleAddToCart(e, item.item_id)}
+                      className="add-to-cart-button"
+                    >
+                      장바구니에 추가
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-            
           </div>
-          
         ))}
       </div>
       {/* 페이지네이션 UI */}

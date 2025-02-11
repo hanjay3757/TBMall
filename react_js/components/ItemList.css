@@ -24,14 +24,7 @@
   background-color: #45a049;
 }
 
-.delete-button {
-  background-color: #f44336;
-  color: white;
-}
 
-.delete-button:hover {
-  background-color: #da190b;
-}
 
 .add-to-cart-button {
   background-color: #2196F3;
@@ -66,15 +59,12 @@
 }
 
 .item-card {
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease;
-  transform-style: preserve-3d;
-  will-change: transform;
-  height: 500px;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
 }
@@ -113,11 +103,10 @@
 }
 
 .items-container {
-  perspective: 1000px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(3, 1fr); /* 3개의 열로 구성 */
+  gap: 2rem;
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -126,8 +115,6 @@
   width: 100%;
   height: 200px;
   overflow: hidden;
-  border-radius: 4px;
-  margin-bottom: 15px;
 }
 
 .item-image img {
@@ -137,11 +124,11 @@
 }
 
 .item-content {
+  padding: 1.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 10px 0;
+  gap: 1rem;
 }
 
 .item-content h3 {
@@ -166,20 +153,16 @@
   border-top: 1px solid #eee;
 }
 
-/* 반응형 디자인을 위한 미디어 쿼리 */
-@media (max-width: 1200px) {
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
   .items-container {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
   .items-container {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-  
-  .item-card {
-    height: 450px;
+    grid-template-columns: 1fr;
   }
 }
 
