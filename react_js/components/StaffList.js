@@ -16,13 +16,14 @@ const StaffList = () => {
       const data = await response.json();
       setStaffList(data);
     } catch (error) {
-      // 에러 처리
+      console.error('Error fetching staff list:', error);
     }
   };
 
   // 수정 버튼 클릭 핸들러
   const handleEdit = (member_no) => {
-    navigate(`/staff/edit/${member_no}`);
+    console.log('수정 버튼 클릭:', member_no);
+    navigate(`/staff/edit/${member_no}`);  // 직원 수정 페이지로 이동
   };
 
   return (

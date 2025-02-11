@@ -5,14 +5,15 @@ import { SERVER_URL } from '../config';
 
 function RemovedStaff() {
   const [removedStaffList, setRemovedStaffList] = useState([]);
-  const [activeStaffList, setActiveStaffList] = useState([]);
+  const [activeStaffList, setActiveStaffList] = useState([]); // 빈 배열로 초기화
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchRemovedStaff();
-    fetchActiveStaff();
+    fetchActiveStaff(); // 현재 직원 목록도 함께 불러오기
   }, []);
 
+  // 삭제된 직원 목록 불러오기
   const fetchRemovedStaff = async () => {
     try {
       const response = await axios.post(`${SERVER_URL}/mvc/staff/removelist`, {}, {
@@ -33,6 +34,7 @@ function RemovedStaff() {
     }
   };
 
+  // 현재 직원 목록 불러오기 함수 수정
   const fetchActiveStaff = async () => {
     try {
       const response = await axios.post(`${SERVER_URL}/mvc/staff/list`, {}, {
@@ -43,15 +45,16 @@ function RemovedStaff() {
         }
       });
       
+      // 응답 데이터 구조 확인 및 처리
       if (response.data && Array.isArray(response.data.staff)) {
         setActiveStaffList(response.data.staff);
       } else {
         console.error('예상치 못한 응답 데이터 형식:', response.data);
-        setActiveStaffList([]);
+        setActiveStaffList([]); // 빈 배열로 설정
       }
     } catch (error) {
       console.error('현재 직원 목록을 불러오는데 실패했습니다:', error);
-      setActiveStaffList([]);
+      setActiveStaffList([]); // 에러 시 빈 배열로 설정
     }
   };
 
@@ -68,6 +71,7 @@ function RemovedStaff() {
       });
 
       if (response.data.success) {
+        // 복구 성공 시 양쪽 목록 모두 새로고침
         fetchRemovedStaff();
         fetchActiveStaff();
         alert('직원이 복구되었습니다.');
@@ -80,19 +84,9 @@ function RemovedStaff() {
     }
   };
 
-  const getPositionName = (position_no) => {
-    switch(position_no) {
-      case 1: return '사원';
-      case 2: return '대리';
-      case 3: return '과장';
-      case 4: return '차장';
-      case 5: return '부장';
-      default: return '직급 미정';
-    }
-  };
-
   return (
     <div className="staff-management">
+      {/* 현재 직원 목록 */}
       <div className="staff-section">
         <h2>현재 직원 목록</h2>
         <table className="staff-table">
@@ -101,7 +95,6 @@ function RemovedStaff() {
               <th>직원번호</th>
               <th>아이디</th>
               <th>이름</th>
-              <th>직급</th>
               <th>관리자 여부</th>
             </tr>
           </thead>
@@ -111,7 +104,6 @@ function RemovedStaff() {
                 <td>{staff.member_no}</td>
                 <td>{staff.member_id}</td>
                 <td>{staff.member_nick}</td>
-                <td>{getPositionName(staff.position_no)}</td>
                 <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
               </tr>
             ))}
@@ -119,6 +111,7 @@ function RemovedStaff() {
         </table>
       </div>
 
+      {/* 삭제된 직원 목록 */}
       <div className="staff-section">
         <h2>삭제된 직원 목록</h2>
         {error ? (
@@ -130,7 +123,6 @@ function RemovedStaff() {
                 <th>직원번호</th>
                 <th>아이디</th>
                 <th>이름</th>
-                <th>직급</th>
                 <th>관리자 여부</th>
                 <th>관리</th>
               </tr>
@@ -141,7 +133,6 @@ function RemovedStaff() {
                   <td>{staff.member_no}</td>
                   <td>{staff.member_id}</td>
                   <td>{staff.member_nick}</td>
-                  <td>{getPositionName(staff.position_no)}</td>
                   <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
                   <td>
                     <button onClick={() => handleRestore(staff.member_no)}>복구</button>

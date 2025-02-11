@@ -5,8 +5,6 @@ import { SERVER_URL } from '../config';
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
 
   const login = async (staffId, password) => {
     setIsLoading(true);
@@ -40,18 +38,5 @@ export const useAuth = () => {
     }
   };
 
-  const checkLoginStatus = async () => {
-    try {
-      const response = await axios.get('/staff/info');
-      if (response.data) {
-        setIsLoggedIn(true);
-        setUserInfo(response.data);
-      }
-    } catch (error) {
-      setIsLoggedIn(false);
-      setUserInfo(null);
-    }
-  };
-
-  return { login, isLoading, error, isLoggedIn, userInfo };
+  return { login, isLoading, error };
 }; 

@@ -86,7 +86,7 @@ function Header({
 
           <nav className="main-nav">
             <ul>
-              <li onClick={() => navigate('/board/list')}>공지 사항</li>
+              <li onClick={() => navigate('/board/list')}>게시판</li>
               {isLoggedIn && (
                 <li onClick={() => navigate('/stuff/cart')}>장바구니</li>
               )}

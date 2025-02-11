@@ -18,19 +18,23 @@ function ItemRegister() {
     e.preventDefault();
     
     try {
+      // 이미지 URL 처리
       let finalImageUrl = itemData.image_url;
       if (finalImageUrl && !finalImageUrl.startsWith('/upload/')) {
         // 외부 URL인 경우 그대로 저장
+        console.log('저장할 이미지 URL:', finalImageUrl);
       }
 
       const params = new URLSearchParams();
       Object.keys(itemData).forEach(key => {
         if (key === 'image_url') {
-          params.append(key, finalImageUrl);
+          params.append(key, finalImageUrl); // 처리된 이미지 URL 저장
         } else {
           params.append(key, itemData[key]);
         }
       });
+
+      console.log('등록할 데이터:', Object.fromEntries(params));
 
       const response = await axios.post(
         `${SERVER_URL}/mvc/stuff/item/register`,
@@ -49,6 +53,7 @@ function ItemRegister() {
         alert(response.data.message || '물건 등록에 실패했습니다.');
       }
     } catch (error) {
+      console.error('물건 등록 실패:', error);
       alert('물건 등록 중 오류가 발생했습니다.');
     }
   };

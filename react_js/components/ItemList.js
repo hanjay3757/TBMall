@@ -13,8 +13,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const [rotations, setRotations] = useState({});
   // 현재 페이지 번호를 관리하는 state
   const [currentPage, setCurrentPage] = useState(1);
-  // 한 페이지당 보여줄 아이템 개수를 3개로 설정
-  const [pageSize] = useState(10);
+  // 한 페이지당 보여줄 아이템 개수
+  const [pageSize] = useState(8);
   // 전체 페이지 수를 관리하는 state
   const [totalPage, setTotalPage] = useState(0);
   const cardRefs = useRef({});
@@ -49,6 +49,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
 
       // 서버로부터 받은 아이템 데이터와 전체 페이지 수를 추출
       const {items: itemsToProcess, totalPage} = response.data;
+      console.log('서버에서 받은 아이템 데이터:', itemsToProcess);
 
       // 재고가 0인 아이템은 장바구니에 있는지 확인 후 삭제 처리
       for (const item of itemsToProcess) {
@@ -79,7 +80,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
               }
             }
           } catch (error) {
-            // 에러 처리
+            console.error('아이템 처리 중 오류:', error);
           }
         }
       }
@@ -105,7 +106,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
       });
       setQuantities(initialQuantities);
     } catch (error) {
-      // 에러 처리
+      console.error('아이템 목록 로딩 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -125,8 +126,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
     setRefreshKey(prevKey => prevKey + 1);
   };
 
-  const handleDelete = async (e, item_id) => {
-    e.stopPropagation(); // 이벤트 전파 중단
+  const handleDelete = async (item_id) => {
     try {
       if (!isAdmin) {
         alert('관리자 권한이 필요합니다.');
@@ -177,8 +177,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
     }));
   };
 
-  const handleAddToCart = async (e, itemId) => {
-    e.stopPropagation(); // 이벤트 전파 중단
+  const handleAddToCart = async (itemId, quantity) => {
     try {
       if (!isLoggedIn) {
         alert('로그인이 필요합니다.');
@@ -194,7 +193,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
 
       const params = new URLSearchParams();
       params.append('itemId', itemId);
-      params.append('quantity', quantities[itemId] || 1);
+      params.append('quantity', quantity);
 
       const response = await axios.post(
         '/stuff/api/cart/add',
@@ -215,6 +214,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
         throw new Error(response.data.message);
       }
     } catch (error) {
+      console.error('장바구니 추가 중 오류:', error);
       alert(error.response?.data?.message || '장바구니 추가에 실패했습니다.');
     }
   };
@@ -283,6 +283,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
                 src={item.image_url || 'https://via.placeholder.com/400x200'} 
                 alt={item.item_name}
                 onError={(e) => {
+                  console.log('이미지 로드 실패:', item.image_url); // 이미지 로드 실패 시 로그
                   e.target.src = 'https://via.placeholder.com/400x200';
                 }}
               />
@@ -294,19 +295,19 @@ function ItemList({ isLoggedIn, isAdmin }) {
               <p>{item.item_description}</p>
               
               {isAdmin && (
-                <div className="admin-controls" onClick={e => e.stopPropagation()}>
+                <div className="admin-controls">
                   <button 
-                    className="edit-button"
                     onClick={(e) => {
-                      e.stopPropagation(); // 이벤트 전파 중단
+                      e.stopPropagation(); // 이벤트 버블링 방지
                       navigate(`/stuff/item/edit?itemId=${item.item_id}`);
                     }}
+                    className="edit-button"
                   >
                     수정
                   </button>
                   <button 
+                    onClick={() => handleDelete(item.item_id)}
                     className="delete-button"
-                    onClick={(e) => handleDelete(e, item.item_id)}
                   >
                     삭제
                   </button>
@@ -314,7 +315,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
               )}
 
               {isLoggedIn && item.item_stock > 0 && (
-                <div className="cart-controls" onClick={e => e.stopPropagation()}>
+                <div className="cart-controls">
                   <input
                     type="number"
                     min="1"
@@ -324,8 +325,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
                     className="quantity-input"
                   />
                   <button 
+                    onClick={() => handleAddToCart(item.item_id, quantities[item.item_id] || 1)}
                     className="add-to-cart-button"
-                    onClick={(e) => handleAddToCart(e, item.item_id)}
                   >
                     장바구니에 추가
                   </button>

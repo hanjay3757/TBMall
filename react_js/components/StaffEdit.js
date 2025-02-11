@@ -15,8 +15,7 @@ function StaffEdit({ onUpdate }) {
     member_birth: '',
     member_phone: '',
     member_email: '',
-    admins: 0,
-    position_no: ''
+    admins: 0
   });
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -78,48 +77,52 @@ function StaffEdit({ onUpdate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = {
-        member_no: parseInt(member_no),
-        member_id: staffData.member_id.trim(),
-        member_nick: staffData.member_nick,
-        member_phone: staffData.member_phone,
-        member_email: staffData.member_email,
-        member_gender: staffData.member_gender,
-        member_birth: staffData.member_birth,
-        position_no: staffData.position_no
-      };
+        const formData = {
+            member_no: parseInt(member_no),
+            member_id: staffData.member_id.trim(),
+            member_nick: staffData.member_nick,
+            member_phone: staffData.member_phone,
+            member_email: staffData.member_email,
+            member_gender: staffData.member_gender,
+            member_birth: staffData.member_birth
+        };
 
-      // 로그인 상태 확인
-      const loginCheckResponse = await axios.post('/staff/check-login');
-      console.log('현재 로그인 상태:', loginCheckResponse.data);
+        // 로그인 상태 확인
+        const loginCheckResponse = await axios.post('/staff/check-login');
+        console.log('현재 로그인 상태:', loginCheckResponse.data);
 
-      // 비밀번호 처리
-      if (!loginCheckResponse.data.isAdmin && loginCheckResponse.data.delete_right_no !== 1) {
-        if (!currentPassword) {
-          alert('현재 비밀번호를 입력해주세요.');
-          return;
+        // 비밀번호 처리
+        if (!loginCheckResponse.data.isAdmin && loginCheckResponse.data.delete_right_no !== 1) {
+            if (!currentPassword) {
+                alert('현재 비밀번호를 입력해주세요.');
+                return;
+            }
+            formData.currentPassword = currentPassword;
         }
-        formData.currentPassword = currentPassword;
-      }
 
-      // 새 비밀번호가 있는 경우에만 추가
-      if (staffData.member_pw) {
-        formData.member_pw = staffData.member_pw;
-      }
-
-      const response = await axios.post('/staff/edit', formData);
-      if (response.data.success) {
-        alert('직원 정보가 수정되었습니다.');
-        if (onUpdate) {
-          await onUpdate();
+        // 새 비밀번호가 있는 경우에만 추가
+        if (staffData.member_pw) {
+            formData.member_pw = staffData.member_pw;
         }
-        navigate('/staff/list');
-      } else {
-        alert('직원 정보 수정에 실패했습니다.');
-      }
+
+        const response = await axios.post('/staff/edit', formData, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.data.success) {
+            alert(response.data.message || '직원 정보가 수정되었습니다.');
+            if (onUpdate) {
+                await onUpdate();
+            }
+            navigate('/');
+        } else {
+            throw new Error(response.data.message || '수정에 실패했습니다.');
+        }
     } catch (error) {
-      console.error('직원 정보 수정 실패:', error);
-      alert(error.response?.data?.message || error.message || '직원 정보 수정에 실패했습니다.');
+        console.error('직원 정보 수정 실패:', error);
+        alert(error.response?.data?.message || error.message || '직원 정보 수정에 실패했습니다.');
     }
   };
 
@@ -154,20 +157,6 @@ function StaffEdit({ onUpdate }) {
             onChange={handleChange}
             required
           />
-        </div>
-        <div className="form-group">
-          <label>직급</label>
-          <select
-            name="position_no"
-            value={staffData.position_no}
-            onChange={handleChange}
-            required
-          >
-            <option value="">직급 선택</option>
-            <option value="1">사장</option>
-            <option value="2">매니저</option>
-            <option value="3">직원</option>
-          </select>
         </div>
         <div className="form-group">
           <label>성별</label>

@@ -284,6 +284,7 @@ public class BoardController {
 			response.put("success", true);
 			response.put("message", "댓글이 작성되었습니다.");
 			response.put("member_no", loginStaff.getMember_no());
+			response.put("reviewpointAmount",dto.getReviewpoint_amount());
 			response.put("comment_content", dto.getComment_content());
 			response.put("comment_writedate", new Date());
 

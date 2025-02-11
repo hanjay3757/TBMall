@@ -17,7 +17,9 @@ function RegisterItem() {
     const fetchAdminInfo = async () => {
       try {
         const response = await axios.get('/staff/check-login', {
+
           withCredentials: true
+
         });
         
         if (!response.data.isLoggedIn || !response.data.isAdmin) {
@@ -31,6 +33,7 @@ function RegisterItem() {
           admin_no: response.data.admin_no
         }));
       } catch (error) {
+        console.error('관리자 정보 조회 실패:', error);
         navigate('/');
       }
     };
@@ -63,7 +66,9 @@ function RegisterItem() {
 
       const response = await axios.post(
         '/stuff/item/register',
+
         params,
+
         {
           withCredentials: true,
           headers: {
@@ -79,6 +84,7 @@ function RegisterItem() {
         alert(response.data.message || '물건 등록에 실패했습니다.');
       }
     } catch (error) {
+      console.error('Error:', error);
       alert(error.response?.data?.message || '물건 등록 중 오류가 발생했습니다.');
     }
   };
