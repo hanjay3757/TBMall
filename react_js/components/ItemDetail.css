@@ -66,6 +66,51 @@
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+.star-ratings {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.star-ratings .star {
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #ddd;  /* 기본 색상은 회색 */
+  user-select: none;  /* 텍스트 선택 방지 */
+}
+
+.star-ratings .star:hover {
+  transform: scale(1.2);
+}
+
+/* 선택된 별들의 스타일 */
+.star-ratings .star.selected {
+  color: #ffd700;  /* 선택된 별은 노란색 */
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+/* 선택되지 않은 별들의 스타일 */
+.star-ratings .star:not(.selected) {
+  color: #ddd;  /* 선택되지 않은 별은 회색 */
+}
+
+/* 호버 효과 */
+.star-ratings:hover .star {
+  color: #ddd;  /* 호버 시 모든 별을 일단 회색으로 */
+}
+
+.star-ratings .star:hover ~ .star {
+  color: #ddd !important;  /* 호버한 별 이후의 별들은 회색으로 */
+}
+
+.star-ratings .star:hover,
+.star-ratings .star:hover ~ .star.selected {
+  color: #ffd700 !important;  /* 호버한 별과 그 이전 별들은 노란색으로 */
+}
 
 .prices {
   font-size: clamp(1rem, 2.5vw, 1.2rem);
