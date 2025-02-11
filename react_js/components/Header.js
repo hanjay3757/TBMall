@@ -81,7 +81,7 @@ function Header({
         <div className="left-section">
           <div className="logo" onClick={() => navigate('/')}>
             <img src={logoImage} alt="떠발이 직장인 로고" />
-            <h1>떠발이 직장인</h1>
+            <h1></h1>
           </div>
 
           <nav className="main-nav">
