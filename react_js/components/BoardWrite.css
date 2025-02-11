@@ -1,187 +1,155 @@
 .board-write-container, .board-edit-container {
     width: 95%;
     max-width: 1200px;
-    margin: 20px auto;
-    padding: 30px;
+    margin: 2rem auto;
+    padding: 2.5rem;
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .board-write-container h2, .board-edit-container h2 {
-    color: #333;
-    font-size: 24px;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #e9ecef;
+    color: #2c3e50;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid #e9ecef;
     text-align: center;
+    font-weight: 700;
 }
 
 .board-write-form, .board-edit-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 1.5rem;
 }
 
 .form-group, .edit-input-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-group label, .edit-input-group label {
-    font-size: 16px;
-    color: #495057;
-    font-weight: 500;
+    font-size: 1.1rem;
+    color: #34495e;
+    font-weight: 600;
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
 }
 
 .form-group input, .edit-input-group input {
-    padding: 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 16px;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
     width: 100%;
-    transition: border-color 0.2s;
+    transition: all 0.3s ease;
 }
 
 .form-group input:focus, .edit-input-group input:focus {
-    border-color: #0d6efd;
+    border-color: #3498db;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(13,110,253,0.25);
+    box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
 }
 
 .form-group textarea, .edit-input-group textarea {
-    padding: 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 16px;
-    min-height: 200px;
+    padding: clamp(0.8rem, 2vw, 1rem);
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+    min-height: clamp(200px, 40vh, 250px);
     width: 100%;
     resize: vertical;
-    transition: border-color 0.2s;
+    transition: all 0.3s ease;
+    line-height: 1.6;
 }
 
 .form-group textarea:focus, .edit-input-group textarea:focus {
-    border-color: #0d6efd;
+    border-color: #3498db;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(13,110,253,0.25);
+    box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
 }
 
 .button-group {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+    gap: 1.2rem;
+    margin-top: 2rem;
 }
 
-.submit-button, .cancel-button, .edit-button {
-    padding: 12px 24px;
+.submit-button, .cancel-button {
+    padding: 1rem 2rem;
     border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 500;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     color: white;
+    min-width: 150px;
 }
 
 .submit-button, .edit-button {
-    background-color: #28a745;
+    background-color: #2ecc71;
 }
 
 .submit-button:hover, .edit-button:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: #27ae60;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
 .cancel-button {
-    background-color: #6c757d;
+    background-color: #7f8c8d;
 }
 
 .cancel-button:hover {
-    background-color: #5a6268;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: #95a5a6;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
-/* 반응형 디자인 */
 @media (max-width: 768px) {
     .board-write-container, .board-edit-container {
-        width: 90%;
-        padding: 20px;
+        width: 95%;
+        padding: 1.5rem;
     }
 
     .button-group {
         flex-direction: column;
-        gap: 10px;
+        gap: 1rem;
     }
 
     .submit-button, .cancel-button, .edit-button {
         width: 100%;
+        padding: 0.8rem;
+    }
+    
+    .board-write-container h2, .board-edit-container h2 {
+        font-size: 1.5rem;
     }
 }
 
-/* BoardEdit.js 관련 스타일 */
 .loading {
     text-align: center;
-    padding: 20px;
-    font-size: 18px;
-    color: #666;
+    padding: 2rem;
+    font-size: 1.2rem;
+    color: #7f8c8d;
 }
 
+/* edit-input-group 스타일이 위에서 이미 정의되어 있으므로 아래 중복 코드는 제거 가능합니다 */
 .edit-title {
-    font-size: 28px;
+    font-size: 2rem;
     text-align: center;
-    margin-bottom: 30px;
-    color: #333;
+    margin-bottom: 2rem;
+    color: #2c3e50;
+    font-weight: 700;
 }
 
 .edit-form {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
-}
-
-.edit-input-group {
-    margin-bottom: 20px;
-}
-
-.edit-input-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #333;
-}
-
-.edit-input-group input,
-.edit-input-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.edit-input-group textarea {
-    min-height: 200px;
-    resize: vertical;
-}
-
-.edit-button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.edit-button:hover {
-    background-color: #0056b3;
+    padding: 2rem;
 }

@@ -2,20 +2,47 @@
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
+    font-size: clamp(0.875rem, 2vw, 1rem);
   }
   
   .board-table th, .board-table td {
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: clamp(0.5rem, 1.5vw, 0.75rem);
     text-align: left;
   }
   
   .board-table th {
     background: #f4f4f4;
     font-weight: bold;
+    font-size: clamp(0.9375rem, 2.2vw, 1.125rem);
   }
   
   .board-table tr:hover {
     background: #f9f9f9;
   }
-  
+
+  /* 페이지네이션 */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(0.3rem, 1vw, 0.5rem);
+    margin: clamp(1rem, 3vw, 2rem) 0;
+  }
+
+  .pagination button {
+    padding: clamp(0.4rem, 1.2vw, 0.6rem) clamp(0.8rem, 2vw, 1rem);
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+  }
+
+  /* 글쓰기 버튼 */
+  .write-button {
+    padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(1.2rem, 2.5vw, 1.5rem);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+  }
+
+  /* 제목 */
+  h1 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: clamp(1rem, 2.5vw, 1.5rem) 0;
+  }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import './BoardWrite.css';
 function BoardWrite({ isLoggedIn }) {
     const navigate = useNavigate();
     // useEffect(() => {
@@ -71,33 +71,45 @@ function BoardWrite({ isLoggedIn }) {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            {/* member_no는 고정값으로 렌더링 */}
-            
-            <div>
-                <label htmlFor="board_title">글 제목:</label>
-                <input
-                    type="text"
-                    id="board_title"
-                    name="board_title"
-                    value={boardData.board_title}
-                    onChange={handleChange}
-                    required
-                />
-            </div>
-            <div>
-                <label htmlFor="board_content">글 내용:</label>
-                <textarea
-                    id="board_content"
-                    name="board_content"
-                    value={boardData.board_content}
-                    onChange={handleChange}
-                    required
-                ></textarea>
-            </div>
+        <div className="board-write-container">
+            <h2>게시글 작성</h2>
+            <form onSubmit={handleSubmit} className="board-write-form">
+                <div className="form-group">
+                    <label htmlFor="board_title">글 제목</label>
+                    <input
+                        type="text"
+                        id="board_title"
+                        name="board_title"
+                        value={boardData.board_title}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="board_content">글 내용</label>
+                    <textarea
+                        id="board_content"
+                        name="board_content"
+                        value={boardData.board_content}
+                        onChange={handleChange}
+                        required
+                    ></textarea>
+                </div>
                 
-            <button type="submit">글 작성</button>
-        </form>
+                <div className="button-group">
+                    <button type="submit" className="submit-button">
+                        글 작성
+                    </button>
+                    <button 
+                        type="button" 
+                        className="cancel-button"
+                        onClick={() => navigate('/board/list')}
+                    >
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 }
 

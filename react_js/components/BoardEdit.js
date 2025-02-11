@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import './BoardWrite.css';
 
 function BoardEdit({ isLoggedIn, isAdmin }) {
     const navigate = useNavigate();
@@ -66,11 +67,6 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // const params = new URLSearchParams();
-        // params.append('board_no', boardNo);
-        // params.append('member_no', memberNo);
-        // params.append('board_title', boardData.board_title);
-        // params.append('board_content', boardData.board_content);
         const data ={
             board_no : boardNo,
             member_no : memberNo,
@@ -78,7 +74,6 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
             board_content : boardData.board_content,
         }
 
-        
         try {
             const response = await axios.post('/board/editContent', JSON.stringify(data), {
                 headers: {
@@ -99,7 +94,7 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     };
 
     if (loading) {
-        return <div>로딩 중....</div>;
+        return <div className="loading">로딩 중....</div>;
     }
 
     if (!hasPermission) {
@@ -107,10 +102,10 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
     }
 
     return (
-        <div>
+        <div className="board-edit-container">
             <h2>글 수정</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
+            <form onSubmit={handleSubmit} className="board-edit-form">
+                <div className="edit-input-group">
                     <label>글 제목:</label>
                     <input
                         type="text"
@@ -119,7 +114,7 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
                         onChange={handleChange}
                     />
                 </div>
-                <div>
+                <div className="edit-input-group">
                     <label>글 내용:</label>
                     <textarea
                         name="board_content"
@@ -127,7 +122,12 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
                         onChange={handleChange}
                     />
                 </div>
-                <button type="submit">수정</button>
+                <div className="button-group">
+                    <button type="submit" className="submit-button">수정</button>
+                    <button type="button" className="cancel-button" onClick={() => navigate('/board/list')}>
+                        취소
+                    </button>
+                </div>
             </form>
         </div>
     );

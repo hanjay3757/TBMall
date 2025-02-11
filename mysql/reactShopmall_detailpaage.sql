@@ -13,14 +13,11 @@ DROP database my_cat;
 create database my_cat;
 
 drop table tbmall_comment;
-select *from tbmall_comment;
--- 별점 
-ALTER TABLE tbmall_comment DROP COLUMN rating;
 
--- 새로운 rating 컬럼 추가 (0~5 범위, 소수점 한 자리)
-ALTER TABLE tbmall_comment ADD COLUMN rating INTEGER;
+show tables;
 
--- rating 컬럼이 제대로 생성되어 있는지 확인
+select * from tbmall_member;
+
 
 create table tbmall_comment(
 	comment_no int auto_increment primary key,
@@ -31,6 +28,7 @@ create table tbmall_comment(
     foreign key (item_id) references tbmall_stuff(item_id) on delete cascade,
     foreign key (member_no) references tbmall_member(member_no) on delete cascade
 );
+
 select * from tbmall_comment;
 insert into tbmall_comment (board_no, member_no , comment_content , comment_writedate) values(10,1,'도배금지',sysdate());
 
@@ -38,23 +36,6 @@ select c.board_no,c.member_no,c.comment_content,c.comment_writedate from tbmall_
 
 
 ALTER TABLE tbmall_orders DROP FOREIGN KEY tbmall_orders_ibfk_2;
-
-ALTER TABLE tbmall_board
-ADD COLUMN rating DECIMAL(2,1) DEFAULT NULL;
-
-TRUNCATE TABLE tbmall_board;
---
-SET FOREIGN_KEY_CHECKS = 0;
-
--- 테이블 데이터 삭제
-TRUNCATE TABLE tbmall_comment;
-TRUNCATE TABLE tbmall_board;
-
--- 외래키 체크 다시 활성화
-SET FOREIGN_KEY_CHECKS = 1;
-
-
-
 create table tbmall_board(		
 	board_no int auto_increment primary key,
 	member_no int not null,
@@ -70,7 +51,6 @@ ADD COLUMN board_delete_at TIMESTAMP NULL DEFAULT NULL COMMENT '삭제된 일시
 
 DELIMITER $$
 
-
 CREATE TRIGGER update_board_delete_at
 BEFORE UPDATE ON tbmall_board
 FOR EACH ROW
@@ -84,7 +64,7 @@ DELIMITER ;
 
 
 select * from tbmall_board where board_delete=0 limit 0,5 ;
-select * from tbmall_board ;tbmall_boardtbmall_board
+select * from tbmall_board ;
 
 update tbmall_board set board_title = 'edittest' ,board_content ='editcontent', board_writedate =CURRENT_TIMESTAMP where board_no = 3;
 
@@ -149,7 +129,6 @@ ALTER TABLE tbmall_member
 DROP COLUMN member_delete_at;
 ALTER TABLE tbmall_member 
 DROP COLUMN member_delete;
-
 -- 관리자 권한 
 create table tbmall_admin(
 	admin_no int primary key auto_increment,
@@ -303,7 +282,7 @@ insert into tbmall_point (position_no, point_amount) values(3,2000);
 insert into tbmall_point (position_no, point_amount) values(4,10);
 update tbmall_point set point_amount =20000 where point_no=2;
 
-select * from tbmall_member;
+
 
 drop table tbmall_point;
 
@@ -360,127 +339,40 @@ select * from tbmall_member;
 
 SELECT * FROM tbmall_stuff;
 
-SELECT p.position_no, m.position_no
-FROM tbmall_point p
-JOIN tbmall_member m ON p.position_no = m.position_no
-WHERE m.member_no = 2; 
+create table tbmall_reviewpoint(
+	reviewpoint_no  int not null primary key auto_increment,
+    comment_no int not null,
+    member_no int not null,
+    item_id bigint not null,
+    reviewpoint_amount int not null,
+    reviewpoint_writedate DATETIME DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (comment_no) REFERENCES tbmall_comment(comment_no) ON DELETE CASCADE,
+	FOREIGN KEY (member_no) REFERENCES tbmall_comment(member_no) ON DELETE CASCADE,
+	FOREIGN KEY (item_id) REFERENCES tbmall_comment(item_id) ON DELETE CASCADE
+	);
 
-select * from tbmall_position;
+select * from tbmall_reviewpoint;
+drop table tbmall_reviewpoint;
 
-SELECT p.position_no
-FROM tbmall_point p
-JOIN tbmall_position pos ON p.position_no = pos.position_no
-JOIN tbmall_member m ON pos.position_no = m.position_no
-WHERE m.member_no = 3;
+select * from tbmall_comment;
 
+insert into tbmall_reviewpoint (comment_no , member_no , item_id , reviewpoint_amount, reviewpoint_writedate) values('2','3','21','2',sysdate());
+insert into tbmall_reviewpoint (comment_no , member_no , item_id , reviewpoint_amount, reviewpoint_writedate) values('3','1','21','5',sysdate());
+insert into tbmall_reviewpoint (comment_no , member_no , item_id , reviewpoint_amount, reviewpoint_writedate) values('4','4','21','1',sysdate());
 
- UPDATE tbmall_point p
-    SET p.point_amount = COALESCE(p.point_amount, 0) - COALESCE((
-        SELECT SUM(s.item_price * 10)
-        FROM tbmall_stuff s
-        WHERE s.item_id =23 
-    ), 0)
-    WHERE p.position_no = (
-        SELECT pos.position_no
-        FROM tbmall_member m
-        JOIN tbmall_position pos ON m.position_no = pos.position_no  -- tbmall_position 연결
-        WHERE m.member_no = 3
-    );
-    
-    select * from tbmall_point;
-    select * from tbmall_reviews;
-    DROP TABLE tbmall_reviews;
--- 리뷰 테이블 생성
-CREATE TABLE tbmall_reviews (
-    review_id INT AUTO_INCREMENT PRIMARY KEY,
-    item_id BIGINT NOT NULL,
-    member_no INT NOT NULL,
-    rating DECIMAL(2,1) NOT NULL CHECK (rating >= 0 AND rating <= 5),
-    review_content TEXT,
-    review_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    image_url VARCHAR(255) NULL,
-    FOREIGN KEY (item_id) REFERENCES tbmall_stuff(item_id) ON DELETE CASCADE,
-    FOREIGN KEY (member_no) REFERENCES tbmall_member(member_no) ON DELETE CASCADE
-);
-
-
-SELECT r.*, s.image_url as item_image_url
-FROM tbmall_reviews r
-JOIN tbmall_stuff s ON r.item_id = s.item_id
-WHERE r.item_id = 18
-ORDER BY r.review_date DESC;
--- 상품의 리뷰 목록 조회
 SELECT 
-    r.*,
-    s.item_name,
-    s.item_price,
-    s.item_stock,
-    s.item_description,
-    s.reg_date,
-    s.admin_no,
-    s.item_delete,
-    s.delete_date,
-    s.image_url
-FROM tbmall_reviews r
-JOIN tbmall_stuff s ON r.item_id = s.item_id
-
-WHERE r.item_id = 22
-ORDER BY r.review_date DESC;
-select * from tbmall_stuff;
-SELECT 
-    r.review_id,
-    r.member_no,
-    m.member_nick,
-    r.rating,
-    r.review_content,
-    r.image_url,
-    DATE_FORMAT(r.review_date, '%Y-%m-%d %H:%i') as review_date
-FROM 
-    tbmall_reviews r
-    LEFT JOIN tbmall_member m ON r.member_no = m.member_no
-WHERE 
-    r.item_id = 21
-ORDER BY 
-    r.review_date DESC;
-
-UPDATE tbmall_reviews r
-INNER JOIN tbmall_stuff s ON r.item_id = s.item_id
-SET r.image_url = s.image_url;
--- 상품의 평균 평점 조회
-SELECT 
-    COUNT(*) as review_count,
-    ROUND(AVG(rating), 1) as avg_rating
-FROM 
-    tbmall_reviews
-WHERE 
-    item_id = 1;
-
--- 리뷰 등록
-INSERT INTO tbmall_reviews (
-    item_id, member_no, rating, review_content, image_url
-) VALUES (
-    1, 1, 4.5, '상품이 매우 좋습니다!', '/images/reviews/example.jpg'
-);
-
-
-SELECT
-		m.member_no as member_no,
-		m.member_id as member_id,
-		m.member_nick as member_nick,
-		p.point_amount as point_amount,
-		j.staff_position as staff_position
-		FROM tbmall_member m
-		LEFT JOIN
-		tbmall_point p on m.position_no = p.position_no
-		LEFT JOIN
-		tbmall_position j on m.position_no = j.position_no
-		WHERE
-		m.member_no =1;
-
-select * from tbmall_member;
-select * from tbmall_point;
-
-delete from tbmall_point where point_no =4;
-update tbmall_member set position_no=2 where member_no =1;
+    c.comment_no,
+    c.member_no AS commenter_member_no,
+    c.item_id,
+    c.comment_content,
+    c.comment_writedate,
+    r.reviewpoint_no,
+    r.reviewpoint_amount,
+    r.reviewpoint_writedate
+FROM tbmall_comment c
+JOIN tbmall_reviewpoint r 
+    ON c.comment_no = r.comment_no 
+    AND c.member_no = r.member_no  -- 댓글 작성자와 별점 매긴 사람이 같은 경우만 조회
+WHERE c.item_id = 21;
 
 

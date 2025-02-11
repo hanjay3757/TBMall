@@ -190,7 +190,7 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
     <div>
 
-      <h1>TBmall 고객 게시판</h1>
+      <h1>TBmall 공지 사항 </h1>
 
       <table className="board-table">
 
@@ -218,27 +218,21 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
             <tr key={board.board_no}>
 
-              <td>{(currentPage - 1) * pageSize + index + 1}</td>
-
-              <td>{board.board_title}</td>
-
-              <td>
-
-                <span
-
-                  className="board-content-link"
-
-                  onClick={() => readContent(board.board_no)}
-
-                >
-
-                  {board.board_content}
-
-                </span>
-
+              <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
+                {(currentPage - 1) * pageSize + index + 1}
               </td>
 
-              <td>{board.board_writedate}</td>
+              <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
+                {board.board_title}
+              </td>
+
+              <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
+                {board.board_content}
+              </td>
+
+              <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
+                {board.board_writedate}
+              </td>
 
               {isAdmin && (
 
@@ -246,8 +240,10 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
                   <button
 
-                    onClick={() => handleDelete(board.board_no)}
-
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(board.board_no);
+                    }}
                     className="delete-button"
 
                   >
