@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.spring.dto.BoardDto;
 import com.spring.dto.CommentDto;
 import com.spring.dto.PagingDto;
+import com.spring.dto.ReviewPointDto;
 
 public interface BoardMapper {
 	// 게시판 관련 기본
@@ -37,5 +38,10 @@ public interface BoardMapper {
 	void deleteComment(Long comment_no);
 
 	void deleteCommentByItemAndMember(@Param("item_id") Long item_id, @Param("member_no") Long member_no);
-
+	
+	
+	 //별점 정보 입력하기
+    public void insertReviewPoint(ReviewPointDto reviewpointDto);
+    
+    public int getReviewPointList(@Param("item_id") Long item_id); //별점 내용 가져오기
 }

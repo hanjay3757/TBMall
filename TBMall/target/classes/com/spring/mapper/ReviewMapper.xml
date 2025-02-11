@@ -71,5 +71,6 @@
         WHERE member_no = #{memberNo}
         ORDER BY review_date DESC
     </select>
-
+    
+ 
 </mapper> 

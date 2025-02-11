@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.spring.config.GlobalConfig;
 import com.spring.dto.BoardDto;
 import com.spring.dto.CommentDto;
-import com.spring.dto.ReviewPointDto;
 import com.spring.dto.StaffDto;
 import com.spring.dto.StuffDto;
 import com.spring.service.BoardService;
@@ -46,8 +45,6 @@ public class BoardController {
 	private BoardService service;
 
 	private StuffService stuffservice;
-	
-
 
 	@GetMapping("/list")
 	public ResponseEntity<Map<String, Object>> getBoardList(@RequestParam(defaultValue = "1") int currentPage,
@@ -94,7 +91,7 @@ public class BoardController {
 
 		try {
 			dto.setMember_no(loginStaff.getMember_no());
-//			System.out.println("받아온 commentDto:" + dto);// 디버깅용
+			System.out.println("받아온 commentDto:" + dto);// 디버깅용
 			service.writeContent(dto);
 			response.put("success", true);
 			response.put("message", "글이 작성되었습니다.");
@@ -263,24 +260,6 @@ public class BoardController {
 			dto.setItem_id(currentStuff.getItem_id());
 			dto.setMember_no(loginStaff.getMember_no());
 			service.writeComment(dto);
-			
-			// 생성된 댓글의 ID를 가져오기
-			Long commentNo = dto.getComment_no();
-		
-			//세션에서 별점 데이터를 가져오기
-			Integer reviewpointAmount = dto.getReviewpoint_amount();
-			
-			if(reviewpointAmount != null && reviewpointAmount >0) {
-				ReviewPointDto reviewpointdto = new ReviewPointDto();
-				reviewpointdto.setComment_no(commentNo);
-				reviewpointdto.setItem_id(currentStuff.getItem_id());
-				reviewpointdto.setMember_no(loginStaff.getMember_no());
-				reviewpointdto.setReviewpoint_amount(reviewpointAmount);
-				reviewpointdto.setReviewpoint_writedate(new Date());
-			
-				service.insertReviewPoint(reviewpointdto);
-			}
-			
 			response.put("success", true);
 			response.put("message", "댓글이 작성되었습니다.");
 			response.put("member_no", loginStaff.getMember_no());
@@ -339,11 +318,5 @@ public class BoardController {
 
 		return response;
 	}
-	
-	
-	
-	
-	
-	
 
 }

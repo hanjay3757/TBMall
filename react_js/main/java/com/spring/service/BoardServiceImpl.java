@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.spring.dto.BoardDto;
 import com.spring.dto.CommentDto;
 import com.spring.dto.PagingDto;
-import com.spring.dto.ReviewPointDto;
 import com.spring.mapper.BoardMapper;
-import com.spring.mapper.ReviewMapper;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
@@ -25,8 +23,7 @@ public class BoardServiceImpl implements BoardService {
 
 	@Setter(onMethod_ = @Autowired)
 	private BoardMapper mapper;
-	
-	
+
 	@Override
 	public ArrayList<BoardDto> getBoardlist(int currentPage, int pageSize) {
 		log.info("게시판 내 모든 글 리스트 가져오기");
@@ -56,8 +53,7 @@ public class BoardServiceImpl implements BoardService {
 	@Override
 	public void writeContent(BoardDto boarddto) {
 		log.info("글 작성");
-		
-		
+
 		mapper.writeContent(boarddto);
 	}
 
@@ -109,28 +105,7 @@ public class BoardServiceImpl implements BoardService {
 				|| commentDto.getComment_content() == null) {
 			throw new IllegalArgumentException("댓글 정보가 올바르지 않습니다.");
 		}
-		log.info("생성된 댓글 ID:"+commentDto.getComment_no());
 		mapper.writeComment(commentDto);
-	}
-
-	@Override
-	public void deleteComment(Long comment_no) {
-		mapper.deleteComment(comment_no);
-	}
-
-	@Override
-	public void deleteCommentByItemAndMember(Long item_id, Long member_no) {
-		mapper.deleteCommentByItemAndMember(item_id, member_no);
-	}
-	
-	@Override
-	public void insertReviewPoint(ReviewPointDto reviewpointDto) {
-		mapper.insertReviewPoint(reviewpointDto);
-	}
-	
-	@Override
-	public int getReviewPointList(Long item_id) {
-		return mapper.getReviewPointList(item_id);
 	}
 
 }

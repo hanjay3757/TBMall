@@ -11,6 +11,7 @@ public class CommentDto {
 	private Long member_no;
 	private String comment_content;
 	private Date comment_writedate;
+	private int reviewpoint_amount;
 
 	public CommentDto(Long item_id, Long member_no, String comment_content, Date comment_writedate) {
 		this.item_id = item_id;

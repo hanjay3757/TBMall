@@ -57,7 +57,7 @@
 		LIMIT #{pagingDto.limit} OFFSET #{pagingDto.offset};
 	</select> 
 	<!--댓글 작성  -->
-	 <insert id="writeComment" parameterType="com.spring.dto.CommentDto">
+	 <insert id="writeComment" parameterType="com.spring.dto.CommentDto" useGeneratedKeys="true" keyProperty="comment_no">
 		INSERT INTO tbmall_comment
 			(item_id,
 			member_no,
@@ -94,5 +94,43 @@
 		DELETE FROM tbmall_comment 
 		WHERE item_id = #{item_id} AND member_no = #{member_no}
 	</delete>
+	
+	
+	   <insert id="insertReviewPoint" parameterType="com.spring.dto.ReviewPointDto" >
+    	INSERT INTO tbmall_reviewpoint(
+    		comment_no,
+    		member_no,
+    		item_id,
+    		reviewpoint_amount,
+    		reviewpoint_writedate
+    	) 
+    	VALUES(
+    		#{comment_no},
+    		#{member_no},
+    		#{item_id},
+    		#{reviewpoint_amount},
+    		CURRENT_TIMESTAMP
+    	)
+    </insert>
+    
+    
+    <!-- 댓글 정보를 통해서 해당 물건의 별점 정보 가져오기 -->
+    <select id="getReviewPointList" parameterType="Long" resultType="com.spring.dto.ReviewPointDto" >
+    	SELECT 
+    		c.comment_no,
+   			c.member_no AS commenter_member_no,
+    		c.item_id,
+    		c.comment_content,
+    		c.comment_writedate,
+    		r.reviewpoint_no,
+    		r.reviewpoint_amount,
+    		r.reviewpoint_writedate
+		FROM tbmall_comment c
+		JOIN tbmall_reviewpoint r 
+    	ON c.comment_no = r.comment_no 
+    	AND c.member_no = r.member_no  
+		WHERE c.item_id = #{item_id};
+    </select>
+	
 
 </mapper>
