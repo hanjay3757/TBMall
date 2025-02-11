@@ -118,10 +118,10 @@ public class BoardServiceImpl implements BoardService {
 		mapper.deleteComment(comment_no);
 	}
 
-	@Override
-	public void deleteCommentByItemAndMember(Long item_id, Long member_no) {
-		mapper.deleteCommentByItemAndMember(item_id, member_no);
-	}
+//	@Override
+//	public void deleteCommentByItemAndMember(Long item_id, Long member_no) {
+//		mapper.deleteCommentByItemAndMember(item_id, member_no);
+//	}
 	
 	@Override
 	public void insertReviewPoint(ReviewPointDto reviewpointDto) {

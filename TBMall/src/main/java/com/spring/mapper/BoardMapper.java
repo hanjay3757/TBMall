@@ -37,8 +37,8 @@ public interface BoardMapper {
 	// 댓글 삭제
 	void deleteComment(Long comment_no);
 
-	void deleteCommentByItemAndMember(@Param("item_id") Long item_id, @Param("member_no") Long member_no);
-	
+//	void deleteCommentByItemAndMember(@Param("item_id") Long item_id, @Param("member_no") Long member_no);
+//	
 	
 	 //별점 정보 입력하기
     public void insertReviewPoint(ReviewPointDto reviewpointDto);

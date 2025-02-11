@@ -281,7 +281,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
             key={item.item_id}
             ref={el => cardRefs.current[item.item_id] = el}
             className="item-card"
-            onClick={() => navigate(`/item/detail/${item.item_id}`)}
+            onClick={() => navigate(`/stuff/item/${item.item_id}`)}
             onMouseMove={(e) => handleMouseMove(item.item_id, e)}
             onMouseLeave={() => handleMouseLeave(item.item_id)}
             style={{

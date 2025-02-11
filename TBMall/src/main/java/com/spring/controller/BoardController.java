@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -298,15 +299,12 @@ public class BoardController {
 	}
 
 	// 댓글 삭제
-	@DeleteMapping("/comment/{item_id}/{member_no}")
-	@ResponseBody
+	@PostMapping("/deleteComment")
 	public Map<String, Object> deleteComment(
-			@PathVariable("item_id") Long item_id,
-			@PathVariable("member_no") Long member_no,
+			@Param("comment_no") Long comment_no,
 			HttpSession session
 	) {
 		Map<String, Object> response = new HashMap<>();
-		log.info("댓글 삭제 요청 - item_id: " + item_id + ", member_no: " + member_no);
 		
 		try {
 			// 로그인 체크
@@ -327,7 +325,7 @@ public class BoardController {
 			}
 
 			// 댓글 삭제 실행
-			service.deleteCommentByItemAndMember(item_id, member_no);
+			service.deleteComment(comment_no);
 			
 			response.put("success", true);
 			response.put("message", "댓글이 삭제되었습니다.");

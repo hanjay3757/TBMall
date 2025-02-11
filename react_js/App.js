@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route , useNavigate } from 'react-router-dom';
 import StaffEdit from './components/StaffEdit';
 import ItemList from './components/ItemList';
 import ItemRegister from './components/ItemRegister';

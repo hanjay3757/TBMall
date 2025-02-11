@@ -51,11 +51,11 @@
         c.member_no,
         c.comment_content,
         c.comment_writedate,
-        r.reviewpoint_amount  <!-- ⭐ 별점 추가 -->
+        r.reviewpoint_amount 
     FROM tbmall_comment c
     INNER JOIN tbmall_stuff b 
         ON c.item_id = b.item_id
-    LEFT JOIN tbmall_reviewpoint r  <!-- ⭐ 댓글과 연결된 별점 정보 가져오기 -->
+    LEFT JOIN tbmall_reviewpoint r  
         ON c.comment_no = r.comment_no 
         AND c.member_no = r.member_no  
     WHERE c.item_id = #{item_id}  
@@ -94,11 +94,7 @@
 		WHERE comment_no = #{comment_no}
 	</delete>
 
-	<!-- 댓글 삭제 (item_id와 member_no로) -->
-	<delete id="deleteCommentByItemAndMember">
-		DELETE FROM tbmall_comment 
-		WHERE item_id = #{item_id} AND member_no = #{member_no}
-	</delete>
+
 	
 	
 	   <insert id="insertReviewPoint" parameterType="com.spring.dto.ReviewPointDto" >

@@ -35,7 +35,7 @@ public interface BoardService {
 	// 댓글 삭제
 	void deleteComment(Long comment_no);
 
-	void deleteCommentByItemAndMember(Long item_id, Long member_no);
+//	void deleteCommentByItemAndMember(Long item_id, Long member_no);
 	
 	//별점 관련
 	public void insertReviewPoint(ReviewPointDto reviewpointDto);
