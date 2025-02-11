@@ -43,6 +43,20 @@ function ItemDetail() {
     );
   };
 
+  const StarRatingDisplay = ({ rating }) => {
+
+    console.log("별점 확인:",rating);
+
+    return (
+      
+      <div className="star-rating" style={{ border: "1px solid red" }}>
+        {Array(rating).fill("⭐").join("")} {/* 별을 rating 개수만큼 출력 */}
+  
+          
+      </div>
+    );
+  };
+
   const loadComments = async (itemId) => {
     try {
       console.log('댓글 목록 요청 - item_id:', itemId);
@@ -60,6 +74,9 @@ function ItemDetail() {
 
       if (response.data && Array.isArray(response.data.comments)) {
         setComments(response.data.comments);
+        setTimeout(() => {
+          console.log("🔥 상태 업데이트 후 comments:", comments);
+         }, 100);
         setTotalComment(response.data.totalComment || 0);
         setCurrentComment(response.data.currentComment || 1);
       } else {
@@ -161,7 +178,7 @@ function ItemDetail() {
     return () => {
       window.removeEventListener('storage', checkLoginStatus);
     };
-  }, [itemId, currentComment]);
+  }, [itemId, currentComment],[comments]);
 
   const handleDelete = async (comment_no) => {
     try {
@@ -220,6 +237,7 @@ function ItemDetail() {
             member_no: comment.member_no,
             content: comment.comment_content,
             writedate: comment.comment_writedate,
+            reviewpoint_amount: comment.reviewpoint_amount,  // ✅ 별점 정보 확인
             fullComment: comment
           });
 
@@ -233,8 +251,12 @@ function ItemDetail() {
                   {new Date(comment.comment_writedate).toLocaleDateString()}
                 </span>
               </div>
-              <p className="comment-content">{comment.comment_content}</p>
-             <p className="comment-contents">{comment.comment_content}</p>
+              
+                 {/* ✅ 댓글 별점 표시 */}
+          <StarRatingDisplay rating={comment.reviewpoint_amount || 0} />
+
+          <p className="comment-content">{comment.comment_content}</p>
+
               {isAdminUser && (
                 <button
                   onClick={() => {

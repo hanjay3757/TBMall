@@ -46,15 +46,20 @@
 	<!-- 모든 댓글 리스트 가져오기 (보고 있는 글 번호)-->
 	 <select id="getCommentList" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.CommentDto">
 		SELECT 
-			c.item_id,
-			c.member_no,
-			c.comment_content,
-			c.comment_writedate
-		FROM tbmall_comment c
-		INNER JOIN tbmall_stuff b 
-		ON c.item_id = b.item_id
-		WHERE c.item_id = #{item_id}	
-		LIMIT #{pagingDto.limit} OFFSET #{pagingDto.offset};
+        c.comment_no,
+        c.item_id,
+        c.member_no,
+        c.comment_content,
+        c.comment_writedate,
+        r.reviewpoint_amount  <!-- ⭐ 별점 추가 -->
+    FROM tbmall_comment c
+    INNER JOIN tbmall_stuff b 
+        ON c.item_id = b.item_id
+    LEFT JOIN tbmall_reviewpoint r  <!-- ⭐ 댓글과 연결된 별점 정보 가져오기 -->
+        ON c.comment_no = r.comment_no 
+        AND c.member_no = r.member_no  
+    WHERE c.item_id = #{item_id}  
+    LIMIT #{pagingDto.limit} OFFSET #{pagingDto.offset};
 	</select> 
 	<!--댓글 작성  -->
 	 <insert id="writeComment" parameterType="com.spring.dto.CommentDto" useGeneratedKeys="true" keyProperty="comment_no">
