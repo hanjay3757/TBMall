@@ -1,0 +1,113 @@
+/* ReadContent.css */
+.board-detail-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* 컨테이너 밖으로 넘어가지 않도록 */
+  }
+  
+  .board-detail-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    word-break: break-all; /* 긴 제목이 있을 경우 줄바꿈 */
+  }
+  
+  .board-detail-content {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    white-space: pre-wrap; /* 줄바꿈 처리를 위해 */
+    margin-bottom: 20px;
+    word-break: break-all; /* 긴 내용이 있을 경우 줄바꿈 */
+  }
+  
+  .board-detail-back-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+    float: right;
+    max-width: calc(100% - 20px); /* 여백 고려 */
+    overflow: hidden;
+    white-space: nowrap; /* 버튼 텍스트 한 줄로 */
+  }
+  
+  .board-detail-back-button:hover {
+    background-color: #0056b3;
+  }
+
+  .board-edit-button {
+    display: inline-block;
+    margin-top: 20px;
+    margin-right: 10px;
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+    float: right;
+    max-width: calc(100% - 20px); /* 여백 고려 */
+    overflow: hidden;
+    white-space: nowrap; /* 버튼 텍스트 한 줄로 */
+  }
+
+  .board-edit-button:hover {
+    background-color: #218838;
+  }
+
+  .comment-section {
+    margin-top: 20px;
+    clear: both; /* float 해제 */
+    width: 100%;
+  }
+  
+  .comment-list {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+  }
+  
+  .comment-item {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding: 5px 0;
+    word-break: break-all; /* 긴 댓글 줄바꿈 */
+  }
+  
+  .comment-form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    width: 100%;
+  }
+  
+  .comment-input {
+    height: 60px;
+    margin-bottom: 10px;
+    padding: 10px;
+    resize: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .comment-submit-button {
+    align-self: flex-end;
+    padding: 5px 15px;
+  }
