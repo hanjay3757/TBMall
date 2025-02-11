@@ -30,15 +30,38 @@ function ItemDetail() {
   const StarRating = ({rating, setRating}) => {
     return (
       <div className="star-ratings">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={star <= rating ? "star selected" : "star"}
-            onClick={() => setRating(star)}
-          >
-            ⭐
-          </span>
-        ))}
+        {[1, 2, 3, 4, 5].map((star) => {
+          let starClass = "star";
+          const starChar = star <= rating ? "⭐" : "☆";
+          
+          if (star <= rating) {
+            starClass += " selected";
+          } else {
+            starClass += " exceeded";
+          }
+          
+          return (
+            <span
+              key={star}
+              className={starClass}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => {
+                const stars = document.querySelectorAll('.star');
+                stars.forEach((s, index) => {
+                  if (index < star) {
+                    s.classList.add('hover');
+                  }
+                });
+              }}
+              onMouseLeave={() => {
+                const stars = document.querySelectorAll('.star');
+                stars.forEach(s => s.classList.remove('hover'));
+              }}
+            >
+              {starChar}
+            </span>
+          );
+        })}
       </div>
     );
   };
@@ -73,11 +96,17 @@ function ItemDetail() {
       console.log('댓글 목록 응답:', response.data);
 
       if (response.data && Array.isArray(response.data.comments)) {
-        setComments(response.data.comments);
-          // ⭐ 상태 업데이트 후 값을 즉시 확인
-          setTimeout(() => {
-            console.log("🔥 상태 업데이트 후 comments:", comments);
-           }, 100);
+        // 중복 제거를 위해 Set 객체 사용
+        const uniqueComments = Array.from(
+          new Map(response.data.comments.map(comment => [comment.comment_no, comment])).values()
+        );
+        
+        setComments(uniqueComments);
+        // ⭐ 상태 업데이트 후 값을 즉시 확인
+        setTimeout(() => {
+          console.log("🔥 상태 업데이트 후 comments:", uniqueComments);
+        }, 100);
+        
         setTotalComment(response.data.totalComment || 0);
         setCurrentComment(response.data.currentComment || 1);
       } else {
@@ -179,7 +208,7 @@ function ItemDetail() {
     return () => {
       window.removeEventListener('storage', checkLoginStatus);
     };
-  }, [itemId, currentComment],[comments]);
+  }, [itemId, currentComment]);
 
   const handleDelete = async (comment_no) => {
     try {
@@ -211,10 +240,45 @@ function ItemDetail() {
     }
   };
 
-  const handleCommentPageChange = (page) => {
-    if (page >= 1 && page <= totalComment) {
+  const handleCommentPageChange = async (page) => {
+    try {
+      // 페이지 유효성 검사
+      if (page < 1 || page > Math.ceil(totalComment / cpageSize)) {
+        return;
+      }
+      
       setCurrentComment(page);
+      await loadComments(itemId); // 새로운 페이지의 댓글 로드
+    } catch (error) {
+      console.error('페이지 변경 중 오류 발생:', error);
     }
+  };
+
+  const renderPagination = () => {
+    const totalPages = Math.ceil(totalComment / cpageSize);
+    
+    return (
+      <div className="pagination">
+        <button
+          onClick={() => handleCommentPageChange(currentComment - 1)}
+          disabled={currentComment <= 1}
+        >
+          이전
+        </button>
+        
+        {/* 현재 페이지 번호와 전체 페이지 수 표시 */}
+        <span>
+          {currentComment} / {totalPages}
+        </span>
+        
+        <button
+          onClick={() => handleCommentPageChange(currentComment + 1)}
+          disabled={currentComment >= totalPages}
+        >
+          다음
+        </button>
+      </div>
+    );
   };
 
   const renderComments = () => {
@@ -274,21 +338,7 @@ function ItemDetail() {
           );
         })}
         
-        <div className="pagination">
-          <button
-            onClick={() => handleCommentPageChange(currentComment - 1)}
-            disabled={currentComment <= 1}
-          >
-            이전
-          </button>
-          <span>{currentComment} / {totalComment}</span>
-          <button
-            onClick={() => handleCommentPageChange(currentComment + 1)}
-            disabled={currentComment >= totalComment}
-          >
-            다음
-          </button>
-        </div>
+        {renderPagination()}
       </div>
     );
   };

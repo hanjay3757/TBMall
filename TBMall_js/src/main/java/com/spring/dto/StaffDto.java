@@ -11,6 +11,7 @@ public class StaffDto {
 	};
 
 	private Long admin_no;
+	private Long position_no;
 	private Long member_no;
 	private String member_id;
 	private String member_pw;

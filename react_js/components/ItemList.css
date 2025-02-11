@@ -112,47 +112,6 @@
   animation: spin 1s linear infinite;
 }
 
-.items-container {
-  perspective: 1000px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.item-image {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  border-radius: 4px;
-  margin-bottom: 15px;
-}
-
-.item-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.item-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 10px 0;
-}
-
-.item-content h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.2em;
-}
-
-.item-content p {
-  margin: 5px 0;
-  line-height: 1.4;
-}
 
 .cart-controls {
   margin-top: auto;
