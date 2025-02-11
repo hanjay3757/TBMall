@@ -2,6 +2,11 @@ import React from 'react';
 import './Footer.css';
 
 function Footer() {
+
+   // 클릭 시 알림을 띄우는 함수
+   const handleLinkClick = () => {
+    alert("준비 중입니다.");
+  };
   return (
     <footer className="footer">
       <div className="footer-content">
@@ -20,9 +25,9 @@ function Footer() {
         <div className="footer-section">
           <h3>바로가기</h3>
           <ul>
-            <li>이용약관</li>
-            <li>개인정보처리방침</li>
-            <li>자주 묻는 질문</li>
+            <li onClick={handleLinkClick} style={{ cursor: "pointer" }}>이용약관</li>
+            <li onClick={handleLinkClick} style={{ cursor: "pointer" }}>개인정보처리방침</li>
+            <li onClick={handleLinkClick} style={{ cursor: "pointer" }}>자주 묻는 질문</li>
           </ul>
         </div>
       </div>

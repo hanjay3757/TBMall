@@ -202,7 +202,7 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
             <th>제목</th>
 
-            <th>내용</th>
+            {/* <th>내용</th> */}
 
             <th>작성일</th>
 
@@ -226,9 +226,9 @@ function BoardList({ isLoggedIn, isAdmin }) {
                 {board.board_title}
               </td>
 
-              <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
+              {/* <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
                 {board.board_content}
-              </td>
+              </td> */}
 
               <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
                 {board.board_writedate}
