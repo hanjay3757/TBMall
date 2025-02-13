@@ -178,30 +178,30 @@ public class BoardController {
 		return "board/edit";
 	}
 
-//	@PostMapping("board/editContent")
-//	public Map<String, Object> editContent(@RequestBody CommentDto commentDto, HttpSession session) {
-//		Map<String, Object> response = new HashMap<>();
-//		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
-//
-//		if (loginStaff == null
-//				|| (!commentDto.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
-//			response.put("success", false);
-//			response.put("message", "권한이 없습니다.");
-//			return response;
-//		}
+	@PostMapping("board/editContent")
+	public Map<String, Object> editContent(@RequestBody BoardDto board, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 
-//		try {
-//			service.editContent(commentDto); // 수정 로직
-//			response.put("success", true);
-//			response.put("message", "정보가 수정되었습니다.");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			response.put("success", false);
-//			response.put("message", "수정 중 오류가 발생했습니다.");
-//		}
-//
-//		return response;
-//	}
+		if (loginStaff == null
+				|| (!board.getMember_no().equals(loginStaff.getMember_no()) && loginStaff.getAdmins() != 1)) {
+			response.put("success", false);
+			response.put("message", "권한이 없습니다.");
+			return response;
+		}
+
+		try {
+			service.editContent(board); // 수정 로직
+			response.put("success", true);
+			response.put("message", "정보가 수정되었습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("success", false);
+			response.put("message", "수정 중 오류가 발생했습니다.");
+		}
+
+		return response;
+	}
 
 	// 읽고 있는 글에 달린 댓글 모두 가져오기
 	@GetMapping("/commentlist")
