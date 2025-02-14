@@ -38,7 +38,7 @@ function StaffRegister() {
       
       if (response.data.success) {
         alert('직원이 등록되었습니다.');
-        navigate('/staff/list');
+        navigate('/staff/removelist');
       }
     } catch (error) {
       console.error('직원 등록 실패:', error);

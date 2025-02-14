@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './RemovedStaff.css';
 import { SERVER_URL } from '../config';
 
 function RemovedStaff() {
+  const navigate = useNavigate();
   const [removedStaffList, setRemovedStaffList] = useState([]);
   const [activeStaffList, setActiveStaffList] = useState([]); // 빈 배열로 초기화
   const [error, setError] = useState(null);
@@ -84,6 +86,38 @@ function RemovedStaff() {
     }
   };
 
+  // 직원 삭제 함수
+  const handleDelete = async (member_no) => {
+    if (window.confirm('이 직원을 삭제하시겠습니까?')) {
+      try {
+        const params = new URLSearchParams();
+        params.append('member_no', member_no);
+
+        const response = await axios.post(`${SERVER_URL}/mvc/staff/remove`, params, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          withCredentials: true
+        });
+
+        if (response.data === 'redirect:/staff/list' || response.status === 200) {
+          alert('직원이 삭제되었습니다.');
+          fetchActiveStaff(); // 목록 새로고침
+        } else {
+          throw new Error('삭제에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('직원 삭제 실패:', error);
+        alert('직원 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 직원 수정 함수 수정
+  const handleEdit = (member_no) => {
+    navigate(`/staff/edit?member_no=${member_no}`);  // URL 형식 수정
+  };
+
   return (
     <div className="staff-management">
       {/* 현재 직원 목록 */}
@@ -96,6 +130,7 @@ function RemovedStaff() {
               <th>아이디</th>
               <th>이름</th>
               <th>관리자 여부</th>
+              <th>관리</th>
             </tr>
           </thead>
           <tbody>
@@ -105,6 +140,20 @@ function RemovedStaff() {
                 <td>{staff.member_id}</td>
                 <td>{staff.member_nick}</td>
                 <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+                <td>
+                  <button 
+                    onClick={() => handleEdit(staff.member_no)}
+                    className="edit-button"
+                  >
+                    수정
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(staff.member_no)}
+                    className="delete-button"
+                  >
+                    삭제
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -135,7 +184,18 @@ function RemovedStaff() {
                   <td>{staff.member_nick}</td>
                   <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
                   <td>
-                    <button onClick={() => handleRestore(staff.member_no)}>복구</button>
+                    <button 
+                      onClick={() => handleRestore(staff.member_no)}
+                      className="restore-button"
+                    >
+                      복구
+                    </button>
+                    <button 
+                      onClick={() => handleEdit(staff.member_no)}
+                      className="edit-button"
+                    >
+                      수정
+                    </button>
                   </td>
                 </tr>
               ))}

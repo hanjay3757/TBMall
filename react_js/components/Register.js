@@ -44,7 +44,7 @@ function Register() {
 
       if (response.data.success) {
         alert('직원 등록이 완료되었습니다.');
-        navigate('/');
+        navigate('/staff/removelist');
       } else {
         alert(response.data.message || '등록에 실패했습니다.');
       }
@@ -185,7 +185,7 @@ function Register() {
         </div>
         <div className="button-group">
           <button type="submit">등록</button>
-          <button type="button" onClick={() => navigate('/')}>
+          <button type="button" onClick={() => navigate('/staff/removelist')}>
             취소
           </button>
         </div>

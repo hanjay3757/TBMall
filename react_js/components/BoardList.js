@@ -112,7 +112,7 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
       if (window.confirm('이 글을 삭제하시겠습니까?')) {
 
-        const response = await axios.post(
+        const response = await axios.post('/board/deleteOneContent',
 
           { board_no: board_no },
 
@@ -180,8 +180,18 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
   if (boards.length === 0) {
 
-    return <p>게시판에 등록된 글이 없습니다.</p>;
-
+    return (
+      <div>
+        <p>게시판에 등록된 글이 없습니다.</p>
+        {isLoggedIn && (
+          <div style={{ marginTop: '20px' }}>
+            <button onClick={handleWrite} className="write-button">
+              글 작성
+            </button>
+          </div>
+        )}
+      </div>
+    );
   }
 
 
@@ -201,8 +211,8 @@ function BoardList({ isLoggedIn, isAdmin }) {
             <th>번호</th>
 
             <th>제목</th>
-
-            {/* <th>내용</th> */}
+{/* 
+            <th>내용</th> */}
 
             <th>작성일</th>
 
@@ -226,7 +236,7 @@ function BoardList({ isLoggedIn, isAdmin }) {
                 {board.board_title}
               </td>
 
-              {/* <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
+             {/*  <td onClick={() => readContent(board.board_no)} style={{cursor: 'pointer'}}>
                 {board.board_content}
               </td> */}
 
@@ -327,4 +337,3 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
 
 export default BoardList;
-

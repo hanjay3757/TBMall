@@ -23,33 +23,42 @@ function StaffEdit({ onUpdate }) {
   useEffect(() => {
     const fetchStaffData = async () => {
       try {
-        const response = await axios.post('/staff/list', {}, {
+        if (!member_no) {
+          throw new Error('직원 번호가 없습니다.');
+        }
+
+        // /staff/read 엔드포인트 사용
+        const params = new URLSearchParams();
+        params.append('member_no', member_no);
+
+        const response = await axios.post('/staff/read', params, {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Content-Type': 'application/x-www-form-urlencoded'
           }
         });
         
         if (response.data) {
-          const staff = response.data.find(staff => staff.member_no === parseInt(member_no));
-          console.log('서버에서 받은 직원 데이터:', staff);
+          console.log('서버에서 받은 직원 데이터:', response.data);
           
-          if (staff) {
-            const formattedData = {
-              ...staff,
-              member_birth: staff.member_birth ? 
-                new Date(staff.member_birth).toISOString().split('T')[0] : ''
-            };
-            setStaffData(formattedData);
-          } else {
-            throw new Error('직원을 찾을 수 없습니다.');
-          }
+          const formattedData = {
+            ...response.data,
+            member_birth: response.data.member_birth ? 
+              new Date(response.data.member_birth).toISOString().split('T')[0] : ''
+          };
+          setStaffData(formattedData);
+        } else {
+          throw new Error('직원을 찾을 수 없습니다.');
         }
       } catch (error) {
         console.error('직원 정보를 가져오는데 실패했습니다:', error);
+        console.error('에러 상세:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
         alert('직원 정보를 불러오는데 실패했습니다.');
-        navigate('/');
+        navigate('/staff/list');
       }
     };
 
@@ -77,52 +86,59 @@ function StaffEdit({ onUpdate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        const formData = {
+        // 날짜 형식 변환
+        const birthDate = staffData.member_birth ? 
+            new Date(staffData.member_birth).toISOString().split('T')[0] : null;
+
+        // StaffDto와 일치하는 데이터 구조 생성
+        const staffDto = {
             member_no: parseInt(member_no),
             member_id: staffData.member_id.trim(),
             member_nick: staffData.member_nick,
             member_phone: staffData.member_phone,
             member_email: staffData.member_email,
             member_gender: staffData.member_gender,
-            member_birth: staffData.member_birth
+            member_birth: birthDate,
+            delete_right_no: staffData.delete_right_no || 0,
+            position_no: staffData.position_no || 1,
+            admins: staffData.admins || 0,
+            member_delete: staffData.member_delete || 0,
+            points: staffData.points || 0
         };
 
-        // 로그인 상태 확인
-        const loginCheckResponse = await axios.post('/staff/check-login');
-        console.log('현재 로그인 상태:', loginCheckResponse.data);
-
-        // 비밀번호 처리
-        if (!loginCheckResponse.data.isAdmin && loginCheckResponse.data.delete_right_no !== 1) {
-            if (!currentPassword) {
-                alert('현재 비밀번호를 입력해주세요.');
-                return;
-            }
-            formData.currentPassword = currentPassword;
-        }
-
-        // 새 비밀번호가 있는 경우에만 추가
+        // 비밀번호가 있는 경우에만 추가
         if (staffData.member_pw) {
-            formData.member_pw = staffData.member_pw;
+            staffDto.member_pw = staffData.member_pw;
         }
 
-        const response = await axios.post('/staff/edit', formData, {
+        console.log('=== 직원 정보 수정 시작 ===');
+        console.log('전송할 데이터:', staffDto);
+
+        // Spring의 @RequestBody에 맞춰 JSON 형식으로 전송
+        const response = await axios.post('/staff/edit/', staffDto, {
+            withCredentials: true,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         });
+
+        console.log('서버 응답:', response.data);
 
         if (response.data.success) {
             alert(response.data.message || '직원 정보가 수정되었습니다.');
             if (onUpdate) {
                 await onUpdate();
             }
-            navigate('/');
+            navigate('/staff/removelist');
         } else {
             throw new Error(response.data.message || '수정에 실패했습니다.');
         }
     } catch (error) {
         console.error('직원 정보 수정 실패:', error);
-        alert(error.response?.data?.message || error.message || '직원 정보 수정에 실패했습니다.');
+        console.error('에러 응답:', error.response);
+        const errorMessage = error.response?.data?.message || error.message || '직원 정보 수정에 실패했습니다.';
+        alert(errorMessage);
     }
   };
 

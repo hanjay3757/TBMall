@@ -80,3 +80,48 @@
   font-weight: 500;
   border: 1px solid #fadbd8;
 }
+
+.edit-button, .delete-button, .restore-button {
+  padding: 6px 12px;
+  margin: 0 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #45a049;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #da190b;
+}
+
+.restore-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.restore-button:hover {
+  background-color: #0b7dda;
+}
+
+.staff-table td {
+  vertical-align: middle;
+}
+
+.staff-table td:last-child {
+  white-space: nowrap;
+}

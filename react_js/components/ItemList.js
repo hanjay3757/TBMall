@@ -133,7 +133,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
         alert('관리자 권한이 필요합니다.');
         return;
       }
-      navigate(`/item/edit/${item_id}`);
+      navigate(`/stuff/item/edit?itemId=${item_id}`);
     } catch (error) {
       console.error('수정 페이지 이동 실패:', error);
       alert('수정 페이지로 이동할 수 없습니다.');
