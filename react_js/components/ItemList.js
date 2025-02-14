@@ -309,7 +309,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
               <h3>{item.item_name}</h3>
               <p>가격: {item.item_price.toLocaleString()}원</p>
               <p>재고: {item.item_stock.toLocaleString()}개</p>
-              <p>{item.item_description}</p>
+              <p className="item-description">{item.item_description}</p>
               
               <div className="item-controls">
                 {isAdmin && (

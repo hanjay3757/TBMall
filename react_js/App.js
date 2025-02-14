@@ -18,6 +18,9 @@ import { API_BASE_URL, CLIENT_URL } from './config';
 import ItemDetail from './components/ItemDetail';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import Terms from './components/pages/Terms';
+import Privacy from './components/pages/Privacy';
+import FAQ from './components/pages/FAQ';
 //ㄴ 로딩되는 변수지정 폴더 위치 적어놓음
 // axios 기본 설정
 axios.defaults.baseURL = API_BASE_URL;
@@ -354,7 +357,7 @@ function App() {
     const today = new Date().toISOString().split('T')[0];
 
     if(lastAttendanceDate === today) {
-      alert("금일 출석체크 성공. 내일 다시 해주세요~");
+      alert("금일 출석체크는 하셨습니다. 내일 다시 해주세요~");
       return;
     }
 
@@ -436,6 +439,9 @@ function App() {
             element={<ItemDetail isLoggedIn={isLoggedIn} />} 
           />
           <Route path="/staff/edit/:member_no" element={<StaffEdit />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/faq" element={<FAQ />} />
         </Routes>
       </main>
       <Footer />

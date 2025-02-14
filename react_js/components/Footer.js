@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 function Footer() {
@@ -7,7 +8,7 @@ function Footer() {
       <div className="footer-content">
         <div className="footer-section">
           <h3>떠벌이직장인</h3>
-          <p>최고의 서비스를 제공하는 쇼핑몰입니다.</p>
+          <p>복지몰입니다</p>
         </div>
         
         <div className="footer-section">
@@ -20,9 +21,9 @@ function Footer() {
         <div className="footer-section">
           <h3>바로가기</h3>
           <ul>
-            <li>이용약관</li>
-            <li>개인정보처리방침</li>
-            <li>자주 묻는 질문</li>
+            <li><Link to="/terms" className="footer-link" style={{color: '#e2e8f0'}}>이용약관</Link></li>
+            <li><Link to="/privacy" className="footer-link" style={{color: '#e2e8f0'}}>개인정보처리방침</Link></li>
+            <li><Link to="/faq" className="footer-link" style={{color: '#e2e8f0'}}>자주 묻는 질문</Link></li>
           </ul>
         </div>
       </div>

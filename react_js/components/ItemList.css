@@ -112,10 +112,21 @@
   animation: spin 1s linear infinite;
 }
 
+/* .item-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(12px, 1em, 16px);
+  height: 20px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+} */
 
-.cart-controls {
+.item-controls {
   margin-top: auto;
-  padding-top: 15px;
+  padding-top: 10px;
   border-top: 1px solid #eee;
 }
 
@@ -136,7 +147,7 @@
   .items-container {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
-  
+ 
   .item-card {
     height: 450px;
   }

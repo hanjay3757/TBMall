@@ -14,7 +14,7 @@ function Cart() {
 
   const loadCartItems = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/stuff/api/cart`, {
+      const response = await axios.get(`${API_BASE_URL}/stuff/api/cart`, {}, {
         withCredentials: true
       });
       console.log('장바구니 데이터:', response.data);
@@ -71,24 +71,62 @@ function Cart() {
   };
 
   const handleCheckout = async () => {
+    // requestData를 try 블록 밖에서 선언
+    let requestData;
+    
     try {
-      const orderData = cartItems.map(item => ({
-        item_id: item.itemId,
-        order_quantity: item.quantity,
-      }));
+      if (cartItems.length === 0) {
+        alert('장바구니가 비어있습니다.');
+        return;
+      }
+
+      // member_no가 있는지 확인
+      const memberNo = cartItems[0]?.memberNo;
+      if (!memberNo) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      // 서버가 기대하는 형식으로 데이터 구성
+      requestData = {
+        itemIds: cartItems.map(item => ({
+          itemId: item.itemId,
+          quantity: item.quantity
+        })),
+        member_no: memberNo
+      };
+
+      console.log('=== 주문 처리 시작 ===');
+      console.log('주문 데이터:', requestData);
 
       const response = await axios.post(
-        `/stuff/api/cart/checkout`,
-        { orders: orderData },
-        { withCredentials: true }
+        `${API_BASE_URL}/stuff/api/cart/checkout`,
+        requestData,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        }
       );
 
+      console.log('주문 응답:', response.data);
+
       if (response.data.status === 'success') {
+        // 장바구니 비우기
+        await Promise.all(cartItems.map(item => 
+          axios.delete(`${API_BASE_URL}/stuff/api/cart/${item.cartId}`, {
+            withCredentials: true
+          })
+        ));
+
         alert('주문이 완료되었습니다.');
         setCartItems([]);
       }
     } catch (error) {
       console.error('주문 처리 실패:', error);
+      console.error('요청 데이터:', requestData);  // 이제 접근 가능
+      console.error('에러 응답:', error.response?.data);
       alert(error.response?.data?.message || '주문 처리 중 오류가 발생했습니다.');
     }
   };
