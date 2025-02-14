@@ -6,7 +6,7 @@
 	<!-- resultType 에 복수형(ArrayList 등)을 적는게 아님. 
 	그냥 dto 단수의 경로를 적어야됨. -->
 	<!-- 모든 회원 정보 -->
-	<select id="getList" resultType="com.spring.dto.StaffDto">
+	<select id="getList" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.StaffDto">
 		SELECT 
 			m.*,
 			a.admin_no,
@@ -16,8 +16,17 @@
 			LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
 		WHERE 
 			m.member_delete = 0 OR m.member_delete IS NULL
-		ORDER BY 
-			m.member_no DESC
+		LIMIT #{limit} OFFSET #{offset}
+	</select>
+	
+	<select id="getStaffCount" resultType="int">
+		SELECT 
+			count(*)
+		FROM 
+			tbmall_member m
+			LEFT JOIN tbmall_admin a ON m.member_no = a.member_no
+		WHERE 
+			m.member_delete = 0 OR m.member_delete IS NULL
 	</select>
 	
 	<!-- 관리자 정보만 불러오기 -->
@@ -142,4 +151,31 @@
 			0
 		)
 	</insert>
+	
+	<!-- 직위&포인트 관련 -->
+	<!-- 회원 번호에 따른 직위와 포인트 잔여 보기 -->
+	<!--  <resultMap id="PointPositionMap" type="com.spring.dto.PointDto">
+        <result property="position_no" column="position_no"/>
+        <result property="point_amount" column="point_amount"/>
+        <association property="staffDto" javaType="com.spring.dto.StaffDto">
+            <result property="member_no" column="member_no"/>
+            <result property="member_id" column="member_id"/>
+            <result property="member_nick" column="member_nick"/>
+        </association>
+    </resultMap>
+	<select id="getPointPosition" parameterType="long" resultType="PointPositionMap">
+	SELECT 
+	m.member_no as member_no,
+    m.member_id as member_id,
+    m.member_nick as member_nick,
+    p.point_amount as point_amount,
+    j.staff_position as staff_position
+    FROM tbmall_member m
+    LEFT JOIN
+    tbmall_point p on m.position_no = p.position_no
+    LEFT JOIN
+    tbmall_position j on m.position_no = j.position_no
+    WHERE
+	m.member_no =#{member_no}
+	</select> -->
 </mapper>

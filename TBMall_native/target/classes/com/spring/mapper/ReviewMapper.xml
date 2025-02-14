@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.mapper.ReviewMapper">
+
+    <insert id="insertReview" parameterType="com.spring.dto.ReviewDTO">
+        INSERT INTO tbmall_reviews (
+            item_id, 
+            member_no, 
+            rating, 
+            review_content, 
+            image_url
+        ) VALUES (
+            #{itemId}, 
+            #{memberNo}, 
+            #{rating}, 
+            #{reviewContent}, 
+            #{imageUrl}
+        )
+    </insert>
+
+    <update id="updateReview" parameterType="com.spring.dto.ReviewDTO">
+        UPDATE tbmall_reviews 
+        SET rating = #{rating},
+            review_content = #{reviewContent},
+            image_url = #{imageUrl}
+        WHERE review_id = #{reviewId}
+    </update>
+
+    <delete id="deleteReview" parameterType="integer">
+        DELETE FROM tbmall_reviews 
+        WHERE review_id = #{reviewId}
+    </delete>
+
+    <select id="getReviewById" parameterType="integer" resultType="com.spring.dto.ReviewDTO">
+        SELECT 
+            review_id as reviewId,
+            item_id as itemId,
+            member_no as memberNo,
+            rating,
+            review_content as reviewContent,
+            DATE_FORMAT(review_date, '%Y-%m-%d %H:%i') as reviewDate,
+            image_url as imageUrl
+        FROM tbmall_reviews 
+        WHERE review_id = #{reviewId}
+    </select>
+
+    <select id="getReviewsByItemId" parameterType="long" resultType="com.spring.dto.ReviewDTO">
+        SELECT 
+            review_id as reviewId,
+            item_id as itemId,
+            member_no as memberNo,
+            rating,
+            review_content as reviewContent,
+            DATE_FORMAT(review_date, '%Y-%m-%d %H:%i') as reviewDate,
+            image_url as imageUrl
+        FROM tbmall_reviews 
+        WHERE item_id = #{itemId}
+        ORDER BY review_date DESC
+    </select>
+
+    <select id="getReviewsByMemberNo" parameterType="integer" resultType="com.spring.dto.ReviewDTO">
+        SELECT 
+            review_id as reviewId,
+            item_id as itemId,
+            member_no as memberNo,
+            rating,
+            review_content as reviewContent,
+            DATE_FORMAT(review_date, '%Y-%m-%d %H:%i') as reviewDate,
+            image_url as imageUrl
+        FROM tbmall_reviews 
+        WHERE member_no = #{memberNo}
+        ORDER BY review_date DESC
+    </select>
+    
+ 
+</mapper> 
