@@ -9,6 +9,8 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,19 +20,24 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.spring.config.GlobalConfig;
 import com.spring.dto.CartDto;
 import com.spring.dto.StaffDto;
 import com.spring.dto.StuffDto;
+import com.spring.service.PointService;
 import com.spring.service.StaffService;
 import com.spring.service.StuffService;
 
 @RestController
 @RequestMapping("/stuff")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", allowedHeaders = "*")
+@CrossOrigin(origins = GlobalConfig.ALLOWED_ORIGIN, allowedHeaders = "*", methods = { RequestMethod.GET,
+		RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH,
+		RequestMethod.OPTIONS }, allowCredentials = "true")
 public class StuffController {
 
 	private static final Logger log = LoggerFactory.getLogger(StuffController.class);
@@ -41,6 +48,9 @@ public class StuffController {
 	@Autowired
 	private StaffService staffService;
 
+	@Autowired
+	private PointService pointservice;
+
 	private static final String LOGIN_STAFF = "loginStaff";
 
 	private boolean isAdmin(HttpSession session) {
@@ -49,28 +59,57 @@ public class StuffController {
 	}
 
 	// 장바구니 체크아웃 API
+	// 장바구니 체크아웃 API
 	@PostMapping("/api/cart/checkout")
-	@ResponseBody
-	public Map<String, String> checkout(HttpSession session) {
-		Map<String, String> response = new HashMap<>();
-		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
+	public ResponseEntity<?> checkout(@RequestBody Map<String, Object> requestData) {
+		List<Map<String, Object>> itemList = (List<Map<String, Object>>) requestData.get("itemIds");
+		Long memberNo = Long.valueOf(requestData.get("member_no").toString());
 
-		if (loginStaff == null) {
-			response.put("status", "error");
-			response.put("message", "로그인이 필요합니다.");
-			return response;
+		if (memberNo == null || itemList == null || itemList.isEmpty()) {
+			return ResponseEntity.badRequest().body("잘못된 요청입니다.");
 		}
+
+		System.out.println("📦 주문 아이템: " + itemList);
+		System.out.println("👤 주문한 사용자: " + memberNo);
 
 		try {
-			service.processCheckout(loginStaff.getMember_no());
-			response.put("status", "success");
-			response.put("message", "주문이 완료되었습니다.");
+			// 모든 아이템의 재고 체크를 먼저 수행
+			for (Map<String, Object> item : itemList) {
+				Long itemId = Long.valueOf(item.get("itemId").toString());
+				Integer quantity = Integer.valueOf(item.get("quantity").toString());
+
+				StuffDto stuffDto = service.getItem(itemId);
+				if (stuffDto == null) {
+					return ResponseEntity.badRequest().body("상품을 찾을 수 없습니다: " + itemId);
+				}
+
+				// 장바구니에 있는 아이템은 재고가 0이어도 구매 가능하도록 수정
+				if (stuffDto.getItem_stock() < 0) { // 0 이하일 때만 체크
+					return ResponseEntity.badRequest().body("재고가 부족합니다: " + stuffDto.getItem_name());
+				}
+			}
+
+			// 재고 체크가 통과하면 실제 주문 처리 수행
+			for (Map<String, Object> item : itemList) {
+				Long itemId = Long.valueOf(item.get("itemId").toString());
+				Integer quantity = Integer.valueOf(item.get("quantity").toString());
+
+				StuffDto stuffDto = service.getItem(itemId);
+
+				// 재고 감소
+				stuffDto.setItem_stock(stuffDto.getItem_stock() - quantity);
+				service.updateItem(stuffDto);
+
+				// 포인트 적립
+				pointservice.pointUse(itemId, memberNo, quantity);
+			}
+
+			return ResponseEntity.ok().body(Map.of("status", "success", "message", "주문 완료"));
 		} catch (Exception e) {
-			log.error("결제 실패: " + e.getMessage());
-			response.put("status", "error");
-			response.put("message", e.getMessage());
+			e.printStackTrace(); // 로그 확인을 위해 추가
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "message", e.getMessage()));
 		}
-		return response;
 	}
 
 	@PostMapping("/cart/remove")
@@ -84,11 +123,27 @@ public class StuffController {
 		return "redirect:/stuff/cart";
 	}
 
-	// 물건 목록 조회
+	// 물건 목록 페이징
 	@GetMapping("/item/list")
 	@ResponseBody
-	public List<StuffDto> getList() {
-		return service.getItemList();
+	public ResponseEntity<Map<String, Object>> getList(@RequestParam(defaultValue = "1") int currentPage,
+			@RequestParam(defaultValue = "3") int pageSize) {
+		// 전체 등록된 물건 수 가져오기
+		int totalCount = service.getCountItemList();
+
+		// 총 페이지 수 계산
+		int totalPage = (int) Math.ceil((double) totalCount / pageSize);
+
+		// 현재 페이지에 해당하는 물건 목록 가져오기
+		List<StuffDto> stuffs = service.getItemList(currentPage, pageSize);
+
+		// 클라이언트에 반환할 데이터를 Map 에 담기
+		Map<String, Object> response = new HashMap<>();
+		response.put("items", stuffs);
+		response.put("totalPage", totalPage);
+		response.put("currentPage", currentPage);
+
+		return ResponseEntity.ok(response);
 	}
 
 	// 물건 등록 페이지
@@ -180,7 +235,7 @@ public class StuffController {
 		return "stuff/cart";
 	}
 
-	@GetMapping("/item/deleted")
+	@PostMapping("/item/deleted")
 	@ResponseBody
 	public Map<String, Object> getDeletedItems(HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
@@ -220,7 +275,7 @@ public class StuffController {
 
 	// 물건 수정 페이지
 	@GetMapping("/item/edit")
-	public String editItemForm(@RequestParam("itemId") Long itemId, Model model, HttpSession session) {
+	public String editItemForm(Long itemId, Model model, HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			return "redirect:/staff/login";
@@ -232,13 +287,13 @@ public class StuffController {
 
 	// 물건 수정 처리
 	@PostMapping("/item/edit")
-	public String editItem(StuffDto stuff, HttpSession session) {
+	public String editItem(StuffDto stuffDto, HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 		if (loginStaff == null || loginStaff.getAdmins() != 1) {
 			return "redirect:/staff/login";
 		}
 
-		service.updateItem(stuff);
+		service.updateItem(stuffDto);
 		return "redirect:/stuff/item/list";
 	}
 
@@ -273,7 +328,7 @@ public class StuffController {
 	public List<CartDto> getCartItems(HttpSession session) {
 		StaffDto loginStaff = (StaffDto) session.getAttribute(LOGIN_STAFF);
 		if (loginStaff == null) {
-			throw new RuntimeException("로그인이 필요합니다.");
+			return null;
 		}
 		return service.getCartItems(loginStaff.getMember_no());
 	}
@@ -325,5 +380,33 @@ public class StuffController {
 			response.put("message", e.getMessage());
 		}
 		return response;
+	}
+
+	@GetMapping("/item/detail/{itemId}")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> getItemDetail(@PathVariable Long itemId) {
+		try {
+			// 특정 아이템의 상세 정보 가져오기
+			StuffDto item = service.getItem(itemId);
+
+			if (item == null) {
+				Map<String, Object> response = new HashMap<>();
+				response.put("status", "error");
+				response.put("message", "아이템을 찾을 수 없습니다.");
+				return ResponseEntity.ok(response);
+			}
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("item", item);
+			return ResponseEntity.ok(response);
+
+		} catch (Exception e) {
+			log.error("아이템 정보 조회 중 오류 발생: ", e);
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "error");
+			response.put("message", "아이템 정보를 가져오는데 실패했습니다.");
+			return ResponseEntity.ok(response);
+		}
 	}
 }

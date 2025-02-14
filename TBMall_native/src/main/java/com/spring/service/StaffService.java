@@ -3,11 +3,14 @@ package com.spring.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.spring.dto.PointDto;
 import com.spring.dto.StaffDto;
 
 public interface StaffService {
-	public ArrayList<StaffDto> getList(); // 모든 회원 정보 가져오기
-
+	public ArrayList<StaffDto> getList(int currentPage , int pageSize); // 모든 회원 정보 가져오기
+	
+	public int getStaffCount(); // 모든 회원의 수 가져오기
+	
 	public ArrayList<StaffDto> getAdminList(); // 모든 관리자 정보 가져오기
 
 	public StaffDto read(long member_no);
@@ -30,5 +33,8 @@ public interface StaffService {
 	public void register(StaffDto staffDto);
 
 	public void adminAppoint(Long member_no); // 추가
+	
+//	//포인트 및 직위 관련
+//	public PointDto getPointPosition(Long member_no);
 
 }

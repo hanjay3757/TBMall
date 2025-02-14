@@ -5,12 +5,16 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.spring.dto.CartDto;
+import com.spring.dto.PagingDto;
 import com.spring.dto.StuffDto;
 
 public interface StuffMapper {
 	// 물건 관련
-	public List<StuffDto> getItemList();
+	public List<StuffDto> getItemList(PagingDto pagingDto);
 
+	//페이징 목적 등록 물건의 총 개수 구하는 메서드
+	public int getCountItemList();
+	
 	public void registerItem(StuffDto stuff);
 
 	public StuffDto getItem(Long item_id);

@@ -7,8 +7,10 @@ import com.spring.dto.StuffDto;
 
 public interface StuffService {
 	// 물건 관련
-	public List<StuffDto> getItemList();
-
+	public List<StuffDto> getItemList(int currentPage, int pageSize);// 모든 물건 리스트 가져오기(삭제된거 제외)
+	
+	public int getCountItemList();
+	
 	public void registerItem(StuffDto stuff);
 
 	// 물건 삭제 기능 24.12.17
