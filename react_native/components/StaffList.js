@@ -6,7 +6,8 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Alert,
-  ActivityIndicator 
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';  // react-router-dom 대신 사용
 import axios from 'axios';
@@ -16,6 +17,7 @@ const StaffList = () => {
   const navigation = useNavigation();  // useNavigate 대신 사용
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadStaffList();
@@ -32,6 +34,15 @@ const StaffList = () => {
       setLoading(false);
     }
   };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadStaffList();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const renderItem = ({ item }) => (
     <View style={styles.staffCard}>
@@ -58,6 +69,9 @@ const StaffList = () => {
   return (
     <View style={styles.container}>
       <FlatList
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         data={staffList}
         renderItem={renderItem}
         keyExtractor={item => item.member_no.toString()}

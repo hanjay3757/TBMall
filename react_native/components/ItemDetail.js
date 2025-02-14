@@ -238,6 +238,40 @@ function ItemDetail() {
     }
   };
 
+  const handleAddToCart = async () => {
+    try {
+      if (!userInfo) {
+        Alert.alert('오류', '로그인이 필요합니다.');
+        return;
+      }
+
+      // URLSearchParams를 사용하여 form 데이터 형식으로 전송
+      const params = new URLSearchParams();
+      params.append('itemId', itemId);
+      params.append('quantity', 1);
+
+      console.log('장바구니 추가 요청 데이터:', Object.fromEntries(params));
+
+      const response = await axios.post('/stuff/api/cart/add', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'  // form 데이터 형식으로 변경
+        }
+      });
+
+      console.log('장바구니 추가 응답:', response.data);
+
+      if (response.data.success) {
+        Alert.alert('성공', '장바구니에 추가되었습니다.');
+      } else {
+        Alert.alert('실패', response.data.message || '장바구니 추가에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('장바구니 추가 실패:', error);
+      console.error('에러 응답:', error.response?.data);
+      Alert.alert('오류', '장바구니 추가 중 오류가 발생했습니다.');
+    }
+  };
+
   const renderComment = ({ item }) => (
     <View style={styles.commentItem}>
       <Text style={styles.commentContent}>{item.comment_content}</Text>
@@ -274,14 +308,24 @@ function ItemDetail() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.itemDetail}>
-        {userInfo?.isAdmin && (
-          <TouchableOpacity 
-            style={styles.editButton}
-            onPress={() => navigation.navigate('ItemEdit', { itemId: item.item_id })}
-          >
-            <Text style={styles.buttonText}>수정</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.buttonContainer}>
+          {userInfo?.isAdmin && (
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={() => navigation.navigate('ItemEdit', { itemId: item.item_id })}
+            >
+              <Text style={styles.buttonText}>수정</Text>
+            </TouchableOpacity>
+          )}
+          {userInfo && (
+            <TouchableOpacity 
+              style={styles.cartButton}
+              onPress={handleAddToCart}
+            >
+              <Text style={styles.buttonText}>장바구니 추가</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         <Image 
           source={{ uri: item.image_url || 'https://via.placeholder.com/400x300' }}
@@ -363,6 +407,12 @@ const styles = StyleSheet.create({
   itemDetail: {
     padding: 15,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+    gap: 10,
+  },
   itemImage: {
     width: '100%',
     height: 300,
@@ -396,8 +446,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
-    marginBottom: 10,
-    alignSelf: 'flex-end',
+  },
+  cartButton: {
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 5,
   },
   buttonText: {
     color: '#fff',

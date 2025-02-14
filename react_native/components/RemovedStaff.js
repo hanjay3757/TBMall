@@ -6,7 +6,8 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Alert,
-  ActivityIndicator 
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -224,6 +225,15 @@ function RemovedStaff() {
     loadActiveStaff(1, false).finally(() => setRefreshing(false));
   };
 
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadRemovedStaff();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   const renderRemovedItem = ({ item }) => (
     <View style={styles.staffCard}>
       <View style={styles.staffInfo}>
@@ -293,8 +303,11 @@ function RemovedStaff() {
           ListEmptyComponent={
             <Text style={styles.emptyText}>삭제된 직원이 없습니다.</Text>
           }
-          refreshing={loading}
-          onRefresh={loadRemovedStaff}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       </View>
     </View>

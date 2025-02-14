@@ -19,6 +19,7 @@ function BoardEdit() {
   const { boardNo } = route.params;
   const [loading, setLoading] = useState(true);
   const [hasPermission, setHasPermission] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
 
   const [boardData, setBoardData] = useState({
     board_no: boardNo,
@@ -37,12 +38,24 @@ function BoardEdit() {
 
   const checkPermissionAndLoadData = async () => {
     try {
-      const memberNo = await AsyncStorage.getItem('member_no');
+      // 사용자 정보 로드
+      const userInfoStr = await AsyncStorage.getItem('userInfo');
+      const userInfo = JSON.parse(userInfoStr);
+      setUserInfo(userInfo);
+
+      // 게시글 정보 로드
       const response = await axios.get(`/board/read?board_no=${boardNo}`);
-      
-      if (response.data.member_no === memberNo) {
+      setBoardData(response.data);
+
+      console.log('=== 수정 권한 체크 ===');
+      console.log('userInfo:', userInfo);
+      console.log('board:', response.data);
+      console.log('isAdmin:', userInfo.isAdmin);
+      console.log('isAuthor:', userInfo.member_no === response.data.member_no);
+
+      // isAdmin만으로 관리자 권한 체크
+      if (userInfo.isAdmin || userInfo.member_no === response.data.member_no) {
         setHasPermission(true);
-        setBoardData(response.data);
       } else {
         Alert.alert('권한 없음', '게시글을 수정할 권한이 없습니다.');
         navigation.goBack();
@@ -57,22 +70,29 @@ function BoardEdit() {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('/board/edit', boardData, {
+      const data = {
+        board_no: boardNo,
+        member_no: userInfo.member_no,
+        board_title: boardData.board_title,
+        board_content: boardData.board_content,
+      };
+
+      const response = await axios.post('/board/editContent', JSON.stringify(data), {
         headers: {
           'Content-Type': 'application/json'
         }
       });
 
       if (response.data.success) {
-        Alert.alert('성공', '게시글이 수정되었습니다.', [
+        Alert.alert('성공', '글 수정 완료', [
           { text: 'OK', onPress: () => navigation.navigate('BoardList') }
         ]);
       } else {
-        Alert.alert('실패', '게시글 수정에 실패했습니다.');
+        Alert.alert('실패', response.data.message || '글 수정에 실패하였습니다.');
       }
     } catch (error) {
-      console.error('게시글 수정 실패:', error);
-      Alert.alert('오류', '게시글 수정 중 오류가 발생했습니다.');
+      console.error('글 수정 실패:', error.response?.data || error.message);
+      Alert.alert('오류', '글 수정에 실패하였습니다.');
     }
   };
 

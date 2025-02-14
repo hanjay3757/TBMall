@@ -6,32 +6,42 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Alert,
-  ActivityIndicator,
-  TextInput 
+  ActivityIndicator
 } from 'react-native';
 import axios from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SERVER_URL } from '../config';
 
 function ReadContent() {
   const navigation = useNavigation();
   const route = useRoute();
   const { boardNo } = route.params;
   const [board, setBoard] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
+    loadUserInfo();
     loadBoard();
-    loadComments();
-  }, [currentPage]);
+  }, []);
+
+  const loadUserInfo = async () => {
+    try {
+      const userInfoStr = await AsyncStorage.getItem('userInfo');
+      if (userInfoStr) {
+        setUserInfo(JSON.parse(userInfoStr));
+      }
+    } catch (error) {
+      console.error('사용자 정보 로드 실패:', error);
+    }
+  };
 
   const loadBoard = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}/board/read?board_no=${boardNo}`);
+      const response = await axios.get('/board/read', {
+        params: { board_no: boardNo }
+      });
       setBoard(response.data);
       setLoading(false);
     } catch (error) {
@@ -41,51 +51,19 @@ function ReadContent() {
     }
   };
 
-  const loadComments = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}/board/comments/${boardNo}`, {
-        params: { page: currentPage }
-      });
-      setComments(response.data.comments);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error('댓글 로딩 실패:', error);
-    }
-  };
-
-  const handleAddComment = async () => {
-    try {
-      const memberNo = await AsyncStorage.getItem('member_no');
-      if (!memberNo) {
-        Alert.alert('오류', '로그인이 필요합니다.');
-        return;
-      }
-
-      const response = await axios.post(`${SERVER_URL}/board/comment`, {
-        boardNo,
-        memberNo,
-        content: newComment
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.data.success) {
-        setNewComment('');
-        loadComments();
-        Alert.alert('성공', '댓글이 등록되었습니다.');
-      } else {
-        Alert.alert('실패', '댓글 등록에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('댓글 등록 실패:', error);
-      Alert.alert('오류', '댓글 등록 중 오류가 발생했습니다.');
-    }
-  };
-
   const handleEdit = () => {
     navigation.navigate('BoardEdit', { boardNo });
+  };
+
+  // 수정 권한 체크
+  const canEdit = () => {
+    if (!userInfo || !board) return false;
+    console.log('=== 수정 권한 체크 ===');
+    console.log('userInfo:', userInfo);
+    console.log('board:', board);
+    console.log('isAdmin:', userInfo.isAdmin || userInfo.admins === 1);
+    console.log('isAuthor:', userInfo.member_no === board.member_no);
+    return (userInfo.isAdmin || userInfo.admins === 1) || userInfo.member_no === board.member_no;
   };
 
   if (loading) {
@@ -107,12 +85,14 @@ function ReadContent() {
         <Text style={styles.content}>{board?.board_content}</Text>
 
         <View style={styles.buttonGroup}>
-          <TouchableOpacity 
-            style={styles.editButton}
-            onPress={handleEdit}
-          >
-            <Text style={styles.buttonText}>수정</Text>
-          </TouchableOpacity>
+          {canEdit() && (
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={handleEdit}
+            >
+              <Text style={styles.buttonText}>수정</Text>
+            </TouchableOpacity>
+          )}
           
           <TouchableOpacity 
             style={styles.backButton}
@@ -120,51 +100,6 @@ function ReadContent() {
           >
             <Text style={styles.buttonText}>목록</Text>
           </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.commentsSection}>
-        <Text style={styles.commentsTitle}>댓글</Text>
-        
-        <View style={styles.commentForm}>
-          <TextInput
-            style={styles.commentInput}
-            value={newComment}
-            onChangeText={setNewComment}
-            placeholder="댓글을 입력하세요"
-            multiline
-          />
-          <TouchableOpacity 
-            style={styles.submitButton}
-            onPress={handleAddComment}
-          >
-            <Text style={styles.buttonText}>등록</Text>
-          </TouchableOpacity>
-        </View>
-
-        {comments.map((comment) => (
-          <View key={comment.id} style={styles.commentItem}>
-            <Text style={styles.commentAuthor}>{comment.member_nick}</Text>
-            <Text style={styles.commentContent}>{comment.content}</Text>
-            <Text style={styles.commentDate}>
-              {new Date(comment.writedate).toLocaleDateString()}
-            </Text>
-          </View>
-        ))}
-
-        <View style={styles.pagination}>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <TouchableOpacity
-              key={i + 1}
-              style={[
-                styles.pageButton,
-                currentPage === i + 1 && styles.activePageButton
-              ]}
-              onPress={() => setCurrentPage(i + 1)}
-            >
-              <Text style={styles.pageButtonText}>{i + 1}</Text>
-            </TouchableOpacity>
-          ))}
         </View>
       </View>
     </ScrollView>
@@ -222,69 +157,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '40%',
     alignItems: 'center',
-  },
-  commentsSection: {
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  commentsTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  commentForm: {
-    marginBottom: 20,
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
-    minHeight: 80,
-    marginBottom: 10,
-  },
-  submitButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  commentItem: {
-    backgroundColor: '#f8f8f8',
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  commentAuthor: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  commentContent: {
-    marginBottom: 5,
-  },
-  commentDate: {
-    fontSize: 12,
-    color: '#666',
-  },
-  pagination: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  pageButton: {
-    padding: 8,
-    marginHorizontal: 5,
-    borderRadius: 5,
-    backgroundColor: '#f0f0f0',
-    minWidth: 35,
-    alignItems: 'center',
-  },
-  activePageButton: {
-    backgroundColor: '#007AFF',
-  },
-  pageButtonText: {
-    color: '#333',
   },
   buttonText: {
     color: '#fff',

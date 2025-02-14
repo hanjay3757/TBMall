@@ -19,6 +19,12 @@ function MenuBar({ isLoggedIn, isAdmin }) {
         >
           <Text style={styles.buttonText}>물건 목록</Text>
         </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={() => navigation.navigate('BoardList')}
+        >
+          <Text style={styles.buttonText}>게시판</Text>
+        </TouchableOpacity>
         {isLoggedIn && (
           <TouchableOpacity 
             style={styles.menuButton}

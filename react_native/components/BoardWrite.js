@@ -21,25 +21,40 @@ function BoardWrite() {
 
   const handleSubmit = async () => {
     try {
-      const memberNo = await AsyncStorage.getItem('member_no');
-      if (!memberNo) {
-        Alert.alert('오류', '로그인이 필요합니다.');
+      // 필수 필드 검증
+      if (!boardData.board_title.trim() || !boardData.board_content.trim()) {
+        Alert.alert('오류', '제목과 내용을 모두 입력해주세요.');
         return;
       }
 
-      const submitData = {
-        ...boardData,
-        member_no: memberNo
-      };
+      // 사용자 정보 가져오기
+      const userInfoStr = await AsyncStorage.getItem('userInfo');
+      if (!userInfoStr) {
+        Alert.alert('오류', '로그인이 필요합니다.');
+        return;
+      }
+      const userInfo = JSON.parse(userInfoStr);
 
-      const response = await axios.post('/board/write', submitData, {
+      // URLSearchParams 사용
+      const params = new URLSearchParams();
+      params.append('member_no', userInfo.member_no.toString());
+      params.append('board_title', boardData.board_title);
+      params.append('board_content', boardData.board_content);
+
+      console.log('=== 게시글 작성 요청 ===');
+      console.log('전송 데이터:', Object.fromEntries(params));
+
+      const response = await axios.post('/board/write', params, {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        withCredentials: true
       });
 
+      console.log('서버 응답:', response.data);
+
       if (response.data.success) {
-        Alert.alert('성공', '게시글이 등록되었습니다.', [
+        Alert.alert('성공', response.data.message || '게시글이 등록되었습니다.', [
           { text: 'OK', onPress: () => navigation.navigate('BoardList') }
         ]);
       } else {
@@ -47,7 +62,8 @@ function BoardWrite() {
       }
     } catch (error) {
       console.error('게시글 작성 실패:', error);
-      Alert.alert('오류', '게시글 작성 중 오류가 발생했습니다.');
+      console.error('에러 응답:', error.response?.data);
+      Alert.alert('오류', error.response?.data?.message || '게시글 작성 중 오류가 발생했습니다.');
     }
   };
 
@@ -116,29 +132,29 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
     textAlign: 'center',
+    marginBottom: 20,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
     fontSize: 16,
-    marginBottom: 8,
+    marginBottom: 5,
     fontWeight: '500',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 5,
+    padding: 10,
     fontSize: 16,
   },
   textArea: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 5,
+    padding: 10,
     fontSize: 16,
     minHeight: 200,
   },
@@ -151,21 +167,21 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: '#007AFF',
     padding: 15,
-    borderRadius: 8,
+    borderRadius: 5,
     width: '40%',
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#666',
     padding: 15,
-    borderRadius: 8,
+    borderRadius: 5,
     width: '40%',
     alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });
 
