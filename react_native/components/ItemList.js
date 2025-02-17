@@ -8,11 +8,26 @@ import {
   Image,
   TextInput,
   Alert,
-  ActivityIndicator 
+  ActivityIndicator,
+  ScrollView,
+  Dimensions
 } from 'react-native';
 import axios from 'axios';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const StarRating = ({ rating }) => {
+  return (
+    <View style={styles.starContainer}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Text key={star} style={styles.star}>
+          {star <= Math.round(rating) ? '⭐' : '☆'}
+        </Text>
+      ))}
+      <Text style={styles.ratingText}>({rating.toFixed(1)})</Text>
+    </View>
+  );
+};
 
 function ItemList() {
   const navigation = useNavigation();
@@ -20,18 +35,12 @@ function ItemList() {
   const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(8);
-  const [totalPages, setTotalPages] = useState(0);
+  const [pageSize] = useState(1);
   const [userInfo, setUserInfo] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      console.log('ItemList 화면 포커스 - 데이터 새로고침');
-      loadItems(currentPage);
-    }, [currentPage])
-  );
+  const [totalPages, setTotalPages] = useState(1);
+  const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
     console.log('=== ItemList Props 확인 ===');
@@ -60,65 +69,71 @@ function ItemList() {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      // 화면이 포커스를 받을 때마다 아이템 목록을 새로고침
       loadItems(currentPage);
     });
 
     return unsubscribe;
-  }, [navigation, currentPage]);
+  }, [navigation]);
+
+  useEffect(() => {
+    loadItems(currentPage);
+  }, [currentPage]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('ItemList 화면 포커스 - 데이터 새로고침');
+      loadItems(currentPage);
+    }, [])  // 의존성 배열을 비워서 매번 새로고침되도록 함
+  );
 
   const loadItems = async (page) => {
     try {
       setLoading(true);
-      console.log('아이템 목록 로딩 시작 - 페이지:', page);
+      console.log('아이템 로딩 시작 - 페이지:', page);
       
-      const response = await axios.get('/stuff/item/list', {
+      const allItemsResponse = await axios.get('/stuff/item/list', {
         params: {
-          currentPage: page,
-          pageSize
+          currentPage: 1,
+          pageSize: 100,
+          timestamp: new Date().getTime()
         }
       });
 
-      if (response.data && response.data.items) {
-        // 중복 제거를 위해 item_id 기준으로 그룹화
-        const uniqueItems = response.data.items.reduce((acc, curr) => {
-          if (!acc[curr.item_id]) {
-            acc[curr.item_id] = curr;
-          }
-          return acc;
-        }, {});
+      // 중복 제거를 위해 Map 사용
+      const uniqueItemsMap = new Map();
+      allItemsResponse.data.items.forEach(item => {
+        // item_id를 키로 사용하여 가장 최신 항목만 유지
+        if (!uniqueItemsMap.has(item.item_id) || 
+            item.reg_date > uniqueItemsMap.get(item.item_id).reg_date) {
+          uniqueItemsMap.set(item.item_id, item);
+        }
+      });
 
-        // 재고가 0인 아이템은 장바구니에 있는 경우에만 표시
-        const cartResponse = await axios.get('/stuff/api/cart');
-        const cartItems = cartResponse.data || [];
+      // 중복이 제거된 활성 아이템만 필터링
+      const activeItems = Array.from(uniqueItemsMap.values())
+        .filter(item => item.item_delete === 0 && item.item_stock > 0)
+        .map(item => ({
+          ...item,
+          avg_review_score: item.avg_review_score || 0
+        }));
 
-        // 모든 아이템을 표시하되, 재고가 0이면서 장바구니에 없는 것만 삭제 처리
-        const activeItems = Object.values(uniqueItems).filter(item => {
-          if (item.item_stock === 0) {
-            // 장바구니에 있는지 확인
-            const isInCart = cartItems.some(cartItem => cartItem.itemId === item.item_id);
-            if (!isInCart && !item.item_delete) {
-              // 장바구니에 없고 아직 삭제되지 않은 경우에만 삭제 처리
-              const params = new URLSearchParams();
-              params.append('item_id', item.item_id);
-              axios.post('/stuff/item/delete', params, {
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                }
-              });
-              return false;
-            }
-            return isInCart; // 장바구니에 있으면 표시
-          }
-          return !item.item_delete; // 재고가 있고 삭제되지 않은 아이템은 표시
-        });
+      // 페이지네이션 계산
+      const calculatedTotalPages = Math.ceil(activeItems.length / pageSize);
+      setTotalPages(calculatedTotalPages);
+      
+      console.log('전체 활성 아이템:', activeItems.length);
+      console.log('계산된 전체 페이지:', calculatedTotalPages);
 
-        setItems(activeItems);
-        setTotalPages(response.data.totalPages || 1);
+      // 현재 페이지의 아이템 가져오기
+      const currentPageItem = activeItems[page - 1];
+      if (currentPageItem) {
+        setItems([currentPageItem]);
+        console.log('현재 페이지 아이템:', currentPageItem);
       } else {
-        console.log('아이템 데이터 없음');
         setItems([]);
-        setTotalPages(1);
+        if (page > 1 && calculatedTotalPages > 0) {
+          setCurrentPage(calculatedTotalPages);
+        }
       }
     } catch (error) {
       console.error('아이템 로딩 실패:', error);
@@ -129,6 +144,23 @@ function ItemList() {
     }
   };
 
+  const handleScroll = (event) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const pageWidth = screenWidth;
+    const newPage = Math.round(offsetX / pageWidth) + 1;
+    
+    console.log('Scroll Event:', {
+      offsetX,
+      currentPage,
+      totalPages,
+      newPage
+    });
+
+    if (newPage !== currentPage && newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
   const handleAddToCart = async (itemId) => {
     try {
       if (!userInfo) {
@@ -136,13 +168,17 @@ function ItemList() {
         return;
       }
 
-      // 현재 아이템 찾기
       const item = items.find(item => item.item_id === itemId);
       const quantity = quantities[itemId] || 1;
 
-      // 재고 체크
-      if (!item || item.item_stock < quantity) {
-        Alert.alert('오류', '재고가 부족합니다.');
+      if (!item) {
+        Alert.alert('오류', '상품을 찾을 수 없습니다.');
+        return;
+      }
+      
+      if (item.item_stock < quantity) {
+        setQuantities(prev => ({ ...prev, [itemId]: item.item_stock }));
+        Alert.alert('알림', `재고가 ${item.item_stock}개 남아있어 수량이 조정되었습니다.`);
         return;
       }
 
@@ -164,8 +200,6 @@ function ItemList() {
       if (response.data.status === 'success' || response.data.success) {
         Alert.alert('성공', response.data.message || '장바구니에 추가되었습니다.');
         setQuantities(prev => ({ ...prev, [itemId]: 1 }));
-        
-        // 장바구니 추가 성공 후 아이템 목록 새로고침
         await loadItems(currentPage);
       } else {
         throw new Error(response.data.message || '장바구니 추가에 실패했습니다.');
@@ -179,7 +213,6 @@ function ItemList() {
 
   const handleDeleteItem = async (itemId) => {
     try {
-      // 관리자 권한 체크
       if (!isAdmin) {
         Alert.alert('오류', '관리자만 삭제할 수 있습니다.');
         return;
@@ -190,7 +223,6 @@ function ItemList() {
         return;
       }
 
-      // 삭제 확인 다이얼로그
       Alert.alert(
         '물건 삭제',
         '정말 이 물건을 삭제하시겠습니까?',
@@ -202,7 +234,6 @@ function ItemList() {
           {
             text: '삭제',
             onPress: async () => {
-              // URLSearchParams 사용하여 form 데이터로 전송
               const params = new URLSearchParams();
               params.append('item_id', itemId);
 
@@ -213,7 +244,6 @@ function ItemList() {
                 }
               });
 
-              // 응답 체크 로직 수정
               if (response.data === 'redirect:/stuff/item/list' || 
                   response.status === 200 || 
                   response.data.success) {
@@ -234,7 +264,7 @@ function ItemList() {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.itemCard}>
+    <View style={[styles.itemCard, { width: screenWidth - 20 }]}>
       <TouchableOpacity 
         onPress={() => navigation.navigate('ItemDetail', { itemId: item.item_id })}
       >
@@ -250,6 +280,7 @@ function ItemList() {
           <Text style={styles.itemStock}>
             재고: {item.item_stock ? item.item_stock.toLocaleString() : '0'}개
           </Text>
+          <StarRating rating={item.avg_review_score || 0} />
         </View>
       </TouchableOpacity>
       
@@ -294,6 +325,46 @@ function ItemList() {
     </View>
   );
 
+  // 페이지 이동 버튼 컴포넌트 추가
+  const [startX, setStartX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleTouchStart = (event) => {
+    setStartX(event.nativeEvent.pageX);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (event) => {
+    if (!isDragging) return;
+
+    const currentX = event.nativeEvent.pageX;
+    const diff = startX - currentX;
+    if (Math.abs(diff) > 50) { // 50픽셀 이상 드래그했을 때
+      if (diff > 0) {
+        if (currentPage < totalPages) {
+          // 오른쪽으로 드래그하면 다음 페이지로 이동
+          setCurrentPage(prev => prev + 1);
+        } else {
+          // 마지막 페이지에서 오른쪽으로 드래그하면 첫 페이지로
+          setCurrentPage(1);
+        }
+      } else if (diff < 0) {
+        if (currentPage > 1) {
+          // 왼쪽으로 드래그하면 이전 페이지로 이동
+          setCurrentPage(prev => prev - 1);
+        } else {
+          // 첫 페이지에서 왼쪽으로 드래그하면 마지막 페이지로
+          setCurrentPage(totalPages);
+        }
+      }
+      setIsDragging(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -303,17 +374,22 @@ function ItemList() {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={items}
-        renderItem={renderItem}
-        keyExtractor={item => item.item_id.toString()}
-        numColumns={2}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>등록된 물건이 없습니다.</Text>
-        }
-      />
+    <View 
+      style={styles.container}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <View style={styles.content}>
+        {items.length > 0 ? (
+          renderItem({ item: items[0] })
+        ) : (
+          <Text style={styles.emptyText}>등록된 물품이 없습니다.</Text>
+        )}
+      </View>
+    {/*   <View style={styles.pageIndicator}>
+        <Text style={styles.pageText}>{currentPage} / {totalPages}</Text>
+      </View> */}
     </View>
   );
 }
@@ -333,27 +409,32 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     flex: 1,
-    margin: 5,
+    margin: 10,
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   itemImage: {
     width: '100%',
-    height: 150,
+    height: 450,
     borderRadius: 8,
     marginBottom: 8,
   },
   itemInfo: {
     padding: 8,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
   itemName: {
-    fontSize: 16,
+    fontSize: 26,
     fontWeight: '600',
     marginBottom: 4,
   },
@@ -421,6 +502,50 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 5,
     alignItems: 'center',
+  },
+  pageButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  pageButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  pageButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  pageButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  pageText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  starContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  star: {
+    fontSize: 16,
+    marginRight: 2,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 4,
   },
 });
 

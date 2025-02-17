@@ -39,6 +39,25 @@ const StarRatingDisplay = ({ rating }) => {
   );
 };
 
+const StarRatingAverage = ({ rating }) => {
+  return (
+    <View style={styles.starRatings}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Text
+          key={star}
+          style={[
+            styles.star,
+            star <= Math.round(rating) && styles.selectedStar
+          ]}
+        >
+          {star <= Math.round(rating) ? "⭐" : "☆"}
+        </Text>
+      ))}
+      <Text style={styles.ratingValue}>({rating.toFixed(1)})</Text>
+    </View>
+  );
+};
+
 function ItemDetail() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -81,7 +100,11 @@ function ItemDetail() {
       console.log('상품 상세 응답:', response.data);
 
       if (response.data && response.data.item) {
-        setItem(response.data.item);
+        const avgRating = response.data.item.avg_review_score || 0;
+        setItem({
+          ...response.data.item,
+          avgRating
+        });
       } else if (response.data) {
         setItem({
           ...response.data,
@@ -341,6 +364,10 @@ function ItemDetail() {
             재고: {item.item_stock ? item.item_stock.toLocaleString() : '0'}개
           </Text>
           <Text style={styles.description}>{item.item_description}</Text>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.averageRating}>평균 평점:</Text>
+            <StarRatingAverage rating={item.avgRating || 0} />
+          </View>
         </View>
 
         <View style={styles.commentsSection}>
@@ -532,6 +559,30 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: '#fff',
     fontSize: 12,
+  },
+  starRatings: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  star: {
+    fontSize: 20,
+    color: '#ddd',
+    marginRight: 2,
+  },
+  selectedStar: {
+    color: '#ffd700',
+  },
+  ratingValue: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#666',
+  },
+  averageRating: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  ratingContainer: {
+    marginTop: 15,
   },
 });
 
