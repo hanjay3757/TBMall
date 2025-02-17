@@ -41,5 +41,8 @@ public interface BoardService {
 	public void insertReviewPoint(ReviewPointDto reviewpointDto);
 	
 	public int getReviewPointList(Long item_id);
+	
+//	public double getAvgReviewPoint();
+	
 
 }

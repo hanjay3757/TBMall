@@ -97,7 +97,10 @@ function ItemList({ isLoggedIn, isAdmin }) {
       });
 
       // 필터링된 아이템 목록과 전체 페이지 수를 state에 저장
-      setItems(activeItems);
+      setItems(activeItems.map(item => ({
+        ...item,
+        avgReviewScore: item.avg_review_score || 0
+      })));
       setTotalPage(totalPage);
       
       const initialQuantities = {};
@@ -121,6 +124,60 @@ function ItemList({ isLoggedIn, isAdmin }) {
     // 새로운 페이지의 아이템 목록 로드
     loadItems(page);
   };
+
+  const StarRating = ({rating, setRating}) => {
+    return (
+      <div className="star-ratings">
+        {[1, 2, 3, 4, 5].map((star) => {
+          let starClass = "star";
+          const starChar = star <= rating ? "⭐" : "☆";
+          
+          if (star <= rating) {
+            starClass += " selected";
+          } else {
+            starClass += " exceeded";
+          }
+          
+          return (
+            <span
+              key={star}
+              className={starClass}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => {
+                const stars = document.querySelectorAll('.star');
+                stars.forEach((s, index) => {
+                  if (index < star) {
+                    s.classList.add('hover');
+                  }
+                });
+              }}
+              onMouseLeave={() => {
+                const stars = document.querySelectorAll('.star');
+                stars.forEach(s => s.classList.remove('hover'));
+              }}
+            >
+              {starChar}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const StarRatingDisplay = ({ rating }) => {
+
+    console.log("별점 확인:",rating);
+
+    return (
+      
+      <div className="star-rating" style={{ border: "1px solid red" }}>
+        {Array(rating).fill("⭐").join("")} {/* 별을 rating 개수만큼 출력 */}
+  
+          
+      </div>
+    );
+  };
+
 
   const refreshList = () => {
     setRefreshKey(prevKey => prevKey + 1);
@@ -309,6 +366,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
               <h3>{item.item_name}</h3>
               <p>가격: {item.item_price.toLocaleString()}원</p>
               <p>재고: {item.item_stock.toLocaleString()}개</p>
+              <p>평점: <StarRating rating={item.avgReviewScore}/></p>
               <p className="item-description">{item.item_description}</p>
               
               <div className="item-controls">

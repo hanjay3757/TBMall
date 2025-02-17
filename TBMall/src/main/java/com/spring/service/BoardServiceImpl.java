@@ -132,5 +132,10 @@ public class BoardServiceImpl implements BoardService {
 	public int getReviewPointList(Long item_id) {
 		return mapper.getReviewPointList(item_id);
 	}
+	
+//	@Override
+//	public double getAvgReviewPoint() {
+//		return mapper.getAvgReviewPoint();
+//	}
 
 }

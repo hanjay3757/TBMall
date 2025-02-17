@@ -16,4 +16,8 @@ public class StuffDto {
     private int member_delete;
     private int item_delete;
     private Date delete_date;
+    
+    private int total_review_count;
+    private int total_review_score;
+    private double avg_review_score;
 } 

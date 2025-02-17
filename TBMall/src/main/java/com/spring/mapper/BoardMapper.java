@@ -44,4 +44,7 @@ public interface BoardMapper {
     public void insertReviewPoint(ReviewPointDto reviewpointDto);
     
     public int getReviewPointList(@Param("item_id") Long item_id); //별점 내용 가져오기
+
+//    public double getAvgReviewPoint();
+
 }

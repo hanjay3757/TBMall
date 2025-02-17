@@ -518,6 +518,7 @@ function ItemDetail() {
           <p className="prices">가격: {(item?.item_price || 0).toLocaleString()}원</p>
           <p className="stocks">재고: {(item?.item_stock || 0).toLocaleString()}개</p>
           <p className="descriptions">{item?.item_description}</p>
+          <p>평균 추천:<StarRating rating={item.avg_review_score} /></p>
         </div>
       </div>
 

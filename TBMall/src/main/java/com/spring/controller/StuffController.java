@@ -29,6 +29,7 @@ import com.spring.config.GlobalConfig;
 import com.spring.dto.CartDto;
 import com.spring.dto.StaffDto;
 import com.spring.dto.StuffDto;
+import com.spring.service.BoardService;
 import com.spring.service.PointService;
 import com.spring.service.StaffService;
 import com.spring.service.StuffService;
@@ -50,6 +51,9 @@ public class StuffController {
 
 	@Autowired
 	private PointService pointservice;
+	
+	@Autowired
+	private BoardService boardservice;
 
 	private static final String LOGIN_STAFF = "loginStaff";
 
@@ -130,13 +134,20 @@ public class StuffController {
 			@RequestParam(defaultValue = "3") int pageSize) {
 		// 전체 등록된 물건 수 가져오기
 		int totalCount = service.getCountItemList();
+		
+//		//등록된 물건들의 별점 정보 가져오기
+//		double avgStar = boardservice.getAvgReviewPoint();
+		
 
 		// 총 페이지 수 계산
 		int totalPage = (int) Math.ceil((double) totalCount / pageSize);
 
 		// 현재 페이지에 해당하는 물건 목록 가져오기
 		List<StuffDto> stuffs = service.getItemList(currentPage, pageSize);
-
+		
+		//현재 페이지에 해당하는 물건의 별점 정보 가겨오기
+		
+		
 		// 클라이언트에 반환할 데이터를 Map 에 담기
 		Map<String, Object> response = new HashMap<>();
 		response.put("items", stuffs);
