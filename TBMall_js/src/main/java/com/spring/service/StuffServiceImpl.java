@@ -21,19 +21,19 @@ public class StuffServiceImpl implements StuffService {
 	private StuffMapper mapper;
 
 	@Override
-	public List<StuffDto> getItemList(int currentPage , int pageSize) {
+	public List<StuffDto> getItemList(int currentPage, int pageSize) {
 		log.info("물건 목록 조회...");
-		
-		//페이징 계산
-		int offset = (currentPage-1)*pageSize;
-		
-		PagingDto pagingDto  = new PagingDto(pageSize, offset);
-		
+
+		// 페이징 계산
+		int offset = (currentPage - 1) * pageSize;
+
+		PagingDto pagingDto = new PagingDto(pageSize, offset);
+
 		List<StuffDto> stuff = mapper.getItemList(pagingDto);
-		
+
 		return stuff;
 	}
-	
+
 	@Override
 	public int getCountItemList() {
 		int totalCount = mapper.getCountItemList();
@@ -136,6 +136,11 @@ public class StuffServiceImpl implements StuffService {
 	public void restoreItem(Long itemId) {
 		log.info("물건 복구: " + itemId);
 		mapper.restoreItem(itemId);
+	}
+
+	@Override
+	public int getActiveItemCount() {
+		return mapper.getActiveItemCount();
 	}
 
 	@Override

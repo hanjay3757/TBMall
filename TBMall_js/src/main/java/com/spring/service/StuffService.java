@@ -34,4 +34,6 @@ public interface StuffService {
 	void processCheckout(Long userId);
 
 	void updateCartItemQuantity(Long cartId, int quantity);
+
+	int getActiveItemCount();
 }

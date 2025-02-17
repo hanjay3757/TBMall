@@ -132,6 +132,7 @@
     	AND c.member_no = r.member_no  
 		WHERE c.item_id = #{item_id};
     </select>
-	
+    
+    
 
 </mapper>

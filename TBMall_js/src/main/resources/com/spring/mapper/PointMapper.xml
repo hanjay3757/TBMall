@@ -42,7 +42,7 @@
 			select m.position_no
 			from tbmall_member m
 			where m.member_no =#{member_no}
-		);
+		)
 	</update>
 	
 	

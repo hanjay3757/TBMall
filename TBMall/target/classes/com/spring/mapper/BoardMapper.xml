@@ -43,23 +43,21 @@
 	</select>
 	
 	
-	<!-- 모든 댓글 리스트 가져오기 (보고 있는 글 번호)-->
-	 <select id="getCommentList" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.CommentDto">
+	<!-- 모든 댓글 리스트 가져오기 -->
+	<select id="getCommentList" parameterType="com.spring.dto.PagingDto" resultType="com.spring.dto.CommentDto">
 		SELECT 
-        c.comment_no,
-        c.item_id,
-        c.member_no,
-        c.comment_content,
-        c.comment_writedate,
-        r.reviewpoint_amount 
-    FROM tbmall_comment c
-    INNER JOIN tbmall_stuff b 
-        ON c.item_id = b.item_id
-    LEFT JOIN tbmall_reviewpoint r  
-        ON c.comment_no = r.comment_no 
-        AND c.member_no = r.member_no  
-    WHERE c.item_id = #{item_id}  
-    LIMIT #{pagingDto.limit} OFFSET #{pagingDto.offset};
+			c.comment_no,
+			c.item_id,
+			c.member_no,
+			c.comment_content,
+			c.comment_writedate,
+			c.reviewpoint_amount 
+		FROM tbmall_comment c
+		INNER JOIN tbmall_stuff b 
+			ON c.item_id = b.item_id
+		WHERE c.item_id = #{item_id}  
+		ORDER BY c.comment_writedate DESC
+		LIMIT #{pagingDto.limit} OFFSET #{pagingDto.offset}
 	</select> 
 	<!--댓글 작성  -->
 	 <insert id="writeComment" parameterType="com.spring.dto.CommentDto" useGeneratedKeys="true" keyProperty="comment_no">
@@ -67,11 +65,13 @@
 			(item_id,
 			member_no,
 			comment_content,
+            reviewpoint_amount,
 			comment_writedate)
 			VALUES
 			(#{item_id},
 			#{member_no},
 			#{comment_content},
+			#{reviewpoint_amount},
 			CURRENT_TIMESTAMP
 			)
 	</insert> 
@@ -134,5 +134,34 @@
     </select>
     
     
+    <!-- 상품별 평균 별점과 리뷰 수 조회 -->
+    <select id="getItemRatingSummary" parameterType="Long" resultType="java.util.Map">
+        SELECT 
+            c.item_id,
+            COUNT(*) as review_count,
+            COALESCE(ROUND(AVG(r.reviewpoint_amount), 1), 0) as avg_rating,
+            SUM(CASE WHEN r.reviewpoint_amount = 5 THEN 1 ELSE 0 END) as five_star,
+            SUM(CASE WHEN r.reviewpoint_amount = 4 THEN 1 ELSE 0 END) as four_star,
+            SUM(CASE WHEN r.reviewpoint_amount = 3 THEN 1 ELSE 0 END) as three_star,
+            SUM(CASE WHEN r.reviewpoint_amount = 2 THEN 1 ELSE 0 END) as two_star,
+            SUM(CASE WHEN r.reviewpoint_amount = 1 THEN 1 ELSE 0 END) as one_star
+        FROM tbmall_comment c
+        LEFT JOIN tbmall_reviewpoint r 
+            ON c.comment_no = r.comment_no 
+            AND c.member_no = r.member_no
+        WHERE c.item_id = #{item_id}
+        GROUP BY c.item_id
+    </select>
+
+    <!-- 단순 평균 별점 조회 -->
+    <select id="getAverageRating" parameterType="Long" resultType="Double">
+        SELECT 
+            COALESCE(ROUND(AVG(r.reviewpoint_amount), 1), 0) as avg_rating
+        FROM tbmall_comment c
+        LEFT JOIN tbmall_reviewpoint r 
+            ON c.comment_no = r.comment_no 
+            AND c.member_no = r.member_no
+        WHERE c.item_id = #{item_id}
+    </select>
 
 </mapper>
