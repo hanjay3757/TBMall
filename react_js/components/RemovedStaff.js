@@ -39,7 +39,11 @@ function RemovedStaff() {
   // 현재 직원 목록 불러오기 함수 수정
   const fetchActiveStaff = async () => {
     try {
-      const response = await axios.post(`${SERVER_URL}/mvc/staff/list`, {}, {
+      // pageSize를 큰 숫자로 설정하여 모든 직원 목록을 가져옴
+      const response = await axios.post(`${SERVER_URL}/mvc/staff/list`, {
+        currentPage: 1,
+        pageSize: 1000  // 충분히 큰 숫자로 설정
+      }, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
@@ -47,16 +51,27 @@ function RemovedStaff() {
         }
       });
       
-      // 응답 데이터 구조 확인 및 처리
-      if (response.data && Array.isArray(response.data.staff)) {
-        setActiveStaffList(response.data.staff);
-      } else {
-        console.error('예상치 못한 응답 데이터 형식:', response.data);
-        setActiveStaffList([]); // 빈 배열로 설정
+      if (response.data) {
+        let staffList = [];
+        
+        // 응답 데이터 형식에 따른 처리
+        if (Array.isArray(response.data)) {
+          staffList = response.data;
+        } else if (response.data.staff && Array.isArray(response.data.staff)) {
+          staffList = response.data.staff;
+        } else if (response.data.list && Array.isArray(response.data.list)) {
+          staffList = response.data.list;
+        }
+
+        // member_delete가 0인 직원만 필터링
+        const activeStaff = staffList.filter(staff => staff.member_delete === 0);
+        setActiveStaffList(activeStaff);
+        
+        console.log('현재 직원 목록 업데이트됨:', activeStaff); // 데이터 확인용 로그
       }
     } catch (error) {
       console.error('현재 직원 목록을 불러오는데 실패했습니다:', error);
-      setActiveStaffList([]); // 에러 시 빈 배열로 설정
+      setActiveStaffList([]);
     }
   };
 
@@ -73,10 +88,10 @@ function RemovedStaff() {
       });
 
       if (response.data.success) {
-        // 복구 성공 시 양쪽 목록 모두 새로고침
-        fetchRemovedStaff();
-        fetchActiveStaff();
         alert('직원이 복구되었습니다.');
+        // 복구 후 순차적으로 목록 새로고침
+        await fetchRemovedStaff(); // 먼저 삭제된 목록 업데이트
+        await fetchActiveStaff();  // 그 다음 현재 목록 업데이트
       } else {
         throw new Error(response.data.message || '복구에 실패했습니다.');
       }
@@ -102,7 +117,11 @@ function RemovedStaff() {
 
         if (response.data === 'redirect:/staff/list' || response.status === 200) {
           alert('직원이 삭제되었습니다.');
-          fetchActiveStaff(); // 목록 새로고침
+          // 삭제 후 즉시 양쪽 목록 새로고침
+          await Promise.all([
+            fetchRemovedStaff(),
+            fetchActiveStaff()
+          ]);
         } else {
           throw new Error('삭제에 실패했습니다.');
         }
@@ -123,49 +142,7 @@ function RemovedStaff() {
       {/* 현재 직원 목록 */}
       <div className="staff-section">
         <h2>현재 직원 목록</h2>
-        <table className="staff-table">
-          <thead>
-            <tr>
-              <th>직원번호</th>
-              <th>아이디</th>
-              <th>이름</th>
-              <th>관리자 여부</th>
-              <th>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(activeStaffList) && activeStaffList.map(staff => (
-              <tr key={staff.member_no}>
-                <td>{staff.member_no}</td>
-                <td>{staff.member_id}</td>
-                <td>{staff.member_nick}</td>
-                <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
-                <td>
-                  <button 
-                    onClick={() => handleEdit(staff.member_no)}
-                    className="edit-button"
-                  >
-                    수정
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(staff.member_no)}
-                    className="delete-button"
-                  >
-                    삭제
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* 삭제된 직원 목록 */}
-      <div className="staff-section">
-        <h2>삭제된 직원 목록</h2>
-        {error ? (
-          <p className="error-message">{error}</p>
-        ) : (
+        <div className="table-container">
           <table className="staff-table">
             <thead>
               <tr>
@@ -177,7 +154,7 @@ function RemovedStaff() {
               </tr>
             </thead>
             <tbody>
-              {removedStaffList.map(staff => (
+              {Array.isArray(activeStaffList) && activeStaffList.map(staff => (
                 <tr key={staff.member_no}>
                   <td>{staff.member_no}</td>
                   <td>{staff.member_id}</td>
@@ -185,23 +162,69 @@ function RemovedStaff() {
                   <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
                   <td>
                     <button 
-                      onClick={() => handleRestore(staff.member_no)}
-                      className="restore-button"
-                    >
-                      복구
-                    </button>
-                    <button 
                       onClick={() => handleEdit(staff.member_no)}
                       className="edit-button"
                     >
                       수정
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(staff.member_no)}
+                      className="delete-button"
+                    >
+                      삭제
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        )}
+        </div>
+      </div>
+
+      {/* 삭제된 직원 목록 */}
+      <div className="staff-section">
+        <h2>삭제된 직원 목록</h2>
+        <div className="table-container">
+          {error ? (
+            <p className="error-message">{error}</p>
+          ) : (
+            <table className="staff-table">
+              <thead>
+                <tr>
+                  <th>직원번호</th>
+                  <th>아이디</th>
+                  <th>이름</th>
+                  <th>관리자 여부</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {removedStaffList.map(staff => (
+                  <tr key={staff.member_no}>
+                    <td>{staff.member_no}</td>
+                    <td>{staff.member_id}</td>
+                    <td>{staff.member_nick}</td>
+                    <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+                    <td>
+                      <button 
+                        onClick={() => handleRestore(staff.member_no)}
+                        className="restore-button"
+                      >
+                        복구
+                      </button>
+                      <button 
+                        onClick={() => handleEdit(staff.member_no)}
+                        className="edit-button"
+                      >
+                        수정
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );

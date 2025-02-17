@@ -125,3 +125,59 @@
 .staff-table td:last-child {
   white-space: nowrap;
 }
+
+/* 테이블 컨테이너에 스크롤 적용 */
+.table-container {
+  max-height: 400px;  /* 테이블의 최대 높이 설정 */
+  overflow-y: auto;   /* 세로 스크롤만 표시 */
+  border-radius: 8px;
+  border: 1px solid #eee;
+  margin-bottom: 20px;
+}
+
+/* 테이블 헤더 고정 */
+.staff-table thead {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 스크롤바 스타일링 */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 테이블 내용 스타일 */
+.staff-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.staff-table th,
+.staff-table td {
+  padding: 15px 20px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* 마지막 행의 border 제거 */
+.staff-table tbody tr:last-child td {
+  border-bottom: none;
+}

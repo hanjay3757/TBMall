@@ -387,9 +387,6 @@
   font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
-
-
-
 .loading-spinner {
   display: flex;
   justify-content: center;
@@ -412,4 +409,35 @@
   border: 5px solid #f5f6fa;
   border-top: 5px solid #3498db;
   animation: spin 0.8s linear infinite;
+}
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 8px;
+}
+
+.star-rating .star {
+  color: #ffd700;
+  font-size: 16px;
+}
+
+/* 반개 별 스타일 */
+.star-rating .star:nth-child(n+1):nth-child(-n+5) {
+  position: relative;
+  display: inline-block;
+}
+
+/* 반개 별(★)의 색상 설정 */
+.star-rating .star:nth-child(n+1):nth-child(-n+5):contains('★') {
+  background: linear-gradient(90deg, #ffd700 50%, #e0e0e0 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.star-rating .rating-number {
+  margin-left: 4px;
+  color: #666;
+  font-size: 14px;
 }

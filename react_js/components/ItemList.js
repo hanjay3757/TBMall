@@ -34,80 +34,64 @@ function ItemList({ isLoggedIn, isAdmin }) {
   const loadItems = async (page) => {
     try {
       setLoading(true);
-      // 서버에 현재 페이지와 페이지 크기를 파라미터로 전달하여 해당 페이지의 아이템만 요청
       const response = await axios.get('/stuff/item/list', {
         params: {
           currentPage: page,
           pageSize
         },
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+        withCredentials: true
       });
 
-      // 서버로부터 받은 아이템 데이터와 전체 페이지 수를 추출
       const {items: itemsToProcess, totalPage} = response.data;
-      console.log('서버에서 받은 아이템 데이터:', itemsToProcess);
 
-      // 재고가 0인 아이템은 장바구니에 있는지 확인 후 삭제 처리
-      for (const item of itemsToProcess) {
-        if (item.item_stock === 0 && !item.item_delete) {
-          try {
-            // GET 메서드로 장바구니 조회
-            const cartResponse = await axios.get('/stuff/api/cart', {
-              withCredentials: true,
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              }
-            });
+      // 각 아이템별로 댓글과 평점 정보를 가져오기
+      const itemsWithRatings = await Promise.all(itemsToProcess.map(async (item) => {
+        try {
+          // 각 아이템의 댓글 목록 조회
+          const commentResponse = await axios.get(`/board/commentlist`, {
+            params: {
+              item_id: item.item_id,
+              currentComment: 1,
+              cpageSize: 1000
+            },
+            withCredentials: true
+          });
+
+          if (commentResponse.data && Array.isArray(commentResponse.data.comments)) {
+            const validRatings = commentResponse.data.comments
+              .filter(comment => comment.reviewpoint_amount > 0)
+              .map(comment => Number(comment.reviewpoint_amount));
             
-            if (cartResponse.data && Array.isArray(cartResponse.data)) {
-              const isInCart = cartResponse.data.some(cartItem => cartItem.itemId === item.item_id);
-              
-              if (!isInCart) {
-                const params = new URLSearchParams();
-                params.append('item_id', item.item_id);
-                
-                await axios.post('/stuff/item/delete', params, {
-                  withCredentials: true,
-                  headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                  }
-                });
-              }
-            }
-          } catch (error) {
-            console.error('아이템 처리 중 오류:', error);
+            const totalRating = validRatings.reduce((sum, rating) => sum + rating, 0);
+            const avgRating = validRatings.length > 0 ? totalRating / validRatings.length : 0;
+
+            return {
+              ...item,
+              avg_review_score: Number(avgRating.toFixed(1))
+            };
           }
+          return item;
+        } catch (error) {
+          console.error(`Error fetching ratings for item ${item.item_id}:`, error);
+          return item;
         }
-      }
-      
-      // 중복 제거 및 활성 아이템 필터링
-      const uniqueItems = Array.from(new Map(
-        itemsToProcess.map(item => [item.item_id, item])
-      ).values());
+      }));
 
-      // 활성 아이템 필터링 - 삭제되지 않고 재고가 있는 아이템만 표시
-      const activeItems = uniqueItems.filter(item => {
-        // 삭제되지 않고 재고가 있는 아이템만 표시
-        return !item.item_delete && item.item_stock > 0;
-      });
+      // item_delete가 1인 아이템 제외하고 중복 제거
+      const filteredItems = itemsWithRatings.filter(item => item.item_delete !== 1);
+      const uniqueItems = Array.from(
+        new Map(filteredItems.map(item => [item.item_id, item])).values()
+      );
 
-      // 필터링된 아이템 목록과 전체 페이지 수를 state에 저장
-      setItems(activeItems.map(item => ({
-        ...item,
-        avgReviewScore: item.avg_review_score || 0
-      })));
+      setItems(uniqueItems);
       setTotalPage(totalPage);
       
       const initialQuantities = {};
-      activeItems.forEach(item => {
+      uniqueItems.forEach(item => {
         initialQuantities[item.item_id] = 1;
       });
       setQuantities(initialQuantities);
+
     } catch (error) {
       console.error('아이템 목록 로딩 실패:', error);
     } finally {
@@ -165,19 +149,27 @@ function ItemList({ isLoggedIn, isAdmin }) {
   };
 
   const StarRatingDisplay = ({ rating }) => {
-
-    console.log("별점 확인:",rating);
-
+    // rating이 숫자인지 확인하고 기본값 0으로 설정
+    const numericRating = Number(rating) || 0;
+    
     return (
-      
-      <div className="star-rating" style={{ border: "1px solid red" }}>
-        {Array(rating).fill("⭐").join("")} {/* 별을 rating 개수만큼 출력 */}
-  
-          
+      <div className="star-rating">
+        {[1, 2, 3, 4, 5].map((star) => {
+          if (star <= Math.floor(numericRating)) {
+            // 완전한 별
+            return <span key={star} className="star">⭐</span>;
+          } else if (star === Math.ceil(numericRating) && numericRating % 1 !== 0) {
+            // 반개 별 (소수점이 있는 경우)
+            return <span key={star} className="star">★</span>;
+          } else {
+            // 빈 별
+            return <span key={star} className="star">☆</span>;
+          }
+        })}
+        <span className="rating-number">({numericRating.toFixed(1)})</span>
       </div>
     );
   };
-
 
   const refreshList = () => {
     setRefreshKey(prevKey => prevKey + 1);
@@ -304,8 +296,8 @@ function ItemList({ isLoggedIn, isAdmin }) {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotateX = -((y - centerY) / 10) * 0.5;
-    const rotateY = ((x - centerX) / 10) * 0.5;
+    const rotateX = -((y - centerY) / 10) * 0.15;
+    const rotateY = ((x - centerX) / 10) * 0.15;
 
     setRotations(prev => ({
       ...prev,
@@ -333,9 +325,9 @@ function ItemList({ isLoggedIn, isAdmin }) {
   return (
     <div className="item-list">
       <div className="items-container">
-        {items.map(item => (
+        {items.map((item, index) => (
           <div
-            key={item.item_id}
+            key={`${item.item_id}_${index}`}
             ref={el => cardRefs.current[item.item_id] = el}
             className="item-card"
             onClick={() => navigate(`/stuff/item/${item.item_id}`)}
@@ -366,7 +358,9 @@ function ItemList({ isLoggedIn, isAdmin }) {
               <h3>{item.item_name}</h3>
               <p>가격: {item.item_price.toLocaleString()}원</p>
               <p>재고: {item.item_stock.toLocaleString()}개</p>
-              <p>평점: <StarRating rating={item.avgReviewScore}/></p>
+              <div className="rating-container">
+                평점: <StarRatingDisplay rating={item.avg_review_score} />
+              </div>
               <p className="item-description">{item.item_description}</p>
               
               <div className="item-controls">

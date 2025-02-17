@@ -26,6 +26,7 @@ function ItemDetail() {
   const [userInfo, setUserInfo] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
 
   const StarRating = ({rating, setRating}) => {
     return (
@@ -67,23 +68,30 @@ function ItemDetail() {
   };
 
   const StarRatingDisplay = ({ rating }) => {
-
-    console.log("별점 확인:",rating);
-
+    // rating이 숫자인지 확인하고 기본값 0으로 설정
+    const numericRating = Number(rating) || 0;
+    
     return (
-      
-      <div className="star-rating" style={{ border: "1px solid red" }}>
-        {Array(rating).fill("⭐").join("")} {/* 별을 rating 개수만큼 출력 */}
-  
-          
+      <div className="star-rating">
+        {[1, 2, 3, 4, 5].map((star) => {
+          if (star <= Math.floor(numericRating)) {
+            // 완전한 별
+            return <span key={star} className="star">⭐</span>;
+          } else if (star === Math.ceil(numericRating) && numericRating % 1 !== 0) {
+            // 반개 별 (소수점이 있는 경우)
+            return <span key={star} className="star">★</span>;
+          } else {
+            // 빈 별
+            return <span key={star} className="star">☆</span>;
+          }
+        })}
+        <span className="rating-number">({numericRating.toFixed(1)})</span>
       </div>
     );
   };
 
-  const loadComments = async (itemId) => {
+  const getCommentList = async () => {
     try {
-      console.log('댓글 목록 요청 - item_id:', itemId);
-      
       const response = await axios.get(`${SERVER_URL}/mvc/board/commentlist`, {
         params: {
           item_id: itemId,
@@ -93,31 +101,26 @@ function ItemDetail() {
         withCredentials: true
       });
 
-      console.log('댓글 목록 응답:', response.data);
-
       if (response.data && Array.isArray(response.data.comments)) {
-        // 중복 제거를 위해 Set 객체 사용
+        const updatedComments = response.data.comments.map(comment => ({
+          ...comment,
+          reviewpoint_amount: Number(comment.reviewpoint_amount || 0)
+        }));
+
         const uniqueComments = Array.from(
-          new Map(response.data.comments.map(comment => [comment.comment_no, comment])).values()
+          new Map(updatedComments.map(comment => [comment.comment_no, comment])).values()
         );
-        
+
         setComments(uniqueComments);
-        // ⭐ 상태 업데이트 후 값을 즉시 확인
-        setTimeout(() => {
-          console.log("🔥 상태 업데이트 후 comments:", uniqueComments);
-        }, 100);
         
-        setTotalComment(response.data.totalComment || 0);
-        setCurrentComment(response.data.currentComment || 1);
-      } else {
-        console.warn('댓글 데이터가 없거나 형식이 잘못되었습니다:', response.data);
-        setComments([]);
-        setTotalComment(0);
+        // 평균 별점 계산
+        const validRatings = uniqueComments.filter(comment => comment.reviewpoint_amount > 0);
+        const totalRating = validRatings.reduce((sum, comment) => sum + comment.reviewpoint_amount, 0);
+        const avgRating = validRatings.length > 0 ? totalRating / validRatings.length : 0;
+        setAverageRating(Number(avgRating.toFixed(1)));
       }
     } catch (error) {
-      console.error('댓글 목록을 불러오는 중 오류 발생:', error);
-      setComments([]);
-      setTotalComment(0);
+      console.error('댓글 목록을 불러오는데 실패했습니다:', error);
     }
   };
 
@@ -194,7 +197,7 @@ function ItemDetail() {
         await checkLoginStatus();
         await loadItemDetail();
         if (itemId) {
-          await loadComments(itemId);
+          await getCommentList();
         }
       } catch (error) {
         console.error('데이터 로드 중 오류 발생:', error);
@@ -229,7 +232,7 @@ function ItemDetail() {
 
       if (response.data.success) {
         alert(response.data.message);
-        await loadComments(itemId);
+        await getCommentList();
       } else {
         throw new Error(response.data.message);
       }
@@ -248,7 +251,7 @@ function ItemDetail() {
       }
       
       setCurrentComment(page);
-      await loadComments(itemId); // 새로운 페이지의 댓글 로드
+      await getCommentList(); // 새로운 페이지의 댓글 로드
     } catch (error) {
       console.error('페이지 변경 중 오류 발생:', error);
     }
@@ -424,7 +427,7 @@ function ItemDetail() {
           console.log('댓글 작성 성공');
           setLocalComment('');
           setRating(0);
-          await loadComments(itemId);
+          await getCommentList();
           alert('댓글이 등록되었습니다.');
         } else {
           console.log('댓글 작성 실패:', response.data.message);
@@ -518,7 +521,7 @@ function ItemDetail() {
           <p className="prices">가격: {(item?.item_price || 0).toLocaleString()}원</p>
           <p className="stocks">재고: {(item?.item_stock || 0).toLocaleString()}개</p>
           <p className="descriptions">{item?.item_description}</p>
-          <p>평균 추천:<StarRating rating={item.avg_review_score} /></p>
+          <p>평균 추천: <StarRatingDisplay rating={averageRating} /></p>
         </div>
       </div>
 
