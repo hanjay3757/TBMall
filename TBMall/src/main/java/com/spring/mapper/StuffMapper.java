@@ -44,4 +44,6 @@ public interface StuffMapper {
 	public void updateCartItemQuantity(@Param("cartId") Long cartId, @Param("quantity") int quantity);
 
 	public void clearCart(@Param("member_no") Long memberNo);
+
+	public int getActiveItemCount();
 }

@@ -1,6 +1,5 @@
 package com.spring.controller;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class StuffController {
 
 	@Autowired
 	private StaffService staffService;
-	
+
 	@Autowired
 	private PointService pointservice;
 
@@ -61,34 +60,57 @@ public class StuffController {
 
 	// 장바구니 체크아웃 API
 	// 장바구니 체크아웃 API
-		@PostMapping("/api/cart/checkout")
-		public ResponseEntity<?> checkout(@RequestBody Map<String, Object> requestData) {
-		    List<Map<String, Object>> itemList = (List<Map<String, Object>>) requestData.get("itemIds");
-		    Long memberNo = Long.valueOf(requestData.get("member_no").toString());
+	@PostMapping("/api/cart/checkout")
+	public ResponseEntity<?> checkout(@RequestBody Map<String, Object> requestData) {
+		List<Map<String, Object>> itemList = (List<Map<String, Object>>) requestData.get("itemIds");
+		Long memberNo = Long.valueOf(requestData.get("member_no").toString());
 
-		    if (memberNo == null || itemList == null || itemList.isEmpty()) {
-		        return ResponseEntity.badRequest().body("잘못된 요청입니다.");
-		    }
-
-		    System.out.println("📦 주문 아이템: " + itemList);
-		    System.out.println("👤 주문한 사용자: " + memberNo);
-		    
-		    try {
-		        for (Map<String, Object> item : itemList) {
-		            Long itemId = Long.valueOf(item.get("itemId").toString());  // itemId 추출
-		            Integer quantity = Integer.valueOf(item.get("quantity").toString());  // quantity 추출
-		            
-		            // PointService의 메서드를 호출하여 포인트 계산 또는 적립
-		            pointservice.pointUse( itemId,memberNo,quantity);  // PointService 메서드 예시
-		        }
-
-		        return ResponseEntity.ok().body(Map.of("status", "success", "message", "주문 완료"));
-		    } catch (Exception e) {
-		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
-		    }
-		    
-
+		if (memberNo == null || itemList == null || itemList.isEmpty()) {
+			return ResponseEntity.badRequest().body("잘못된 요청입니다.");
 		}
+
+		System.out.println("📦 주문 아이템: " + itemList);
+		System.out.println("👤 주문한 사용자: " + memberNo);
+
+		try {
+			// 모든 아이템의 재고 체크를 먼저 수행
+			for (Map<String, Object> item : itemList) {
+				Long itemId = Long.valueOf(item.get("itemId").toString());
+				Integer quantity = Integer.valueOf(item.get("quantity").toString());
+
+				StuffDto stuffDto = service.getItem(itemId);
+				if (stuffDto == null) {
+					return ResponseEntity.badRequest().body("상품을 찾을 수 없습니다: " + itemId);
+				}
+
+				// 장바구니에 있는 아이템은 재고가 0이어도 구매 가능하도록 수정
+				if (stuffDto.getItem_stock() < 0) { // 0 이하일 때만 체크
+					return ResponseEntity.badRequest().body("재고가 부족합니다: " + stuffDto.getItem_name());
+				}
+			}
+
+			// 재고 체크가 통과하면 실제 주문 처리 수행
+			for (Map<String, Object> item : itemList) {
+				Long itemId = Long.valueOf(item.get("itemId").toString());
+				Integer quantity = Integer.valueOf(item.get("quantity").toString());
+
+				StuffDto stuffDto = service.getItem(itemId);
+
+				// 재고 감소
+				stuffDto.setItem_stock(stuffDto.getItem_stock() - quantity);
+				service.updateItem(stuffDto);
+
+				// 포인트 적립
+				pointservice.pointUse(itemId, memberNo, quantity);
+			}
+
+			return ResponseEntity.ok().body(Map.of("status", "success", "message", "주문 완료"));
+		} catch (Exception e) {
+			e.printStackTrace(); // 로그 확인을 위해 추가
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "message", e.getMessage()));
+		}
+	}
 
 	@PostMapping("/cart/remove")
 	public String removeFromCart(@RequestParam("cartId") Long cartId, HttpSession session) {
@@ -359,6 +381,7 @@ public class StuffController {
 		}
 		return response;
 	}
+
 	@GetMapping("/item/detail/{itemId}")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> getItemDetail(@PathVariable Long itemId) {
@@ -386,4 +409,5 @@ public class StuffController {
 			return ResponseEntity.ok(response);
 		}
 	}
+
 }

@@ -31,13 +31,9 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @RequestMapping("/staff")
 @RestController
-@CrossOrigin(
-	origins = GlobalConfig.ALLOWED_ORIGIN,
-	allowedHeaders = "*",
-	methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
-			   RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS},
-	allowCredentials = "true"
-)
+@CrossOrigin(origins = GlobalConfig.ALLOWED_ORIGIN, allowedHeaders = "*", methods = { RequestMethod.GET,
+		RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH,
+		RequestMethod.OPTIONS }, allowCredentials = "true")
 @AllArgsConstructor
 public class StaffController {
 	private StaffService service;
@@ -418,8 +414,6 @@ public class StaffController {
 
 		return response;
 	}
-	
-	
 
 	@PostMapping("/pointAdd")
 	public Map<String, Object> pointAdd(@RequestParam("member_no") Long member_no, HttpSession session) {
@@ -431,9 +425,9 @@ public class StaffController {
 			response.put("message", "로그인이 필요합니다.");
 			return response;
 		}
-		
+
 		try {
-			Long pointAdd =pointservice.pointAdd(member_no);
+			Long pointAdd = pointservice.pointAdd(member_no);
 			response.put("success", true);
 			response.put("message", "출석체크 완료.");
 			response.put("pointAdd", pointAdd);

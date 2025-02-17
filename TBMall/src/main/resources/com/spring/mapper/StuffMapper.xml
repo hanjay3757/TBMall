@@ -247,4 +247,12 @@
         SET order_quantity = #{quantity}
         WHERE order_id = #{cartId}
     </update>
+
+    <!-- 활성 상품 개수 조회 -->
+    <select id="getActiveItemCount" resultType="int">
+        SELECT COUNT(*)
+        FROM tbmall_stuff s
+        WHERE s.item_delete = 0 
+        OR s.item_delete IS NULL
+    </select>
 </mapper> 

@@ -12,10 +12,8 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,8 +45,6 @@ public class BoardController {
 	private BoardService service;
 
 	private StuffService stuffservice;
-	
-
 
 	@GetMapping("/list")
 	public ResponseEntity<Map<String, Object>> getBoardList(@RequestParam(defaultValue = "1") int currentPage,
@@ -178,7 +174,7 @@ public class BoardController {
 		return "board/edit";
 	}
 
-	@PostMapping("board/editContent")
+	@PostMapping("/editContent")
 	public Map<String, Object> editContent(@RequestBody BoardDto board, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
@@ -264,28 +260,28 @@ public class BoardController {
 			dto.setItem_id(currentStuff.getItem_id());
 			dto.setMember_no(loginStaff.getMember_no());
 			service.writeComment(dto);
-			
+
 			// 생성된 댓글의 ID를 가져오기
 			Long commentNo = dto.getComment_no();
-		
-			//세션에서 별점 데이터를 가져오기
+
+			// 세션에서 별점 데이터를 가져오기
 			Integer reviewpointAmount = dto.getReviewpoint_amount();
-			
-			if(reviewpointAmount != null && reviewpointAmount >0) {
+
+			if (reviewpointAmount != null && reviewpointAmount > 0) {
 				ReviewPointDto reviewpointdto = new ReviewPointDto();
 				reviewpointdto.setComment_no(commentNo);
 				reviewpointdto.setItem_id(currentStuff.getItem_id());
 				reviewpointdto.setMember_no(loginStaff.getMember_no());
 				reviewpointdto.setReviewpoint_amount(reviewpointAmount);
 				reviewpointdto.setReviewpoint_writedate(new Date());
-			
+
 				service.insertReviewPoint(reviewpointdto);
 			}
-			
+
 			response.put("success", true);
 			response.put("message", "댓글이 작성되었습니다.");
 			response.put("member_no", loginStaff.getMember_no());
-			response.put("reviewpointAmount",dto.getReviewpoint_amount());
+			response.put("reviewpointAmount", dto.getReviewpoint_amount());
 			response.put("comment_content", dto.getComment_content());
 			response.put("comment_writedate", new Date());
 
@@ -300,17 +296,14 @@ public class BoardController {
 
 	// 댓글 삭제
 	@PostMapping("/deleteComment")
-	public Map<String, Object> deleteComment(
-			@Param("comment_no") Long comment_no,
-			HttpSession session
-	) {
+	public Map<String, Object> deleteComment(@Param("comment_no") Long comment_no, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
-		
+
 		try {
 			// 로그인 체크
 			StaffDto loginStaff = (StaffDto) session.getAttribute("loginStaff");
 			log.info("현재 로그인 정보: " + loginStaff);
-			
+
 			if (loginStaff == null) {
 				response.put("success", false);
 				response.put("message", "로그인이 필요합니다.");
@@ -326,10 +319,10 @@ public class BoardController {
 
 			// 댓글 삭제 실행
 			service.deleteComment(comment_no);
-			
+
 			response.put("success", true);
 			response.put("message", "댓글이 삭제되었습니다.");
-			
+
 		} catch (Exception e) {
 			log.error("댓글 삭제 실패: " + e.getMessage());
 			response.put("success", false);
@@ -338,11 +331,5 @@ public class BoardController {
 
 		return response;
 	}
-	
-	
-	
-	
-	
-	
 
 }
