@@ -35,11 +35,17 @@ function BoardWrite() {
       }
       const userInfo = JSON.parse(userInfoStr);
 
+      // 게시글 목록 조회하여 마지막 번호 확인
+      const boardListResponse = await axios.get('/board/list');
+      const boards = boardListResponse.data.boards || [];
+      const lastBoardNo = boards.length > 0 ? Math.max(...boards.map(b => parseInt(b.board_no))) : 0;
+      
       // URLSearchParams 사용
       const params = new URLSearchParams();
       params.append('member_no', userInfo.member_no.toString());
       params.append('board_title', boardData.board_title);
       params.append('board_content', boardData.board_content);
+      params.append('board_no', (lastBoardNo + 1).toString()); // 마지막 번호 + 1
 
       console.log('=== 게시글 작성 요청 ===');
       console.log('전송 데이터:', Object.fromEntries(params));
@@ -55,7 +61,16 @@ function BoardWrite() {
 
       if (response.data.success) {
         Alert.alert('성공', response.data.message || '게시글이 등록되었습니다.', [
-          { text: 'OK', onPress: () => navigation.navigate('BoardList') }
+          { 
+            text: 'OK', 
+            onPress: () => {
+              // BoardList로 이동하면서 새로고침 파라미터 전달
+              navigation.navigate('BoardList', { 
+                refresh: true,
+                timestamp: new Date().getTime()
+              });
+            }
+          }
         ]);
       } else {
         Alert.alert('실패', response.data.message || '게시글 등록에 실패했습니다.');

@@ -32,28 +32,45 @@ const StarRating = ({ rating, setRating }) => {
 };
 
 const StarRatingDisplay = ({ rating }) => {
+  const numericRating = Number(rating) || 0;
+  
   return (
     <View style={styles.starRatingDisplay}>
-      <Text>{Array(rating).fill('⭐').join('')}</Text>
+      {[1, 2, 3, 4, 5].map((star) => {
+        if (star <= Math.floor(numericRating)) {
+          // 완전한 별
+          return <Text key={star} style={styles.starText}>⭐</Text>;
+        } else if (star === Math.ceil(numericRating) && numericRating % 1 !== 0) {
+          // 반개 별 (소수점이 있는 경우)
+          return <Text key={star} style={styles.starText}>★</Text>;
+        } else {
+          // 빈 별
+          return <Text key={star} style={styles.starText}>☆</Text>;
+        }
+      })}
+      <Text style={styles.ratingValue}>({numericRating.toFixed(1)})</Text>
     </View>
   );
 };
 
 const StarRatingAverage = ({ rating }) => {
+  const numericRating = Number(rating) || 0;
+  
   return (
     <View style={styles.starRatings}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Text
-          key={star}
-          style={[
-            styles.star,
-            star <= Math.round(rating) && styles.selectedStar
-          ]}
-        >
-          {star <= Math.round(rating) ? "⭐" : "☆"}
-        </Text>
-      ))}
-      <Text style={styles.ratingValue}>({rating.toFixed(1)})</Text>
+      {[1, 2, 3, 4, 5].map((star) => {
+        if (star <= Math.floor(numericRating)) {
+          // 완전한 별
+          return <Text key={star} style={styles.star}>⭐</Text>;
+        } else if (star === Math.ceil(numericRating) && numericRating % 1 !== 0) {
+          // 반개 별 (소수점이 있는 경우)
+          return <Text key={star} style={styles.star}>★</Text>;
+        } else {
+          // 빈 별
+          return <Text key={star} style={styles.star}>☆</Text>;
+        }
+      })}
+      <Text style={styles.ratingValue}>({numericRating.toFixed(1)})</Text>
     </View>
   );
 };
@@ -146,11 +163,35 @@ function ItemDetail() {
           new Map(response.data.comments.map(comment => [comment.comment_no, comment])).values()
         );
         setComments(uniqueComments);
-      } else {
-        setComments([]);
+
+        // 평균 평점 계산 로직 수정
+        const validRatings = uniqueComments.filter(comment => 
+          comment.reviewpoint_amount !== null && 
+          comment.reviewpoint_amount !== undefined && 
+          !isNaN(comment.reviewpoint_amount)
+        );
+
+        if (validRatings.length > 0) {
+          const totalRating = validRatings.reduce((sum, comment) => 
+            sum + Number(comment.reviewpoint_amount), 0
+          );
+          const avgRating = totalRating / validRatings.length;
+          
+          // item 상태 업데이트
+          setItem(prev => ({
+            ...prev,
+            avgRating: Number(avgRating.toFixed(1))
+          }));
+        } else {
+          // 유효한 평점이 없는 경우 0으로 설정
+          setItem(prev => ({
+            ...prev,
+            avgRating: 0
+          }));
+        }
       }
     } catch (error) {
-      console.error('댓글 로딩 실패:', error.response || error);
+      console.error('댓글 로딩 실패:', error);
       setComments([]);
     }
   };
@@ -192,6 +233,16 @@ function ItemDetail() {
       console.log('댓글 등록 응답:', response.data);
 
       if (response.data.success) {
+        // 댓글 등록 성공 후 상품 상세 정보를 다시 불러옴
+        const itemResponse = await axios.get(`/stuff/item/detail/${itemId}`);
+        if (itemResponse.data && itemResponse.data.item) {
+          const avgRating = itemResponse.data.item.avg_review_score || 0;
+          setItem(prev => ({
+            ...prev,
+            avgRating
+          }));
+        }
+
         setComment('');
         setRating(5);
         loadComments();
@@ -231,13 +282,9 @@ function ItemDetail() {
         return;
       }
 
-      // URLSearchParams 사용
       const params = new URLSearchParams();
       params.append('comment_no', commentNo);
       params.append('member_no', userInfo.member_no);
-
-      console.log('삭제 요청 URL:', '/board/deleteComment');
-      console.log('삭제 요청 데이터:', Object.fromEntries(params));
 
       const response = await axios.post('/board/deleteComment', params, {
         headers: {
@@ -245,11 +292,19 @@ function ItemDetail() {
         }
       });
 
-      console.log('댓글 삭제 응답:', response.data);
-
       if (response.data.success) {
+        // 댓글 삭제 성공 후 상품 상세 정보를 다시 불러옴
+        const itemResponse = await axios.get(`/stuff/item/detail/${itemId}`);
+        if (itemResponse.data && itemResponse.data.item) {
+          const avgRating = itemResponse.data.item.avg_review_score || 0;
+          setItem(prev => ({
+            ...prev,
+            avgRating
+          }));
+        }
+
+        await loadComments();  // 댓글 목록 새로고침
         Alert.alert('성공', '댓글이 삭제되었습니다.');
-        loadComments();  // 댓글 목록 새로고침
       } else {
         Alert.alert('실패', response.data.message || '댓글 삭제에 실패했습니다.');
       }
@@ -283,9 +338,9 @@ function ItemDetail() {
 
       console.log('장바구니 추가 응답:', response.data);
 
-      if (response.data.success) {
+        if (response.data.success) {
         Alert.alert('성공', '장바구니에 추가되었습니다.');
-      } else {
+        } else {
         Alert.alert('실패', response.data.message || '장바구니 추가에 실패했습니다.');
       }
     } catch (error) {
@@ -540,11 +595,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   starRatingDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: 5,
   },
   starText: {
     fontSize: 20,
-    marginHorizontal: 2,
+    marginRight: 2,
+    color: '#FFD700',
   },
   commentInfo: {
     flexDirection: 'row',
@@ -566,11 +624,11 @@ const styles = StyleSheet.create({
   },
   star: {
     fontSize: 20,
-    color: '#ddd',
     marginRight: 2,
+    color: '#FFD700',
   },
   selectedStar: {
-    color: '#ffd700',
+    color: '#FFD700',
   },
   ratingValue: {
     marginLeft: 8,

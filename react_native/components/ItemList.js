@@ -17,14 +17,23 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StarRating = ({ rating }) => {
+  const numericRating = Number(rating) || 0;
+  
   return (
     <View style={styles.starContainer}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Text key={star} style={styles.star}>
-          {star <= Math.round(rating) ? '⭐' : '☆'}
-        </Text>
-      ))}
-      <Text style={styles.ratingText}>({rating.toFixed(1)})</Text>
+      {[1, 2, 3, 4, 5].map((star) => {
+        if (star <= Math.floor(numericRating)) {
+          // 완전한 별
+          return <Text key={star} style={styles.star}>⭐</Text>;
+        } else if (star === Math.ceil(numericRating) && numericRating % 1 !== 0) {
+          // 반개 별 (소수점이 있는 경우)
+          return <Text key={star} style={styles.star}>★</Text>;
+        } else {
+          // 빈 별
+          return <Text key={star} style={styles.star}>☆</Text>;
+        }
+      })}
+      <Text style={styles.ratingText}>({numericRating.toFixed(1)})</Text>
     </View>
   );
 };
@@ -101,21 +110,52 @@ function ItemList() {
 
       // 중복 제거를 위해 Map 사용
       const uniqueItemsMap = new Map();
-      allItemsResponse.data.items.forEach(item => {
-        // item_id를 키로 사용하여 가장 최신 항목만 유지
-        if (!uniqueItemsMap.has(item.item_id) || 
-            item.reg_date > uniqueItemsMap.get(item.item_id).reg_date) {
-          uniqueItemsMap.set(item.item_id, item);
+      
+      // 각 아이템의 댓글과 평점 정보 가져오기
+      for (const item of allItemsResponse.data.items) {
+        try {
+          // 각 아이템의 댓글 목록 가져오기
+          const commentResponse = await axios.get('/board/commentlist', {
+            params: {
+              item_id: item.item_id,
+              currentComment: 1,
+              cpageSize: 100
+            }
+          });
+
+          // 평균 평점 계산
+          let avgRating = 0;
+          if (commentResponse.data && Array.isArray(commentResponse.data.comments)) {
+            const validRatings = commentResponse.data.comments.filter(comment => 
+              comment.reviewpoint_amount !== null && 
+              comment.reviewpoint_amount !== undefined && 
+              !isNaN(comment.reviewpoint_amount)
+            );
+
+            if (validRatings.length > 0) {
+              const totalRating = validRatings.reduce((sum, comment) => 
+                sum + Number(comment.reviewpoint_amount), 0
+              );
+              avgRating = Number((totalRating / validRatings.length).toFixed(1));
+            }
+          }
+
+          // item_id를 키로 사용하여 가장 최신 항목만 유지
+          if (!uniqueItemsMap.has(item.item_id) || 
+              item.reg_date > uniqueItemsMap.get(item.item_id).reg_date) {
+            uniqueItemsMap.set(item.item_id, {
+              ...item,
+              avg_review_score: avgRating
+            });
+          }
+        } catch (error) {
+          console.error(`아이템 ${item.item_id}의 댓글 로딩 실패:`, error);
         }
-      });
+      }
 
       // 중복이 제거된 활성 아이템만 필터링
       const activeItems = Array.from(uniqueItemsMap.values())
-        .filter(item => item.item_delete === 0 && item.item_stock > 0)
-        .map(item => ({
-          ...item,
-          avg_review_score: item.avg_review_score || 0
-        }));
+        .filter(item => item.item_delete === 0 && item.item_stock > 0);
 
       // 페이지네이션 계산
       const calculatedTotalPages = Math.ceil(activeItems.length / pageSize);
@@ -127,8 +167,8 @@ function ItemList() {
       // 현재 페이지의 아이템 가져오기
       const currentPageItem = activeItems[page - 1];
       if (currentPageItem) {
+        console.log('현재 페이지 아이템 평균 별점:', currentPageItem.avg_review_score);
         setItems([currentPageItem]);
-        console.log('현재 페이지 아이템:', currentPageItem);
       } else {
         setItems([]);
         if (page > 1 && calculatedTotalPages > 0) {
@@ -182,17 +222,17 @@ function ItemList() {
         return;
       }
 
-      const params = new URLSearchParams();
+        const params = new URLSearchParams();
       params.append('itemId', itemId);
       params.append('quantity', quantity);
 
       console.log('장바구니 추가 요청:', Object.fromEntries(params));
-
+        
       const response = await axios.post('/stuff/api/cart/add', params, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
       });
 
       console.log('장바구니 응답:', response.data);
@@ -201,7 +241,7 @@ function ItemList() {
         Alert.alert('성공', response.data.message || '장바구니에 추가되었습니다.');
         setQuantities(prev => ({ ...prev, [itemId]: 1 }));
         await loadItems(currentPage);
-      } else {
+        } else {
         throw new Error(response.data.message || '장바구니 추가에 실패했습니다.');
       }
     } catch (error) {
@@ -234,14 +274,14 @@ function ItemList() {
           {
             text: '삭제',
             onPress: async () => {
-              const params = new URLSearchParams();
+      const params = new URLSearchParams();
               params.append('item_id', itemId);
 
               const response = await axios.post('/stuff/item/delete', params, {
-                withCredentials: true,
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                }
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
               });
 
               if (response.data === 'redirect:/stuff/item/list' || 
@@ -541,6 +581,7 @@ const styles = StyleSheet.create({
   star: {
     fontSize: 16,
     marginRight: 2,
+    color: '#FFD700', // 별 색상 (금색)
   },
   ratingText: {
     fontSize: 14,

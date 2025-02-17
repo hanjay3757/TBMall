@@ -11,6 +11,7 @@ import {
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute } from '@react-navigation/native';
 
 function BoardList({ isLoggedIn }) {
   const [boards, setBoards] = useState([]);
@@ -20,6 +21,7 @@ function BoardList({ isLoggedIn }) {
   const [totalPages, setTotalPages] = useState(0);
   const [userInfo, setUserInfo] = useState(null);
   const navigation = useNavigation();
+  const route = useRoute();
 
   const loadUserInfo = async () => {
     try {
@@ -38,24 +40,39 @@ function BoardList({ isLoggedIn }) {
     loadUserInfo();
   }, []);
 
+  useEffect(() => {
+    if (route.params?.refresh) {
+      console.log('게시판 새로고침 요청 감지');
+      loadBoards();
+      navigation.setParams({ refresh: undefined, timestamp: undefined });
+    }
+  }, [route.params]);
+
   const loadBoards = useCallback(async () => {
     try {
+      setLoading(true);
       const response = await axios.get('/board/list', {
-        params: { currentPage, pageSize },
-        withCredentials: true,
+        params: { 
+          currentPage, 
+          pageSize,
+          timestamp: new Date().getTime()
+        },
+        withCredentials: true
       });
 
-      const { boards = [], totalPages } = response.data;
-      console.log('Fetched boards:', boards);
-      console.log('Total Pages:', totalPages);
-
-      const filteredBoards = boards.filter(board => board.board_delete === 0);
-      setBoards(filteredBoards);
-      setTotalPages(totalPages);
-      setLoading(false);
+      if (response.data) {
+        const { boards = [], totalPages = 0 } = response.data;
+        const sortedBoards = boards
+          .filter(board => board.board_delete === 0)
+          .sort((a, b) => a.board_no - b.board_no); // board_no 기준으로 오름차순 정렬
+        
+        setBoards(sortedBoards);
+        setTotalPages(totalPages);
+      }
     } catch (error) {
       console.error('게시판 목록을 불러오는 중 오류 발생:', error);
       Alert.alert('오류', '게시판 목록을 불러오는데 실패했습니다.');
+    } finally {
       setLoading(false);
     }
   }, [currentPage, pageSize]);
@@ -74,8 +91,6 @@ function BoardList({ isLoggedIn }) {
 
   const handleDelete = async (board_no) => {
     try {
-      
-
       if (!userInfo?.isAdmin) {
         Alert.alert('권한 없음', '관리자만 삭제할 수 있습니다.');
         return;
@@ -146,7 +161,7 @@ function BoardList({ isLoggedIn }) {
             style={styles.row}
             onPress={() => readContent(board.board_no)}
           >
-            <Text style={styles.cell}>{(currentPage - 1) * pageSize + index + 1}</Text>
+            <Text style={styles.cell}>{index + 1}</Text>
             <Text style={styles.cell}>{board.board_title}</Text>
             <Text style={styles.cell}>{board.board_writedate}</Text>
             {userInfo?.isAdmin && (

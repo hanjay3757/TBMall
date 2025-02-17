@@ -85,7 +85,16 @@ function BoardEdit() {
 
       if (response.data.success) {
         Alert.alert('성공', '글 수정 완료', [
-          { text: 'OK', onPress: () => navigation.navigate('BoardList') }
+          { 
+            text: 'OK', 
+            onPress: () => {
+              // BoardList로 이동하면서 새로고침 파라미터 전달
+              navigation.navigate('BoardList', { 
+                refresh: true,
+                timestamp: new Date().getTime()
+              });
+            }
+          }
         ]);
       } else {
         Alert.alert('실패', response.data.message || '글 수정에 실패하였습니다.');
