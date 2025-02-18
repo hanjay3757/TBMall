@@ -194,10 +194,10 @@ public class StaffController {
 				response.put("success", true);
 				response.put("member_no", staff.getMember_no());
 				response.put("isAdmin", staff.getAdmins() == 1);
-//				response.put("staff", staff);
 				response.put("name", staff.getMember_nick());
 				response.put("position_no", staff.getPosition_no());
 				response.put("points", pointDto != null ? pointDto.getPoint_amount() : 0);
+				response.put("member_no", staff.getMember_no());
 
 			} else {
 				response.put("success", false);
@@ -298,7 +298,7 @@ public class StaffController {
 				response.put("name", loginStaff.getMember_nick());
 				response.put("delete_right_no", loginStaff.getDelete_right_no());
 				response.put("name", loginStaff.getMember_nick());
-
+				response.put("member_no", loginStaff.getMember_no());
 				response.put("points", loginStaffPoint != null ? loginStaffPoint.getPoint_amount() : 0);
 				response.put("isLoggedIn", true);
 			} else {

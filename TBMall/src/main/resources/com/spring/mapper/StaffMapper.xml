@@ -139,6 +139,7 @@
 			member_email,
 			member_joindate,
 			member_delete
+			
 		) VALUES (
 			#{member_id},
 			#{member_pw},
