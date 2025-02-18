@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -6,23 +6,22 @@ import {
   StyleSheet, 
   Image 
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import './Header.css';
 import { API_BASE_URL, CLIENT_URL } from '../config';
+import { UserContext } from '../App';
 
-function Header({ 
-  isLoggedIn, 
-  isAdmin, 
-  userInfo, 
-  handleAttendanceCheck,
-  setIsLoggedIn,
-  setIsAdmin,
-  setUserInfo
-}) {
+function Header() {
+  const { userInfo, loadUserInfo } = useContext(UserContext);
   const navigation = useNavigation();
+  const route = useRoute();
   const [memberId, setMemberId] = useState('');
   const [memberPw, setMemberPw] = useState('');
+
+  useEffect(() => {
+    loadUserInfo();  // 컴포넌트가 마운트될 때마다 사용자 정보 새로 로드
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -81,6 +80,45 @@ function Header({
     }
   };
 
+  useEffect(() => {
+    // 포인트 업데이트 이벤트 리스너
+    const handlePointsUpdate = (event) => {
+      if (userInfo) {
+        const updatedUserInfo = {
+          ...userInfo,
+          points: event.detail.points
+        };
+        setUserInfo(updatedUserInfo);
+      }
+    };
+
+    // 이벤트 리스너 등록
+    window.addEventListener('pointsUpdated', handlePointsUpdate);
+
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener('pointsUpdated', handlePointsUpdate);
+    };
+  }, [userInfo]);
+
+  // 포인트 업데이트 감지
+  useEffect(() => {
+    if (route.params?.refresh) {
+      loadUserInfo();
+    }
+  }, [route.params?.refresh]);
+
+  // 포인트 업데이트 감지
+  useEffect(() => {
+    if (route.params?.updatedPoints !== undefined) {
+      const updatedUserInfo = {
+        ...userInfo,
+        points: route.params.updatedPoints
+      };
+      setUserInfo(updatedUserInfo);
+    }
+  }, [route.params?.updatedPoints]);
+
   return (
     <View style={styles.header}>
       <View style={styles.headerContent}>
@@ -103,7 +141,7 @@ function Header({
             >
               <Text style={styles.navText}>게시판</Text>
             </TouchableOpacity>
-            {isLoggedIn && (
+            {userInfo && (
               <TouchableOpacity 
                 onPress={() => navigation.navigate('Cart')}
                 style={styles.navButton}
@@ -114,42 +152,18 @@ function Header({
           </View>
         </View>
 
-        {isAdmin && (
-          <View style={styles.adminNav}>
-            <TouchableOpacity 
-              style={styles.adminButton}
-              onPress={() => navigation.navigate('ItemRegister')}
-            >
-              <Text style={styles.buttonText}>물건 등록</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.adminButton}
-              onPress={() => navigation.navigate('StaffRegister')}
-            >
-              <Text style={styles.buttonText}>직원 등록</Text>
-            </TouchableOpacity>
-            {/* 다른 관리자 메뉴 버튼들 */}
-          </View>
-        )}
-
-        <View style={styles.userSection}>
-          {userInfo && (
+        {userInfo && (
+          <View style={styles.userSection}>
             <View style={styles.userInfo}>
               <Text style={styles.userName}>
                 {userInfo.member_nick}님
               </Text>
               <Text style={styles.pointsText}>
-                보유 포인트: {userInfo.points}P
+                보유 포인트: {userInfo.points?.toLocaleString()}P
               </Text>
-              <TouchableOpacity 
-                style={styles.attendanceButton}
-                onPress={handleAttendanceCheck}
-              >
-                <Text style={styles.buttonText}>출석체크</Text>
-              </TouchableOpacity>
             </View>
-          )}
-        </View>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -194,19 +208,6 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: 16,
   },
-  adminNav: {
-    flexDirection: 'row',
-  },
-  adminButton: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    marginHorizontal: 5,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 14,
-  },
   userSection: {
     alignItems: 'flex-end',
   },
@@ -221,12 +222,6 @@ const styles = StyleSheet.create({
   pointsText: {
     fontSize: 14,
     color: '#666',
-  },
-  attendanceButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 5,
   },
 });
 

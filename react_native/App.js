@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -44,6 +44,9 @@ axios.defaults.headers.common = {
 };
 
 const Stack = createStackNavigator();
+
+// Context 생성
+export const UserContext = createContext();
 
 // 로그인 화면
 const LoginScreen = ({ navigation }) => {
@@ -367,73 +370,119 @@ const HomeScreen = ({ navigation }) => {
 
 // 메인 App 컴포넌트
 export default function App() {
+  const [userInfo, setUserInfo] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // 사용자 정보 로드 함수
+  const loadUserInfo = async () => {
+    try {
+      const userInfoStr = await AsyncStorage.getItem('userInfo');
+      if (userInfoStr) {
+        const parsedUserInfo = JSON.parse(userInfoStr);
+        setUserInfo(parsedUserInfo);
+        setIsLoggedIn(true);
+        setIsAdmin(parsedUserInfo.isAdmin);
+      }
+    } catch (error) {
+      console.error('사용자 정보 로드 실패:', error);
+    }
+  };
+
+  // 포인트 업데이트 함수
+  const updateUserPoints = async (newPoints) => {
+    if (userInfo) {
+      const updatedUserInfo = {
+        ...userInfo,
+        points: newPoints
+      };
+      await AsyncStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+      setUserInfo(updatedUserInfo);
+    }
+  };
+
+  useEffect(() => {
+    loadUserInfo();
+  }, []);
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen 
-            name="Login" 
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen 
-            name="Home" 
-            component={HomeScreen}
-            options={({ navigation }) => ({ 
-              headerLeft: null,
-              headerStyle: {
-                backgroundColor: '#2c3e50',
-                height: 110,
-              },
-              headerTintColor: '#fff',
-              headerTitle: () => (
-                <TouchableOpacity 
-                  onPress={() => navigation.navigate('Home')}
-                  style={styles.headerLogoContainer}
-                >
-                  <Image
-                    source={require('./image/TBMALL.png')}
-                    style={styles.headerLogo}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              )
-            })}
-          />
-          <Stack.Screen 
-            name="ItemList"
-            options={{ 
-              title: '물건 목록',
-              headerStyle: {
-                backgroundColor: '#2c3e50'
-              },
-              headerTintColor: '#fff'
-            }}
-          >
-            {(props) => (
-              <ItemList
-                {...props}
-                isLoggedIn={props.route.params?.isLoggedIn}
-                isAdmin={props.route.params?.isAdmin}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="ItemRegister" component={ItemRegister} />
-          <Stack.Screen name="ItemEdit" component={ItemEdit} />
-          <Stack.Screen name="ItemDetail" component={ItemDetail} />
-          <Stack.Screen name="Cart" component={Cart} />
-          <Stack.Screen name="BoardList" component={BoardList} />
-          <Stack.Screen name="BoardWrite" component={BoardWrite} />
-          <Stack.Screen name="BoardEdit" component={BoardEdit} />
-          <Stack.Screen name="ReadContent" component={ReadContent} />
-          <Stack.Screen name="StaffRegister" component={StaffRegister} />
-          <Stack.Screen name="StaffList" component={StaffList} />
-          <Stack.Screen name="StaffEdit" component={StaffEdit} />
-          <Stack.Screen name="DeletedItems" component={DeletedItems} />
-          <Stack.Screen name="RemovedStaff" component={RemovedStaff} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </GestureHandlerRootView>
+    <UserContext.Provider value={{ 
+      userInfo, 
+      setUserInfo, 
+      isLoggedIn, 
+      setIsLoggedIn,
+      isAdmin,
+      setIsAdmin,
+      updateUserPoints,
+      loadUserInfo 
+    }}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login">
+            <Stack.Screen 
+              name="Login" 
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Home" 
+              component={HomeScreen}
+              options={({ navigation }) => ({ 
+                headerLeft: null,
+                headerStyle: {
+                  backgroundColor: '#2c3e50',
+                  height: 110,
+                },
+                headerTintColor: '#fff',
+                headerTitle: () => (
+                  <TouchableOpacity 
+                    onPress={() => navigation.navigate('Home')}
+                    style={styles.headerLogoContainer}
+                  >
+                    <Image
+                      source={require('./image/TBMALL.png')}
+                      style={styles.headerLogo}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                )
+              })}
+            />
+            <Stack.Screen 
+              name="ItemList"
+              options={{ 
+                title: '물건 목록',
+                headerStyle: {
+                  backgroundColor: '#2c3e50'
+                },
+                headerTintColor: '#fff'
+              }}
+            >
+              {(props) => (
+                <ItemList
+                  {...props}
+                  isLoggedIn={props.route.params?.isLoggedIn}
+                  isAdmin={props.route.params?.isAdmin}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="ItemRegister" component={ItemRegister} />
+            <Stack.Screen name="ItemEdit" component={ItemEdit} />
+            <Stack.Screen name="ItemDetail" component={ItemDetail} />
+            <Stack.Screen name="Cart" component={Cart} />
+            <Stack.Screen name="BoardList" component={BoardList} />
+            <Stack.Screen name="BoardWrite" component={BoardWrite} />
+            <Stack.Screen name="BoardEdit" component={BoardEdit} />
+            <Stack.Screen name="ReadContent" component={ReadContent} />
+            <Stack.Screen name="StaffRegister" component={StaffRegister} />
+            <Stack.Screen name="StaffList" component={StaffList} />
+            <Stack.Screen name="StaffEdit" component={StaffEdit} />
+            <Stack.Screen name="DeletedItems" component={DeletedItems} />
+            <Stack.Screen name="RemovedStaff" component={RemovedStaff} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </UserContext.Provider>
   );
 }
 const styles = StyleSheet.create({
@@ -442,7 +491,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6FA',
   },
   mainContainer: {
-    padding: 20,
+    padding: 15,
   },
   userSection: {
     marginBottom: 30,
@@ -458,7 +507,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   menuGrid: {
-    gap: 15,
+    gap: 2,
   },
   menuRow: {
     flexDirection: 'row',

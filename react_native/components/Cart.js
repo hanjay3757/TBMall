@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -13,6 +13,7 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../App';
 
 // axios 기본 설정
 axios.defaults.baseURL = 'http://192.168.0.148:8080/mvc';
@@ -22,8 +23,10 @@ function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+  const { userInfo, updateUserPoints, loadUserInfo } = useContext(UserContext);
 
   useEffect(() => {
+    loadUserInfo();
     loadCartItems();
   }, []);
 
@@ -97,6 +100,20 @@ function Cart() {
       }
       const userInfo = JSON.parse(userInfoStr);
 
+      // 총 구매 금액 계산
+      const totalAmount = cartItems.reduce((sum, item) => 
+        sum + (item.itemPrice * item.quantity), 0
+      );
+
+      // 사용자의 포인트가 부족한 경우
+      if (totalAmount > userInfo.points) {
+        Alert.alert(
+          '포인트 부족',
+          `보유 포인트(${userInfo.points.toLocaleString()}P)가 부족합니다.\n필요 포인트: ${totalAmount.toLocaleString()}P`
+        );
+        return;
+      }
+
       // 서버가 기대하는 형식으로 데이터 구성
       const requestData = {
         itemIds: cartItems.map(item => ({
@@ -126,8 +143,6 @@ function Cart() {
       console.log('서버 응답 데이터:', response.data);
 
       if (response.data.status === 'success') {
-        console.log('=== 장바구니 비우기 시작 ===');
-        
         // 장바구니 아이템 삭제
         await Promise.all(cartItems.map(async item => {
           console.log(`장바구니 아이템 삭제 중: ${item.cartId}`);
@@ -136,33 +151,95 @@ function Cart() {
           return deleteResponse;
         }));
 
-        console.log('=== 장바구니 비우기 완료 ===');
-        console.log('ItemList로 이동 준비 (refresh: true)');
+        // 새로운 포인트 계산
+        const newPoints = userInfo.points - totalAmount;
+        
+        // 포인트 업데이트
+        await updateUserPoints(newPoints);
+        
+        // AsyncStorage 업데이트
+        const updatedUserInfo = {
+          ...userInfo,
+          points: newPoints
+        };
+        await AsyncStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
 
         Alert.alert('성공', '주문이 완료되었습니다.', [
           {
             text: 'OK',
             onPress: () => {
               setCartItems([]);
-              navigation.navigate('ItemList', { refresh: true });
-              console.log('ItemList로 이동 완료');
+              // Home으로 이동하면서 새로운 포인트 정보 전달
+              navigation.reset({
+                index: 0,
+                routes: [
+                  { 
+                    name: 'Home',
+                    params: { 
+                      refresh: true,
+                      updatedPoints: newPoints
+                    }
+                  }
+                ],
+              });
             }
           }
         ]);
       }
     } catch (error) {
-      console.error('=== 주문 처리 실패 ===');
-      console.error('에러 상태 코드:', error.response?.status);
-      console.error('에러 응답 데이터:', error.response?.data);
-      console.error('에러 메시지:', error.message);
-      console.error('요청 URL:', error.config?.url);
-      console.error('요청 데이터:', error.config?.data);
-      console.error('요청 헤더:', error.config?.headers);
-      
-      Alert.alert(
-        '오류',
-        `주문 처리 중 오류가 발생했습니다.\n${error.response?.data?.message || error.message}`
+      console.error('주문 처리 실패:', error);
+      Alert.alert('오류', '주문 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handlePurchase = async () => {
+    try {
+      if (!userInfo) {
+        Alert.alert('오류', '로그인이 필요합니다.');
+        return;
+      }
+
+      // 총 구매 금액 계산
+      const totalAmount = cartItems.reduce((sum, item) => 
+        sum + (item.item_price * item.quantity), 0
       );
+
+      // 사용자의 포인트가 부족한 경우
+      if (totalAmount > userInfo.points) {
+        Alert.alert(
+          '포인트 부족',
+          `보유 포인트(${userInfo.points}P)가 부족합니다.\n필요 포인트: ${totalAmount}P`
+        );
+        return;
+      }
+
+      const params = new URLSearchParams();
+      params.append('member_no', userInfo.member_no);
+
+      const response = await axios.post('/stuff/api/cart/purchase', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      if (response.data.success) {
+        Alert.alert('성공', '구매가 완료되었습니다.');
+        
+        // 구매 후 사용자 정보(포인트) 업데이트
+        const updatedUserInfo = {
+          ...userInfo,
+          points: userInfo.points - totalAmount
+        };
+        await AsyncStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+        updateUserPoints(updatedUserInfo.points);
+        
+        loadCartItems(); // 장바구니 새로고침
+      } else {
+        Alert.alert('실패', response.data.message || '구매에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('구매 실패:', error);
+      Alert.alert('오류', '구매 중 오류가 발생했습니다.');
     }
   };
 
@@ -208,6 +285,11 @@ function Cart() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>장바구니</Text>
+      {userInfo && (
+        <Text style={styles.pointInfo}>
+          보유 포인트: {userInfo.points.toLocaleString()}P
+        </Text>
+      )}
       <FlatList
         data={cartItems}
         renderItem={renderItem}
@@ -247,6 +329,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     padding: 20,
     textAlign: 'center',
+  },
+  pointInfo: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: '#666',
+    marginBottom: 10,
   },
   listContainer: {
     padding: 10,
