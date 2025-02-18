@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Header.css';
@@ -17,6 +17,34 @@ function Header({
   const navigate = useNavigate();
   const [memberId, setMemberId] = useState('');
   const [memberPw, setMemberPw] = useState('');
+
+  // 포인트 정보를 가져오는 함수
+  const fetchUserPoints = async () => {
+    try {
+      // localStorage에서 현재 userInfo 가져오기
+      const userInfoStr = localStorage.getItem('userInfo');
+      if (userInfoStr) {
+        const currentUserInfo = JSON.parse(userInfoStr);
+        setUserInfo(prevUserInfo => ({
+          ...prevUserInfo,
+          points: currentUserInfo.points
+        }));
+      }
+    } catch (error) {
+      console.error('포인트 정보 가져오기 실패:', error);
+    }
+  };
+
+  // 주기적으로 포인트 정보 업데이트
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserPoints(); // 초기 포인트 정보 가져오기
+      
+      const intervalId = setInterval(fetchUserPoints, 222500); // 0.5초마다 업데이트
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [isLoggedIn]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -63,15 +91,28 @@ function Header({
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/staff/logout`, {}, {
+      await axios.post('/staff/logout', {}, {
         withCredentials: true
       });
-
-      if (response.data.success) {
-        window.location.reload();
-      }
+      
+      // App 컴포넌트의 상태 업데이트를 위해 props로 전달받은 함수들 호출
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+      setUserInfo(null);
+      
+      // localStorage 정리
+      localStorage.clear();
+      
+      // 페이지 새로고침
+      window.location.reload();
     } catch (error) {
       console.error('로그아웃 에러:', error);
+      // 에러가 발생해도 강제 로그아웃
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+      setUserInfo(null);
+      localStorage.clear();
+      window.location.reload();
     }
   };
 

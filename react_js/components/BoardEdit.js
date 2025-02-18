@@ -43,7 +43,6 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
                     navigate('/board/list');
                 }
             } catch (error) {
-                console.error('글 데이터를 불러오는데 실패했습니다:', error.response?.data || error.message);
                 alert('글 데이터를 불러올 수 없습니다.');
                 navigate('/board/list');
             } finally {
@@ -88,7 +87,6 @@ function BoardEdit({ isLoggedIn, isAdmin }) {
                 alert(response.data.message || '글 수정에 실패하였습니다.');
             }
         } catch (error) {
-            console.error('글 수정 실패:', error.response?.data || error.message);
             alert('글 수정에 실패하였습니다.');
         }
     };

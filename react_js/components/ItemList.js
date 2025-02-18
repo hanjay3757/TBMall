@@ -3,18 +3,17 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './ItemDetail.css';
 
-function ItemList({ isLoggedIn, isAdmin }) {
+function ItemList({ isLoggedIn, isAdmin, refreshKey }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [items, setItems] = useState([]);
   const [quantities, setQuantities] = useState({});
-  const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [rotations, setRotations] = useState({});
   // 현재 페이지 번호를 관리하는 state
   const [currentPage, setCurrentPage] = useState(1);
-  // 한 페이지당 보여줄 아이템 개수
-  const [pageSize] = useState(8);
+  // 한 페이지당 보여줄 아이템 개수를 6개로 수정
+  const [pageSize] = useState(6);
   // 전체 페이지 수를 관리하는 state
   const [totalPage, setTotalPage] = useState(0);
   const cardRefs = useRef({});
@@ -22,7 +21,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
   // 페이지나 새로고침 키가 변경될 때마다 아이템 목록을 다시 불러옴
   useEffect(() => {
     loadItems(currentPage);
-  }, [refreshKey, currentPage]);
+  }, [currentPage, refreshKey]);
 
   // location state에 refresh가 있으면 현재 페이지의 아이템을 다시 불러옴
   useEffect(() => {
@@ -37,17 +36,85 @@ function ItemList({ isLoggedIn, isAdmin }) {
       const response = await axios.get('/stuff/item/list', {
         params: {
           currentPage: page,
-          pageSize
+          pageSize: pageSize
         },
         withCredentials: true
       });
 
       const {items: itemsToProcess, totalPage} = response.data;
+      
+      console.log('서버 응답 데이터:', {
+        원본아이템수: itemsToProcess.length,
+        페이지크기: pageSize,
+        현재페이지: page,
+        전체페이지: totalPage,
+        원본데이터: itemsToProcess
+      });
+
+      // 장바구니 정보 가져오기
+      const cartResponse = await axios.get('/stuff/api/cart', {
+        withCredentials: true
+      });
+      const cartItems = cartResponse.data || [];
+
+      let needsRefresh = false;  // 새로고침 필요 여부를 추적하는 플래그
+
+      // 재고가 0인 상품 중 장바구니에 없는 상품 삭제
+      for (const item of itemsToProcess) {
+        if (item.item_stock <= 0) {
+          const isInCart = cartItems.some(cartItem => cartItem.itemId === item.item_id);
+          
+          if (!isInCart) {
+            try {
+              const params = new URLSearchParams();
+              params.append('item_id', item.item_id);
+              
+              const response = await axios.post(
+                '/stuff/item/delete', 
+                params,
+                { 
+                  withCredentials: true,
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                  }
+                }
+              );
+
+              if (response.data === 'redirect:/stuff/item/list' || 
+                  response.status === 200 || 
+                  response.data.success) {
+                console.log(`재고가 0 이하이고 장바구니에 없는 상품 삭제 완료: ${item.item_name}`);
+                needsRefresh = true;  // 삭제 성공 시 새로고침 플래그 설정
+              }
+            } catch (error) {
+              console.error(`상품 삭제 실패 (${item.item_name}):`, error);
+            }
+          } else {
+            console.log(`재고가 0 이하지만 장바구니에 있어 유지: ${item.item_name}`);
+            item.item_stock = 0;
+          }
+        }
+      }
+
+      // 삭제 작업이 있었다면 목록 새로고침
+      if (needsRefresh) {
+        window.location.reload();  // 페이지 새로고침
+        return;  // 함수 종료
+      }
+
+      // 재고가 있거나 장바구니에 있는 상품만 필터링
+      const availableItems = itemsToProcess.filter(item => {
+        const isInCart = cartItems.some(cartItem => cartItem.itemId === item.item_id);
+        // 재고가 음수인 경우 0으로 표시
+        if (item.item_stock < 0) {
+          item.item_stock = 0;
+        }
+        return (item.item_stock >= 0 || isInCart) && item.item_delete !== 1;
+      });
 
       // 각 아이템별로 댓글과 평점 정보를 가져오기
-      const itemsWithRatings = await Promise.all(itemsToProcess.map(async (item) => {
+      const itemsWithRatings = await Promise.all(availableItems.map(async (item) => {
         try {
-          // 각 아이템의 댓글 목록 조회
           const commentResponse = await axios.get(`/board/commentlist`, {
             params: {
               item_id: item.item_id,
@@ -72,15 +139,12 @@ function ItemList({ isLoggedIn, isAdmin }) {
           }
           return item;
         } catch (error) {
-          console.error(`Error fetching ratings for item ${item.item_id}:`, error);
           return item;
         }
       }));
 
-      // item_delete가 1인 아이템 제외하고 중복 제거
-      const filteredItems = itemsWithRatings.filter(item => item.item_delete !== 1);
       const uniqueItems = Array.from(
-        new Map(filteredItems.map(item => [item.item_id, item])).values()
+        new Map(itemsWithRatings.map(item => [item.item_id, item])).values()
       );
 
       setItems(uniqueItems);
@@ -93,7 +157,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
       setQuantities(initialQuantities);
 
     } catch (error) {
-      console.error('아이템 목록 로딩 실패:', error);
+      console.error('상품 목록 로드 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -171,10 +235,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
     );
   };
 
-  const refreshList = () => {
-    setRefreshKey(prevKey => prevKey + 1);
-  };
-
   const handleEdit = async (e, item_id) => {
     e.stopPropagation(); // 이벤트 전파 중단
     try {
@@ -184,7 +244,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
       }
       navigate(`/stuff/item/edit?itemId=${item_id}`);
     } catch (error) {
-      console.error('수정 페이지 이동 실패:', error);
       alert('수정 페이지로 이동할 수 없습니다.');
     }
   };
@@ -226,7 +285,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
         }
       }
     } catch (error) {
-      console.error('상품 삭제 실패:', error);
       alert('상품 삭제에 실패했습니다.');
     }
   };
@@ -280,7 +338,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
         throw new Error(response.data.message);
       }
     } catch (error) {
-      console.error('장바구니 추가 실패:', error);
       alert('장바구니 추가에 실패했습니다.');
     }
   };
@@ -349,7 +406,6 @@ function ItemList({ isLoggedIn, isAdmin }) {
                 src={item.image_url || 'https://via.placeholder.com/400x200'} 
                 alt={item.item_name}
                 onError={(e) => {
-                  console.log('이미지 로드 실패:', item.image_url); // 이미지 로드 실패 시 로그
                   e.target.src = 'https://via.placeholder.com/400x200';
                 }}
               />
@@ -363,7 +419,7 @@ function ItemList({ isLoggedIn, isAdmin }) {
               </div>
               <p className="item-description">{item.item_description}</p>
               
-              <div className="item-controls">
+              <div className="item-controls" onClick={(e) => e.stopPropagation()}>
                 {isAdmin && (
                   <>
                     <button
@@ -384,9 +440,9 @@ function ItemList({ isLoggedIn, isAdmin }) {
                   <div className="cart-controls">
                     <input
                       type="number"
-                      min="1"
+                      min="0"
                       max={item.item_stock}
-                      value={quantities[item.item_id] || 1}
+                      value={quantities[item.item_id] || 0}
                       onChange={(e) => handleQuantityChange(item.item_id, parseInt(e.target.value))}
                       className="quantity-input"
                     />

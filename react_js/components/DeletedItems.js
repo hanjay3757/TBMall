@@ -28,7 +28,6 @@ function DeletedItems() {
         throw new Error(response.data.message);
       }
     } catch (error) {
-      console.error('삭제된 물건 목록 로딩 실패:', error);
       setError(error.response?.data?.message || '삭제된 물건 목록을 불러오는데 실패했습니다.');
     }
   };
@@ -57,7 +56,6 @@ function DeletedItems() {
         throw new Error('복구에 실패했습니다.');
       }
     } catch (error) {
-      console.error('물건 복구 실패:', error);
       alert('물건 복구에 실패했습니다.');
     }
   };

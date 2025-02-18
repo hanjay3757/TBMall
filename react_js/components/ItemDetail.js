@@ -211,7 +211,7 @@ function ItemDetail() {
     return () => {
       window.removeEventListener('storage', checkLoginStatus);
     };
-  }, [itemId, currentComment]);
+  }, [itemId]);
 
   const handleDelete = async (comment_no) => {
     try {
@@ -285,63 +285,33 @@ function ItemDetail() {
   };
 
   const renderComments = () => {
-    if (!comments || comments.length === 0) {
-      return <p className="no-comments">등록된 댓글이 없습니다.</p>;
-    }
-
-    const isAdminUser = userInfo?.isAdmin || userInfo?.delete_right_no === 1;
-
-    console.log('관리자 권한 체크:', {
-      userInfo,
-      isAdminUser,
-      memberRole: localStorage.getItem('member_role')
-    });
-
     return (
       <div className="comments-containers">
-        {comments.map((comment, index) => {
-          console.log('댓글 데이터:', {
-            item_id: comment.item_id,
-            member_no: comment.member_no,
-            content: comment.comment_content,
-            writedate: comment.comment_writedate,
-            reviewpoint_amount: comment.reviewpoint_amount,
-            fullComment: comment
-          });
-
-          const uniqueKey = `${comment.item_id}-${comment.member_no}-${index}`;
-
+        {comments.map((comment) => {
+          const isCommentOwner = userInfo?.member_no === comment.member_no;
+          const isAdminUser = userInfo?.isAdmin;
+          
           return (
-            <div key={uniqueKey} className="comment-items">
+            <div key={comment.comment_no} className="comment-items">
               <div className="comment-headers">
                 <span className="comment-authors">{comment.member_nick || '익명'}</span>
                 <span className="comment-dates">
-                  {new Date(comment.comment_writedate).toLocaleDateString()}
+                  {new Date(comment.comment_writedate).toLocaleString()}
                 </span>
+                <StarRatingDisplay rating={comment.reviewpoint_amount} />
               </div>
-                 {/* ✅ 댓글 별점 표시 */}
-          <StarRatingDisplay rating={comment.reviewpoint_amount || 0} />
-
-          <p className="comment-content">{comment.comment_content}</p>
-              {isAdminUser && (
+              <p className="comment-contents">{comment.comment_content}</p>
+              {(isCommentOwner || isAdminUser) && (
                 <button
-                  onClick={() => {
-                    console.log('=== 삭제 버튼 클릭 ===');
-                    console.log('댓글 전체 정보:', comment);
-                    console.log('삭제할 댓글 번호:', comment.comment_no);
-                    console.log('현재 관리자 여부:', isAdminUser);
-                    handleDelete(comment.comment_no);
-                  }}
+                  onClick={() => handleDelete(comment.comment_no)}
                   className="delete-btns"
                 >
                   삭제
                 </button>
               )}
-              </div>
+            </div>
           );
         })}
-        
-        {renderPagination()}
       </div>
     );
   };
@@ -354,20 +324,14 @@ function ItemDetail() {
     const handleSubmit = async (e) => {
       e.preventDefault();
       if (isSubmitting) return;
-      const memberNo = localStorage.getItem('member_no');
-
-      if (!localComment.trim()) {
-        alert('댓글 내용을 입력해 주세요.');
-        return;
-      }
 
       try {
         setIsSubmitting(true);
         console.log('=== 댓글 작성 시작 ===');
         
         console.log('로그인 정보:', {
-          memberNo,
-          isLoggedIn: !!memberNo
+          memberNo: localStorage.getItem('member_no'),
+          isLoggedIn: !!localStorage.getItem('member_no')
         });
 
         console.log('세션 저장 요청 시작 - 파라미터:', {
@@ -379,7 +343,6 @@ function ItemDetail() {
           {
             params: { 
               item_id: Number(itemId),
-              member_no: memberNo,
             },
             withCredentials: true
           }
@@ -399,7 +362,7 @@ function ItemDetail() {
 
         const commentData = {
           item_id: itemId,
-          member_no: memberNo,
+          member_no: localStorage.getItem('member_no'),
           comment_content: localComment.trim(),
           reviewpoint_amount: rating,
         };

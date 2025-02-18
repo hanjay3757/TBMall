@@ -6,19 +6,17 @@
 
 .cart-items {
   display: flex;
-  flex-direction: column;
   gap: 20px;
 }
 
 .cart-item {
-  display: flex;
   padding: 20px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.item-image {
+/* .item-image {
   width: 120px;
   height: 120px;
   object-fit: cover;
@@ -65,7 +63,7 @@
 
 .delete-button:hover {
   background-color: #cc0000;
-}
+} */
 
 .checkout-section {
   margin-top: 30px;

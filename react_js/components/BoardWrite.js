@@ -22,7 +22,6 @@ function BoardWrite({ isLoggedIn }) {
        
     });
 
-    console.log("전송할 데이터:" ,boardData);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -36,14 +35,12 @@ function BoardWrite({ isLoggedIn }) {
         e.preventDefault();
 
         try {
-            console.log('전송할 데이터:', boardData);
 
             const params = new URLSearchParams();
             Object.keys(boardData).forEach((key) => {
                 params.append(key, boardData[key]);
             });
 
-            console.log('등록할 데이터:', Object.fromEntries(params));
 
             const response = await axios.post(
                 '/board/write',
@@ -65,7 +62,6 @@ function BoardWrite({ isLoggedIn }) {
                 alert(response.data.message || '글 등록에 실패하였습니다.');
             }
         } catch (error) {
-            console.error('글 등록 실패:', error);
             alert('글 작성에 실패하였습니다.');
         }
     };

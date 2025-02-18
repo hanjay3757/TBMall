@@ -13,7 +13,8 @@ function Register() {
     member_gender: 'M', 
     member_birth: '',
     member_phone: '',
-    member_email: ''
+    member_email: '',
+    position_no: '1' // 직급 추가
   });
 
   const handleSubmit = async (e) => {
@@ -151,6 +152,21 @@ function Register() {
           </select>
         </div>
         <div className="form-group">
+          <label>직급</label>
+          <select
+            name="position_no"
+            value={formData.position_no}
+            onChange={handleChange}
+            required
+          >
+            <option value="1">사원</option>
+            <option value="2">대리</option>
+            <option value="3">과장</option>
+            <option value="4">차장</option>
+            <option value="5">부장</option>
+          </select>
+        </div>
+        <div className="form-group">
           <label>생년월일</label>
           <input
             type="date"
@@ -183,6 +199,7 @@ function Register() {
             required
           />
         </div>
+        <div></div>
         <div className="button-group">
           <button type="submit">등록</button>
           <button type="button" onClick={() => navigate('/staff/removelist')}>

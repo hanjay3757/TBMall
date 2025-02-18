@@ -73,7 +73,6 @@ function StaffEdit({ onUpdate }) {
         const response = await axios.post('/staff/check-login', {}, {
           withCredentials: true
         });
-        console.log("관리자 상태 확인:", response.data);
         setIsAdmin(response.data.isAdmin || response.data.delete_right_no === 1);
       } catch (error) {
         navigate('/');
@@ -86,59 +85,47 @@ function StaffEdit({ onUpdate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        // 날짜 형식 변환
-        const birthDate = staffData.member_birth ? 
-            new Date(staffData.member_birth).toISOString().split('T')[0] : null;
+      const birthDate = staffData.member_birth ? 
+        new Date(staffData.member_birth).toISOString().split('T')[0] : null;
 
-        // StaffDto와 일치하는 데이터 구조 생성
-        const staffDto = {
-            member_no: parseInt(member_no),
-            member_id: staffData.member_id.trim(),
-            member_nick: staffData.member_nick,
-            member_phone: staffData.member_phone,
-            member_email: staffData.member_email,
-            member_gender: staffData.member_gender,
-            member_birth: birthDate,
-            delete_right_no: staffData.delete_right_no || 0,
-            position_no: staffData.position_no || 1,
-            admins: staffData.admins || 0,
-            member_delete: staffData.member_delete || 0,
-            points: staffData.points || 0
-        };
+      const staffDto = {
+        member_no: parseInt(member_no),
+        member_id: staffData.member_id.trim(),
+        member_nick: staffData.member_nick,
+        member_phone: staffData.member_phone,
+        member_email: staffData.member_email,
+        member_gender: staffData.member_gender,
+        member_birth: birthDate,
+        delete_right_no: staffData.delete_right_no || 0,
+        position_no: staffData.position_no || 1,
+        admins: staffData.admins || 0,
+        member_delete: staffData.member_delete || 0,
+        points: staffData.points || 0
+      };
 
-        // 비밀번호가 있는 경우에만 추가
-        if (staffData.member_pw) {
-            staffDto.member_pw = staffData.member_pw;
+      if (staffData.member_pw) {
+        staffDto.member_pw = staffData.member_pw;
+      }
+
+      const response = await axios.post('/staff/edit/', staffDto, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
+      });
 
-        console.log('=== 직원 정보 수정 시작 ===');
-        console.log('전송할 데이터:', staffDto);
-
-        // Spring의 @RequestBody에 맞춰 JSON 형식으로 전송
-        const response = await axios.post('/staff/edit/', staffDto, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        });
-
-        console.log('서버 응답:', response.data);
-
-        if (response.data.success) {
-            alert(response.data.message || '직원 정보가 수정되었습니다.');
-            if (onUpdate) {
-                await onUpdate();
-            }
-            navigate('/staff/removelist');
-        } else {
-            throw new Error(response.data.message || '수정에 실패했습니다.');
+      if (response.data.success) {
+        alert(response.data.message || '직원 정보가 수정되었습니다.');
+        if (onUpdate) {
+          await onUpdate();
         }
+        navigate('/staff/removelist');
+      } else {
+        throw new Error(response.data.message || '수정에 실패했습니다.');
+      }
     } catch (error) {
-        console.error('직원 정보 수정 실패:', error);
-        console.error('에러 응답:', error.response);
-        const errorMessage = error.response?.data?.message || error.message || '직원 정보 수정에 실패했습니다.';
-        alert(errorMessage);
+      alert('직원 정보 수정에 실패했습니다.');
     }
   };
 
@@ -160,7 +147,7 @@ function StaffEdit({ onUpdate }) {
             type="text"
             name="member_id"
             value={staffData.member_id}
-            onChange={handleChange}
+            disabled
             required
           />
         </div>

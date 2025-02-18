@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 
-function Cart() {
+function Cart({ setUserInfo, onOrderComplete }) {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rotations, setRotations] = useState({});
@@ -17,7 +17,6 @@ function Cart() {
       const response = await axios.get(`${API_BASE_URL}/stuff/api/cart`, {}, {
         withCredentials: true
       });
-      console.log('장바구니 데이터:', response.data);
       
       // 같은 item_id를 가진 아이템들의 수량을 합치기
       const mergedItems = response.data.reduce((acc, curr) => {
@@ -33,7 +32,6 @@ function Cart() {
       setCartItems(mergedItems);
       setLoading(false);
     } catch (error) {
-      console.error('장바구니 로딩 실패:', error);
       setLoading(false);
     }
   };
@@ -65,39 +63,51 @@ function Cart() {
         loadCartItems();
       }
     } catch (error) {
-      console.error('수량 업데이트 실패:', error);
       alert('재고가 부족합니다.');
     }
   };
 
   const handleCheckout = async () => {
-    // requestData를 try 블록 밖에서 선언
-    let requestData;
-    
     try {
       if (cartItems.length === 0) {
         alert('장바구니가 비어있습니다.');
         return;
       }
 
-      // member_no가 있는지 확인
       const memberNo = cartItems[0]?.memberNo;
       if (!memberNo) {
         alert('로그인이 필요합니다.');
         return;
       }
 
-      // 서버가 기대하는 형식으로 데이터 구성
-      requestData = {
+      // 총 결제 금액 계산
+      const totalAmount = cartItems.reduce((total, item) => 
+        total + (item.itemPrice * item.quantity), 0
+      );
+
+      // 현재 보유 포인트 확인
+      const userInfoStr = localStorage.getItem('userInfo');
+      if (!userInfoStr) {
+        alert('사용자 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      const currentUserInfo = JSON.parse(userInfoStr);
+      const currentPoints = currentUserInfo.points || 0;
+
+      // 포인트 부족 체크
+      if (currentPoints < totalAmount) {
+        alert(`포인트가 부족합니다.\n보유 포인트: ${currentPoints.toLocaleString()}P\n필요 포인트: ${totalAmount.toLocaleString()}P`);
+        return;
+      }
+
+      const requestData = {
         itemIds: cartItems.map(item => ({
           itemId: item.itemId,
           quantity: item.quantity
         })),
         member_no: memberNo
       };
-
-      console.log('=== 주문 처리 시작 ===');
-      console.log('주문 데이터:', requestData);
 
       const response = await axios.post(
         `${API_BASE_URL}/stuff/api/cart/checkout`,
@@ -110,8 +120,6 @@ function Cart() {
         }
       );
 
-      console.log('주문 응답:', response.data);
-
       if (response.data.status === 'success') {
         // 장바구니 비우기
         await Promise.all(cartItems.map(item => 
@@ -120,13 +128,33 @@ function Cart() {
           })
         ));
 
+        // 현재 userInfo 가져오기
+        const userInfoStr = localStorage.getItem('userInfo');
+        if (userInfoStr) {
+          const currentUserInfo = JSON.parse(userInfoStr);
+          
+          // 포인트 차감하여 업데이트
+          const updatedUserInfo = {
+            ...currentUserInfo,
+            points: currentUserInfo.points - totalAmount
+          };
+
+          // localStorage 업데이트
+          localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+          
+          // Header의 userInfo 상태 업데이트
+          setUserInfo(updatedUserInfo);
+        }
+
         alert('주문이 완료되었습니다.');
         setCartItems([]);
+        
+        // ItemList 새로고침
+        if (onOrderComplete) {
+          onOrderComplete();
+        }
       }
     } catch (error) {
-      console.error('주문 처리 실패:', error);
-      console.error('요청 데이터:', requestData);  // 이제 접근 가능
-      console.error('에러 응답:', error.response?.data);
       alert(error.response?.data?.message || '주문 처리 중 오류가 발생했습니다.');
     }
   };
@@ -191,7 +219,6 @@ function Cart() {
                       src={item.imageUrl}
                       alt={item.itemName}
                       onError={(e) => {
-                        console.log('이미지 로딩 실패:', item.imageUrl);
                         e.target.src = 'https://via.placeholder.com/400x200';
                       }}
                     />

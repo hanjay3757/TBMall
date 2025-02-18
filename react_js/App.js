@@ -99,6 +99,7 @@ function App() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
+  const [refreshItemList, setRefreshItemList] = useState(0);
 
   useEffect(() => {
     // 로컬 스토리지에서 사용자 정보 가져오기
@@ -136,14 +137,30 @@ function App() {
       }
     })
     .then(response => {
-      console.log('로그인 상태 확인 응답:',response.data);
-      setIsLoggedIn(response.data.isLoggedIn);
-      setIsAdmin(response.data.isAdmin);
+      console.log('로그인 상태 확인 응답:', response.data);
+      if (response.data.isLoggedIn) {
+        setIsLoggedIn(true);
+        setIsAdmin(response.data.isAdmin);
+        
+        // userInfo 업데이트
+        const updatedUserInfo = {
+          member_no: response.data.member_no,
+          member_nick: response.data.name,
+          points: response.data.points,
+          position_no: response.data.delete_right_no,
+          isAdmin: response.data.isAdmin,
+          admin_no: response.data.admin_no
+        };
+        
+        setUserInfo(updatedUserInfo);
+        localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+      }
     })
     .catch(error => {
       console.error('로그인 상태 확인 실패:', error);
       setIsLoggedIn(false);
       setIsAdmin(false);
+      setUserInfo(null);
     });
   }
   if(loading){
@@ -195,16 +212,34 @@ function App() {
   }
 
   function handleLogout() {
-    axios.post('/staff/logout')
+    axios.post('/staff/logout', {}, {
+      withCredentials: true
+    })
       .then(response => {
-        if (response.data.success) {
-          setIsLoggedIn(false);
-          setIsAdmin(false);
-          navigate('/');
-        }
+        // 서버 응답 성공 여부와 관계없이 로그아웃 처리
+        // 상태 초기화
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        setUserInfo(null);
+
+        // localStorage 정리
+        localStorage.clear(); // 모든 데이터 삭제
+
+        // 홈으로 이동
+        navigate('/');
+        
+        // 페이지 새로고침
+        window.location.reload();
       })
       .catch(error => {
         console.error('로그아웃 실패:', error);
+        // 에러가 발생해도 클라이언트에서 로그아웃 처리
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        setUserInfo(null);
+        localStorage.clear();
+        navigate('/');
+        window.location.reload();
       });
   }
 
@@ -340,62 +375,100 @@ function App() {
   );
 
   const handleAttendanceCheck = async () => {
-    if(!isLoggedIn) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
-    const member_no = localStorage.getItem('member_no');
-    if (!member_no) {
-      alert("회원 정보가 없습니다.");
-      return;
-    }
-
-    console.log("현재 로그인된 유저의 position_no:", userInfo.position_no);
-
-    const lastAttendanceDate = localStorage.getItem('lastAttendanceDate');
-    const today = new Date().toISOString().split('T')[0];
-
-    if(lastAttendanceDate === today) {
-      alert("금일 출석체크는 하셨습니다. 내일 다시 해주세요~");
-      return;
-    }
-
-    let rewardPoints = 30;
-    if (userInfo.position_no === 2) {
-      rewardPoints = 100;
-    } else if (userInfo.position_no === 3) {
-      rewardPoints = 50;
-    }
-
     try {
-      const response = await axios.post(
-        `/staff/pointAdd?member_no=${member_no}&points=${rewardPoints}`,
-        { member_no: userInfo.member_no },
-        { withCredentials: true }
-      );
-      
-      if (response.data.success) {
-        alert(response.data.message);
-        
-        localStorage.setItem('lastAttendanceDate', today);
-
-        setUserInfo(prevUserInfo => ({
-          ...prevUserInfo,
-          points: prevUserInfo.points + rewardPoints,
-        }));
-
-        localStorage.setItem('userInfo', JSON.stringify({
-          ...userInfo,
-          points: userInfo.points + rewardPoints,
-        }));
-      } else {
-        alert(response.data.message);
+      // 로그인 상태와 사용자 정보 확인
+      if (!isLoggedIn) {
+        alert('로그인이 필요한 서비스입니다.');
+        return;
       }
-    } catch(error) {
-      console.error("출석 체크 요청 중 오류 발생:", error);
-      alert("출석 체크 중 문제가 발생했습니다.");
+
+      // localStorage에서 최신 사용자 정보 가져오기
+      const storedUserInfo = localStorage.getItem('userInfo');
+      if (!storedUserInfo) {
+        alert('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+        return;
+      }
+
+      const currentUserInfo = JSON.parse(storedUserInfo);
+      if (!currentUserInfo.member_no) {
+        alert('사용자 번호를 찾을 수 없습니다. 다시 로그인해주세요.');
+        return;
+      }
+
+      // 출석체크 로직
+      const attendanceKey = `lastAttendanceDate_${currentUserInfo.member_no}`;
+      const lastAttendanceDate = localStorage.getItem(attendanceKey);
+      const today = new Date().toISOString().split('T')[0];
+
+      if (lastAttendanceDate === today) {
+        alert('오늘은 이미 출석체크를 했습니다. 내일 다시 해주세요~');
+        return;
+      }
+
+      // 직급별 포인트 설정
+      let rewardPoints = 30;  // 기본 포인트
+      if (currentUserInfo.position_no === 2) {
+        rewardPoints = 100;  // 대리 포인트
+      } else if (currentUserInfo.position_no === 3) {
+        rewardPoints = 50;   // 과장 포인트
+      }
+
+      // 서버에 출석체크 요청
+      const params = new URLSearchParams();
+      params.append('member_no', currentUserInfo.member_no);
+      params.append('points', rewardPoints);
+
+      const response = await axios.post('/staff/pointAdd', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        withCredentials: true
+      });
+
+      if (response.data.success) {
+        localStorage.setItem(attendanceKey, today);
+
+        const updatedUserInfo = {
+          ...currentUserInfo,
+          points: currentUserInfo.points + rewardPoints
+        };
+
+        setUserInfo(updatedUserInfo);
+        localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+
+        alert(`출석체크가 완료되었습니다.\n포인트가 +${rewardPoints}P 증가했습니다!`);
+      } else {
+        alert(response.data.message || '출석체크에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('출석체크 실패:', error);
+      alert('출석체크 중 문제가 발생했습니다.');
     }
+  };
+
+  const handleAttendanceReset = async () => {
+    try {
+      // localStorage의 모든 키 가져오기
+      const keys = await Object.keys(localStorage);
+      
+      // 출석체크 관련 키만 필터링
+      const attendanceKeys = keys.filter(key => key.startsWith('lastAttendanceDate_'));
+      
+      if (attendanceKeys.length > 0) {
+        // 모든 출석체크 기록 삭제
+        attendanceKeys.forEach(key => localStorage.removeItem(key));
+        alert('모든 사용자의 출석체크가 초기화되었습니다.');
+      } else {
+        alert('초기화할 출석체크 기록이 없습니다.');
+      }
+    } catch (error) {
+      console.error('출석체크 초기화 실패:', error);
+      alert('출석체크 초기화 중 문제가 발생했습니다.');
+    }
+  };
+
+  const handleRefreshItemList = () => {
+    setRefreshItemList(prev => prev + 1);
   };
 
   return (
@@ -411,14 +484,25 @@ function App() {
       />
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<ItemList isLoggedIn={isLoggedIn} isAdmin={isAdmin} />} />
+          <Route path="/" element={
+            <ItemList 
+              isLoggedIn={isLoggedIn} 
+              isAdmin={isAdmin}
+              refreshKey={refreshItemList} 
+            />
+          } />
           <Route path="/staff/edit" element={<StaffEdit onUpdate={loadStaffList} />} />
           <Route path="/stuff/item/list" element={<ItemList isLoggedIn={isLoggedIn} isAdmin={isAdmin} />} />
           <Route path="/staff/register" element={<StaffRegister />} />
           <Route path="/stuff/item/register" element={<ItemRegister />} />
           <Route path="/stuff/item/edit" element={<ItemEdit />} />
           <Route path="/stuff/item/deleted" element={<DeletedItems />} />
-          <Route path="/stuff/cart" element={<Cart />} />
+          <Route path="/stuff/cart" element={
+            <Cart 
+              setUserInfo={setUserInfo}
+              onOrderComplete={handleRefreshItemList}
+            />
+          } />
           <Route path="/staff/removelist" element={<RemovedStaff />} />
           <Route path="/board/list" element={<BoardList isLoggedIn={isLoggedIn} isAdmin={isAdmin}/> } />
           <Route path="/board/read" element={<ReadContent />} />

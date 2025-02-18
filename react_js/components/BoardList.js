@@ -40,9 +40,6 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
       const { boards = [], totalPages } = response.data; // 백엔드에서 페이지 데이터 가져옴
 
-      console.log('Fetched boards:', boards);
-
-      console.log('Total Pages:', totalPages);
 
       const filteredBoards = boards.filter(board => board.board_delete === 0);
 
@@ -52,7 +49,6 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
     } catch (error) {
 
-      console.error('게시판 목록을 불러오는 중 오류 발생:', error);
 
     } finally {
 
@@ -148,7 +144,6 @@ function BoardList({ isLoggedIn, isAdmin }) {
 
     } catch (error) {
 
-      console.error('글 삭제 실패:', error);
 
       alert(error.response?.data?.message || '글 삭제 중 오류가 발생했습니다.');
 

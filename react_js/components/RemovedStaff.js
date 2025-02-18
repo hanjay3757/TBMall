@@ -39,7 +39,7 @@ function RemovedStaff() {
   // 현재 직원 목록 불러오기 함수 수정
   const fetchActiveStaff = async () => {
     try {
-      // pageSize를 큰 숫자로 설정하여 모든 직원 목록을 가져옴
+      // 페이징 파라미터 추가
       const response = await axios.post(`${SERVER_URL}/mvc/staff/list`, {
         currentPage: 1,
         pageSize: 1000  // 충분히 큰 숫자로 설정
@@ -53,21 +53,22 @@ function RemovedStaff() {
       
       if (response.data) {
         let staffList = [];
+        let totalPage = 1;  // 기본값 설정
         
         // 응답 데이터 형식에 따른 처리
-        if (Array.isArray(response.data)) {
-          staffList = response.data;
-        } else if (response.data.staff && Array.isArray(response.data.staff)) {
+        if (response.data.staff && Array.isArray(response.data.staff)) {
           staffList = response.data.staff;
-        } else if (response.data.list && Array.isArray(response.data.list)) {
-          staffList = response.data.list;
+          totalPage = response.data.totalPage || 1;  // totalPage 값이 있으면 사용
         }
 
         // member_delete가 0인 직원만 필터링
         const activeStaff = staffList.filter(staff => staff.member_delete === 0);
         setActiveStaffList(activeStaff);
         
-        console.log('현재 직원 목록 업데이트됨:', activeStaff); // 데이터 확인용 로그
+        console.log('현재 직원 목록 업데이트됨:', {
+          staffList: activeStaff,
+          totalPage: totalPage
+        }); // 데이터 확인용 로그
       }
     } catch (error) {
       console.error('현재 직원 목록을 불러오는데 실패했습니다:', error);
@@ -137,20 +138,41 @@ function RemovedStaff() {
     navigate(`/staff/edit?member_no=${member_no}`);  // URL 형식 수정
   };
 
+  // 직급 데이터 매핑
+  const getPositionName = (positionNo) => {
+    const positions = {
+      '1': '사장',
+      '2': '부장', 
+      '3': '대리',
+      '4': '사원',
+      '5': '과장'
+    };
+    return positions[positionNo] || '사원';
+  };
+
+  const tableStyle = {
+    width: '100%',
+    tableLayout: 'fixed'
+  };
+
+  const thStyle = {
+    width: '20%'
+  };
+
   return (
     <div className="staff-management">
       {/* 현재 직원 목록 */}
       <div className="staff-section">
         <h2>현재 직원 목록</h2>
         <div className="table-container">
-          <table className="staff-table">
+          <table className="staff-table" style={tableStyle}>
             <thead>
               <tr>
-                <th>직원번호</th>
-                <th>아이디</th>
-                <th>이름</th>
-                <th>관리자 여부</th>
-                <th>관리</th>
+                <th style={thStyle}>직원번호</th>
+                <th style={thStyle}>아이디</th>
+                <th style={thStyle}>이름</th>
+                <th style={thStyle}>직급</th>
+                <th style={thStyle}>관리</th>
               </tr>
             </thead>
             <tbody>
@@ -159,7 +181,7 @@ function RemovedStaff() {
                   <td>{staff.member_no}</td>
                   <td>{staff.member_id}</td>
                   <td>{staff.member_nick}</td>
-                  <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+                  <td>{getPositionName(staff.position_no)}</td>
                   <td>
                     <button 
                       onClick={() => handleEdit(staff.member_no)}
@@ -188,14 +210,14 @@ function RemovedStaff() {
           {error ? (
             <p className="error-message">{error}</p>
           ) : (
-            <table className="staff-table">
+            <table className="staff-table" style={tableStyle}>
               <thead>
                 <tr>
-                  <th>직원번호</th>
-                  <th>아이디</th>
-                  <th>이름</th>
-                  <th>관리자 여부</th>
-                  <th>관리</th>
+                  <th style={thStyle}>직원번호</th>
+                  <th style={thStyle}>아이디</th>
+                  <th style={thStyle}>이름</th>
+                  <th style={thStyle}>직급</th>
+                  <th style={thStyle}>관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,7 +226,7 @@ function RemovedStaff() {
                     <td>{staff.member_no}</td>
                     <td>{staff.member_id}</td>
                     <td>{staff.member_nick}</td>
-                    <td>{staff.admins === 1 ? '관리자' : '일반 직원'}</td>
+                    <td>{getPositionName(staff.position_no)}</td>
                     <td>
                       <button 
                         onClick={() => handleRestore(staff.member_no)}
